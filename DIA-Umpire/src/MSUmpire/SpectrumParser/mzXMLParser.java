@@ -1,0 +1,673 @@
+/* 
+ * Author: Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
+ *             Nesvizhskii Lab, Department of Computational Medicine and Bioinformatics, 
+ *             University of Michigan, Ann Arbor
+ *
+ * Copyright 2014 University of Michigan, Ann Arbor, MI
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package MSUmpire.SpectrumParser;
+
+import MSUmpire.BaseDataStructure.InstrumentParameter;
+import MSUmpire.BaseDataStructure.ScanCollection;
+import MSUmpire.BaseDataStructure.ScanData;
+import MSUmpire.BaseDataStructure.SpectralDataType;
+import MSUmpire.BaseDataStructure.XYData;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.TreeMap;
+import java.util.concurrent.*;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
+
+
+/* * 
+ * constructor To change this template, choose Tools | Templates and open the
+ * template in the editor.
+ */
+/**
+ *
+ * @author Chih-Chiang Tsou
+ */
+public final class mzXMLParser  extends SpectrumParserBase{
+
+    public TreeMap<Integer, Long> ScanIndex=null;
+    public mzXMLParser(String filename, InstrumentParameter parameter, SpectralDataType.DataType datatype, DIA_Setting dIA_Setting, int NoCPUs) throws Exception {
+        super(filename,parameter,datatype,dIA_Setting,NoCPUs);
+//        this.scanCollection = new ScanCollection(parameter.Resolution);
+//        this.scanCollection.Filename = filename;
+        ReadElutionAndScanIndex();
+    }
+
+    private void ReadElutionAndScanIndex() throws Exception {
+        //long startRead =System.nanoTime();
+        if (!FSScanPosRead()) {
+            //long start =System.nanoTime();
+            ParseIndex();
+            //System.out.printf("ParseIndex() took: %.0f ms\n", (System.nanoTime() - start)/1e6);
+            //start =System.nanoTime();
+            WriteIndexSerialization();
+            //System.out.printf("WriteIndexSerialization() took: %.0f ms\n", (System.nanoTime() - start)/1e6);
+        }
+        //System.out.printf("FSScanPosRead() took: %.0f ms\n", (System.nanoTime() - startRead)/1e6);
+        //startRead =System.nanoTime();
+        if (!FSElutionIndexRead()) {
+            //long start =System.nanoTime();
+            ParseElutionIndex();
+            //System.out.printf("ParseElutionIndex() took: %.0f ms\n", (System.nanoTime() - start)/1e6);
+            //start =System.nanoTime();
+            FSElutionIndexWrite();
+            //System.out.printf("FSElutionIndexWrite() took: %.0f ms\n", (System.nanoTime() - start)/1e6);
+        }
+        //System.out.printf("FSElutionIndexRead() took: %.0f ms\n", (System.nanoTime() - startRead)/1e6);
+    }
+
+    private void WriteIndexSerialization() {
+        FSScanPosWrite();
+    }
+    
+    private void FSScanPosWrite() {
+        try {
+            Logger.getRootLogger().debug("Writing ScanPos to file:" + FilenameUtils.removeExtension(filename) + ".ScanPosFS..");
+            FileOutputStream fout = new FileOutputStream(FilenameUtils.removeExtension(filename) + ".ScanPosFS", false);
+            FSTObjectOutput oos = new FSTObjectOutput(fout);
+            oos.writeObject(ScanIndex);
+            oos.close();
+            fout.close();
+        } catch (Exception ex) {
+            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
+        }
+    }
+    
+    private boolean FSScanPosRead() {
+        if (!new File(FilenameUtils.removeExtension(filename) + ".ScanPosFS").exists()) {
+            return false;
+        }
+        try {
+            Logger.getRootLogger().debug("Reading ScanPos:" + FilenameUtils.removeExtension(filename) + ".ScanPosFS...");
+            FileInputStream fileIn = new FileInputStream(FilenameUtils.removeExtension(filename) + ".ScanPosFS");
+            FSTObjectInput in = new FSTObjectInput(fileIn);
+            ScanIndex = (TreeMap<Integer, Long>) in.readObject();
+            TotalScan = ScanIndex.size();
+            in.close();
+            fileIn.close();
+
+        } catch (Exception ex) {
+            Logger.getRootLogger().debug("ScanIndex serialization file failed");
+            //Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
+            return false;
+        }
+        return true;
+    }
+    
+    private void ParseIndex() throws FileNotFoundException, IOException {
+        TotalScan = 0;
+        ScanIndex = new TreeMap<>();
+        try (RandomAccessFile fileHandler = new RandomAccessFile(filename, "r")) {
+            StringBuilder sb = new StringBuilder();
+
+            String CurrentLine = "";
+            long currentLastPt = fileHandler.length() - 1;
+            boolean indexexist=false;
+            int linecount=0;
+            while (!(CurrentLine.trim().startsWith("<index name=") | CurrentLine.trim().startsWith("</msRun>"))) {
+                //Read backward
+                for (long filePointer = currentLastPt; filePointer != -1; filePointer--) {
+                    fileHandler.seek(filePointer);
+                    int readByte = fileHandler.readByte();
+                    if (readByte == 0xA) {
+                        if (filePointer == currentLastPt) {
+                            continue;
+                        } else {
+                            currentLastPt = filePointer;
+                            break;
+                        }
+                    } else if (readByte == 0xD) {
+                        if (filePointer == currentLastPt - 1) {
+                            continue;
+                        } else {
+                            currentLastPt = filePointer;
+                            break;
+                        }
+                    }
+                    sb.append((char) readByte);
+                }
+                linecount++;
+                CurrentLine = sb.reverse().toString();
+                sb = new StringBuilder();
+
+                if (CurrentLine.trim().startsWith("</index>")) {
+                    indexexist = true;
+                }
+
+                if (!indexexist && linecount > 10) {
+                    fileHandler.close();
+                    Logger.getRootLogger().debug("File : " + filename + " doesn't have index. the processing will stop.");
+                    System.exit(1);
+                }
+
+                if (CurrentLine.trim().startsWith("<offset id")) {
+                    int scanNo = Integer.parseInt(CurrentLine.substring(CurrentLine.indexOf("<offset id=\"") + 12).split("\"")[0]);
+                    long index = (long) Long.parseLong(CurrentLine.substring(CurrentLine.indexOf(">") + 1, CurrentLine.indexOf("</offset>")));
+                    if (index < 0) {
+                        index = index + 2147483647l + 2147483648l;
+                    }
+                    if (ScanIndex.containsKey(scanNo + 1) && ScanIndex.get(scanNo + 1) == index) {
+                        Logger.getRootLogger().debug("File : " + filename + " index is not correct, ScanNo:" + scanNo + " and " + scanNo + 1 + " have same index");
+                        Logger.getRootLogger().debug("Please use indexmzXML from  TPP package to fix incorrect index of the mzXML file.");
+                        Logger.getRootLogger().debug("command: indexmzXML filename.mzXML");
+                        System.exit(1);
+                    }
+                    ScanIndex.put(scanNo, index);
+                } else if (CurrentLine.trim().startsWith("<indexOffset>")) {
+                    long IndexEnd = (long) Long.parseLong(CurrentLine.substring(CurrentLine.indexOf("<indexOffset>") + 13, CurrentLine.indexOf("</indexOffset>")));
+                    if (IndexEnd < 0) {
+                        IndexEnd = IndexEnd + 2147483647l + 2147483648l;
+                    }
+                    ScanIndex.put(Integer.MAX_VALUE, IndexEnd);
+                }
+            }
+            TotalScan = ScanIndex.size();
+            sb = null;
+            fileHandler.close();
+        }
+    }
+
+    private void ParseElutionIndex() throws Exception {
+        
+        if(ScanIndex==null | ScanIndex.isEmpty()){
+            return;
+        }
+
+        boolean ReadDIAWindow = false;
+        if (datatype != SpectralDataType.DataType.DDA) {
+            if (datatype != SpectralDataType.DataType.DIA_V_Window) {
+                dIA_Setting.DIAWindows = new TreeMap<>();
+            }
+            ReadDIAWindow = true;
+        }
+        try (RandomAccessFile fileHandler = new RandomAccessFile(filename, "r")) {
+            Iterator<Entry<Integer, Long>> iter = ScanIndex.entrySet().iterator();
+            Long currentIdx = iter.next().getValue();
+            while (iter.hasNext()) {
+                long startposition = currentIdx;
+                long nexposition = iter.next().getValue();
+                currentIdx = nexposition;
+                fileHandler.seek(startposition);
+                
+//                if(startposition>=nexposition){
+//                    System.out.println("");
+//                }
+                
+                byte[] bufr = new byte[(int) (nexposition - startposition)];
+                fileHandler.readFully(bufr, 0, (int) (nexposition - startposition));
+
+                String temp = new String(bufr);
+
+                float rt = 0f;
+                int scanno = 0;
+                int mslevel = 0;
+                //float precursorF=0f;
+                if (!temp.contains("<scan")) {
+                    fileHandler.close();
+                    return;
+                }
+
+                if (temp.contains("<scan num=") && (temp.contains("retentionTime=\"PT"))) {
+                    String substr = temp.substring(temp.indexOf("<scan num=") + 11);
+                    scanno = Integer.parseInt(substr.substring(0, substr.indexOf("\"")));
+                    
+                    rt = Float.parseFloat(temp.substring(temp.indexOf("retentionTime=\"PT") + 17).split("S\"")[0]);
+                    rt=rt/60f;
+                    mslevel = Integer.parseInt(temp.substring(temp.indexOf("msLevel=") + 9, temp.indexOf("msLevel=") + 10));
+                    if (temp.contains("scanType=\"calibration\"")) {
+                        mslevel = -1;
+                    }
+                    if (mslevel == 1) {
+                        NoMS1Scans++;                        
+                        if (temp.contains("scanType=\"SIM\"") && datatype == SpectralDataType.DataType.WiSIM) {
+                            int startidx = temp.indexOf("lowMz=\"") + 7;
+                            int stopidx = startidx + 1;
+                            for (int i = startidx + 1; i < temp.length(); i++) {
+                                if (temp.charAt(i) == '\"') {
+                                    stopidx = i;
+                                    break;
+                                }
+                            }
+                            float lowmz = Float.parseFloat(temp.substring(startidx, stopidx));
+                            startidx = temp.indexOf("highMz=\"") + 8;
+                            stopidx = startidx + 1;
+                            for (int i = startidx + 1; i < temp.length(); i++) {
+                                if (temp.charAt(i) == '\"') {
+                                    stopidx = i;
+                                    break;
+                                }
+                            }
+                            float highmz = Float.parseFloat(temp.substring(startidx, stopidx));
+                            for (XYData MS1win : dIA_Setting.MS1Windows.keySet()) {
+                                if (MS1win.getX() <= lowmz && MS1win.getY() >= highmz) {
+                                    dIA_Setting.MS1Windows.get(MS1win).add(scanno);
+                                }
+                            }
+                        }                        
+                    }
+                    //precursorF= Float.parseFloat(temp.substring(temp.indexOf("precursorIntensity=") + 20, temp.indexOf("\" precursorCharge")));
+                    
+                    if (datatype != SpectralDataType.DataType.DDA) {
+                        if (ReadDIAWindow && mslevel == 2) {
+                            if (datatype == SpectralDataType.DataType.MSX) {
+                                substr = temp;
+                                while (substr.contains("</precursorMz>")) {
+                                    int stopidx = substr.indexOf("</precursorMz>");
+                                    int startidx = 0;
+                                    for (int i = stopidx; i > 0; i--) {
+                                        if (substr.charAt(i) == '>') {
+                                            startidx = i + 1;
+                                            break;
+                                        }
+                                    }
+                                    float precursormz = Float.parseFloat(substr.substring(startidx, stopidx));
+
+                                    startidx = substr.indexOf("windowWideness=\"") + 16;
+                                    stopidx = startidx + 1;
+                                    for (int i = startidx + 1; i < substr.length(); i++) {
+                                        if (substr.charAt(i) == '\"') {
+                                            stopidx = i;
+                                            break;
+                                        }
+                                    }
+                                    float windowwideness = Float.parseFloat(substr.substring(startidx, stopidx));
+                                    float Loffset = windowwideness / 2f;
+                                    float Roffset = windowwideness / 2f;
+
+                                    if (!dIA_Setting.DIAWindows.containsKey(new XYData(precursormz - Loffset, precursormz + Roffset))) {
+                                        ArrayList<Integer> scanList = new ArrayList<>();
+                                        dIA_Setting.DIAWindows.put(new XYData(precursormz - Loffset, precursormz + Roffset), scanList);
+                                    }
+                                    dIA_Setting.DIAWindows.get(new XYData(precursormz - Loffset, precursormz + Roffset)).add(scanno);
+                                    substr = substr.substring(substr.indexOf("</precursorMz>") + 14);
+                                }
+                            } else if (datatype == SpectralDataType.DataType.DIA_F_Window || datatype == SpectralDataType.DataType.pSMART || datatype == SpectralDataType.DataType.WiSIM) {
+                                int stopidx = temp.indexOf("</precursorMz>");
+                                if (stopidx == -1) {
+                                    Logger.getRootLogger().error("Parsing </precursorMz> failed. scan number :" + scanno);                                    
+                                    System.exit(3);
+                                }
+                                int startidx = 0;
+                                for (int i = stopidx; i > 0; i--) {
+                                    if (temp.charAt(i) == '>') {
+                                        startidx = i + 1;
+                                        break;
+                                    }
+                                }
+                                float precursormz = Float.parseFloat(temp.substring(startidx, stopidx));
+                                float Loffset = (dIA_Setting.F_DIA_WindowSize + 1) * 0.2f;
+                                float Roffset = (dIA_Setting.F_DIA_WindowSize + 1) * 0.8f;
+//                                float Loffset = 5f;
+//                                float Roffset = 21f;
+
+                                if (temp.contains("windowWideness=\"")) {
+                                    startidx = temp.indexOf("windowWideness=\"") + 16;
+                                    stopidx = startidx + 1;
+                                    for (int i = startidx + 1; i < temp.length(); i++) {
+                                        if (temp.charAt(i) == '\"') {
+                                            stopidx = i;
+                                            break;
+                                        }
+                                    }
+                                    float windowwideness = Float.parseFloat(temp.substring(startidx, stopidx));
+                                    Loffset = windowwideness / 2f;
+                                    Roffset = windowwideness / 2f;
+                                }
+
+                                if (!dIA_Setting.DIAWindows.containsKey(new XYData(precursormz - Loffset, precursormz + Roffset))) {
+                                    ArrayList<Integer> scanList = new ArrayList<>();
+                                    dIA_Setting.DIAWindows.put(new XYData(precursormz - Loffset, precursormz + Roffset), scanList);
+                                }
+                                dIA_Setting.DIAWindows.get(new XYData(precursormz - Loffset, precursormz + Roffset)).add(scanno);
+                            } else if (datatype == SpectralDataType.DataType.DIA_V_Window) {
+                                int stopidx = temp.indexOf("</precursorMz>");
+                                int startidx = 0;
+                                for (int i = stopidx; i > 0; i--) {
+                                    if (temp.charAt(i) == '>') {
+                                        startidx = i + 1;
+                                        break;
+                                    }
+                                }
+                                float precursormz = Float.parseFloat(temp.substring(startidx, stopidx));
+                                for (XYData window : dIA_Setting.DIAWindows.keySet()) {
+                                    if (window.getX() <= precursormz && window.getY() >= precursormz) {
+                                        dIA_Setting.DIAWindows.get(window).add(scanno);
+                                        break;
+                                    }
+                                }
+                            } else if (datatype == SpectralDataType.DataType.MSe) {
+                                float mzlowF = 0f;
+                                float mzhighF = 10000f;
+                                if (!dIA_Setting.DIAWindows.containsKey(new XYData(mzlowF, mzhighF))) {
+                                    ArrayList<Integer> scanList = new ArrayList<>();
+                                    dIA_Setting.DIAWindows.put(new XYData(mzlowF, mzhighF), scanList);
+                                }
+                                dIA_Setting.DIAWindows.get(new XYData(mzlowF, mzhighF)).add(scanno);
+                            }
+                        }
+                    }
+                } else {
+                    Logger.getRootLogger().error("index of mzXML error");
+                    System.exit(1);
+                }
+                ElutionTimeToScanNoMap.put(rt, scanno);
+                //scanCollection.ElutionTimeToScanNoMap.put(nowtime / 60f, scanno);
+                ScanToElutionTime.put(scanno, rt);
+                MsLevelList.put(scanno, mslevel);
+            }
+            //WriteElutionIndex();            
+            fileHandler.close();
+        }
+    }
+    
+    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak) throws InterruptedException, ExecutionException, IOException {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error("This is not DIA data" + filename);
+            return null;
+        }
+//        if (!MS1WindowScans.containsKey(MS1Window)) {
+//            MS1WindowScans.put(MS1Window, GetScanCollectionMS1Window(MS1Window, IncludePeak, 0f, 999999f));
+//        }
+        //return MS1WindowScans.get(MS1Window);
+        return GetScanCollectionMS1Window(MS1Window, IncludePeak, 0f, 999999f);
+    }
+    
+    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error(filename + " is not DIA data");
+            return null;
+        }
+        ScanCollection MS1WindowScanCollection = new ScanCollection(parameter.Resolution);
+        //System.out.print("Multithreading: "+NoCPUs +" processors (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
+        //System.out.print("...Reading all scans of SWATH window:" + swathwin.X + " - " + swathwin.Y + "....");        
+        
+        List<MzXMLthreadUnit> ScanList = new ArrayList<>();
+
+        int StartScanNo = 0;
+        int EndScanNo = 0;
+
+        StartScanNo = GetStartScan(startTime);        
+        EndScanNo = GetEndScan(endTime);
+        ArrayList<Integer> IncludedScans=new ArrayList<>();
+        for(Integer scannum : dIA_Setting.MS1Windows.get(MS1Window)){
+            if(scannum >= StartScanNo && scannum <= EndScanNo){
+                IncludedScans.add(scannum);
+            }
+        }
+        
+        ParseScans(IncludedScans, ScanList);
+        
+        for (MzXMLthreadUnit result : ScanList) {
+            MS1WindowScanCollection.AddScan(result.scan);
+            MS1WindowScanCollection.ElutionTimeToScanNoMap.put(result.scan.RetentionTime, result.scan.ScanNum);
+        }
+        ScanList.clear();
+        ScanList = null;
+        
+        //System.gc();
+        //System.out.print(".....done\n");
+        //System.out.print("Finished multithreading (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
+
+        return MS1WindowScanCollection;
+    }
+    
+    public ScanCollection GetScanCollectionDIAMS2(XYData DIAWindow, boolean IncludePeak,float startRT, float endRT) throws InterruptedException, ExecutionException, IOException {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error("This is not DIA data" + filename);
+            return null;
+        }
+//        if (!DIAMS2Scans.containsKey(DIAWindow)) {
+//            DIAMS2Scans.put(DIAWindow, GetScanDIAMS2(DIAWindow, IncludePeak, startRT, endRT));
+//        }
+        //return DIAMS2Scans.get(DIAWindow);
+        return GetScanDIAMS2(DIAWindow, IncludePeak, startRT, endRT);
+    }
+
+    public ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error(filename + " is not DIA data");
+            return null;
+        }
+        ScanCollection swathScanCollection = new ScanCollection(parameter.Resolution);
+        //System.out.print("Multithreading: "+NoCPUs +" processors (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
+        //System.out.print("...Reading all scans of SWATH window:" + swathwin.X + " - " + swathwin.Y + "....");        
+        List<MzXMLthreadUnit> ScanList = new ArrayList<>();
+
+        int StartScanNo = 0;
+        int EndScanNo = 0;
+
+       StartScanNo = GetStartScan(startTime);        
+        EndScanNo = GetEndScan(endTime);
+        ArrayList<Integer> IncludedScans=new ArrayList<>();
+        for(Integer scannum :dIA_Setting.DIAWindows.get(DIAWindow)){
+            if(scannum >= StartScanNo && scannum <= EndScanNo){
+                IncludedScans.add(scannum);
+            }
+        }
+        ParseScans(IncludedScans, ScanList);
+        
+        for (MzXMLthreadUnit result : ScanList) {
+            swathScanCollection.AddScan(result.scan);
+            swathScanCollection.ElutionTimeToScanNoMap.put(result.scan.RetentionTime, result.scan.ScanNum);
+        }        
+        ScanList.clear();
+        ScanList = null;
+        
+        //System.gc();
+        //System.out.print(".....done\n");
+        //System.out.print("Finished multithreading (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
+
+        return swathScanCollection;
+    }
+
+    private void ParseScans(ArrayList<Integer> IncludedScans, List<MzXMLthreadUnit> ScanList) throws IOException {
+        ExecutorService executorPool = null;
+        executorPool = Executors.newFixedThreadPool(NoCPUs);
+        Iterator<Entry<Integer, Long>> iter = ScanIndex.entrySet().iterator();        
+        Entry<Integer, Long> ent = iter.next();
+        Long currentIdx = ent.getValue();
+        int nextScanNo = ent.getKey();
+
+        while (iter.hasNext()) {
+            ent = iter.next();
+            long startposition = currentIdx;
+            long nexposition = ent.getValue();
+            int currentScanNo = nextScanNo;
+            nextScanNo = ent.getKey();
+            currentIdx = nexposition;
+
+            if (IncludedScans.contains(currentScanNo)) {
+                byte[] buffer = new byte[(int) (nexposition - startposition)];
+                RandomAccessFile fileHandler = new RandomAccessFile(filename, "r");
+                fileHandler.seek(startposition);
+                fileHandler.read(buffer, 0, (int) (nexposition - startposition));
+                fileHandler.close();
+                String xmltext = new String(buffer);
+                if (ent.getKey() == Integer.MAX_VALUE) {
+                    xmltext = xmltext.replaceAll("</msRun>", "");
+                    buffer = null;
+                }
+                boolean ReadPeak = true;
+                MzXMLthreadUnit unit = new MzXMLthreadUnit(xmltext, parameter, datatype, ReadPeak);
+                ScanList.add(unit);
+                buffer = null;
+                xmltext = null;
+                fileHandler = null;
+            }
+        }
+
+        //progress.SetTotal(ScanList.size());
+        //Thread thread = new Thread(progress);
+        //thread.start();
+        for (MzXMLthreadUnit unit : ScanList) {
+            executorPool.execute(unit);
+        }
+        executorPool.shutdown();
+//        while (!executorPool.isTerminated()) {
+//        }
+        try {
+            executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            Logger.getRootLogger().info("interrupted..");
+        }
+        //thread.stop();
+        //thread = null;
+        //progress.ClearMSG();
+        //progress = null;
+        executorPool = null;
+        ent = null;
+        iter = null;
+    }
+
+    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak) throws InterruptedException, ExecutionException, IOException {
+        return GetAllScanCollectionByMSLabel(MS1Included, MS2Included, MS1Peak, MS2Peak, 0f, 999999f);
+    }
+
+    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+        ScanCollection scanCollection = InitializeScanCollection();
+        Logger.getRootLogger().debug("Memory usage before loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB (" + NoCPUs + " threads)");
+
+        ArrayList<Integer> IncludedScans = new ArrayList<>();
+        
+        for(Integer ScanNum : MsLevelList.keySet()){
+            if(MsLevelList.get(ScanNum)==1 && MS1Included){
+                IncludedScans.add(ScanNum);
+            }
+            if(MsLevelList.get(ScanNum)==2 && MS2Included){
+                IncludedScans.add(ScanNum);
+            }
+        }
+         
+        List<MzXMLthreadUnit> ScanList = new ArrayList<>();
+
+        int StartScanNo = 0;
+        int EndScanNo = 0;
+
+        StartScanNo = GetStartScan(startTime);        
+        EndScanNo = GetEndScan(endTime);
+        
+        ArrayList<Integer> temp=new ArrayList<>();
+        for(Integer scannum : IncludedScans){
+            if(scannum >= StartScanNo && scannum <= EndScanNo){
+                temp.add(scannum);
+            }
+        }
+        
+        ParseScans(temp, ScanList);
+        
+        for (MzXMLthreadUnit result : ScanList) {
+            scanCollection.AddScan(result.scan);
+        }
+        ScanList.clear();
+        ScanList = null;
+        
+        System.gc();
+        //System.out.print(".....done\n");
+        Logger.getRootLogger().debug("Memory usage after loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB");
+        return scanCollection;
+    }
+    
+    public ScanData GetSingleRawScan(int scanNO) throws FileNotFoundException, IOException, Exception {
+        long startposition = ScanIndex.get(scanNO);
+        long nexposition = ScanIndex.ceilingEntry(scanNO + 1).getValue();
+        byte[] buffer = new byte[(int) (nexposition - startposition)];
+        RandomAccessFile fileHandler = new RandomAccessFile(filename, "r");
+        fileHandler.seek(startposition);
+        fileHandler.read(buffer, 0, (int) (nexposition - startposition));
+        String xmltext = new String(buffer);
+        xmltext = xmltext.replaceAll("</msRun>", "");
+
+        mzXMLReadUnit read = new mzXMLReadUnit(xmltext);
+        ScanData scan = read.Parse();
+        xmltext = null;
+        read = null;
+        fileHandler.close();
+        return scan;
+    }
+
+    public ScanData GetSingleScanByScanNumberAndRelease(int scanNO) throws FileNotFoundException, IOException, Exception {
+        //if (!scanCollection.ScanAdded(scanNO)) {
+            long startposition = ScanIndex.get(scanNO);
+            long nexposition = ScanIndex.ceilingEntry(scanNO + 1).getValue();
+            byte[] buffer = new byte[(int) (nexposition - startposition)];
+            RandomAccessFile fileHandler = new RandomAccessFile(filename, "r");
+            fileHandler.seek(startposition);
+            fileHandler.read(buffer, 0, (int) (nexposition - startposition));
+            String xmltext = new String(buffer);
+            xmltext = xmltext.replaceAll("</msRun>", "");
+
+            MzXMLthreadUnit unit = new MzXMLthreadUnit(xmltext, parameter, datatype);
+            unit.run();
+            fileHandler.close();
+            return unit.scan;
+        //}
+        //return scanCollection.GetScan(scanNO);
+    }
+
+    public ScanCollection GetScanCollectionRawByScanList(ArrayList<Integer> ScanNos) throws InterruptedException, ExecutionException, IOException {
+        //System.out.print("Multithreading: "+NoCPUs +" processors (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
+        //System.out.print("...Reading all scans....");
+        ScanCollection scanCollection = InitializeScanCollection();
+        Logger.getRootLogger().debug("Memory usage before loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB");
+
+        List<MzXMLthreadUnit> ScanList = new ArrayList<>();
+
+        ParseScans(ScanNos, ScanList);
+        
+        for (MzXMLthreadUnit result : ScanList) {
+            scanCollection.AddScan(result.scan);
+        }
+        ScanList.clear();
+        ScanList = null;
+
+        System.gc();
+        //System.out.print(".....done\n");
+        Logger.getRootLogger().debug("Memory usage after loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB");
+        return scanCollection;
+    }
+
+    public ScanData GetSingleScanByScanNumber(int scanNO) throws FileNotFoundException, IOException, Exception {
+        //if (!scanCollection.ScanAdded(scanNO)) {
+            long startposition = ScanIndex.get(scanNO);
+            long nexposition = ScanIndex.ceilingEntry(scanNO + 1).getValue();
+            byte[] buffer = new byte[(int) (nexposition - startposition)];
+            RandomAccessFile fileHandler = new RandomAccessFile(filename, "r");
+            fileHandler.seek(startposition);
+            fileHandler.read(buffer, 0, (int) (nexposition - startposition));
+            String xmltext = new String(buffer);
+            if (nexposition == Integer.MAX_VALUE) {
+                xmltext = xmltext.replaceAll("</msRun>", "");
+            }
+            MzXMLthreadUnit unit = new MzXMLthreadUnit(xmltext, parameter, datatype);
+            unit.run();
+            //canCollection.AddScan(unit.scan);
+            buffer = null;
+            fileHandler.close();
+            return unit.scan;
+        //}
+        //return scanCollection.GetScan(scanNO);
+    }
+}

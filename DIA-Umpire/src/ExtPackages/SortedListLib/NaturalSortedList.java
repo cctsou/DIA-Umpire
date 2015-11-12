@@ -1,4 +1,4 @@
-package MSUmpire.SortedListLib;
+package ExtPackages.SortedListLib;
 
 import java.util.Comparator;
 

@@ -25,7 +25,7 @@ import MSUmpire.BaseDataStructure.ScanData;
 import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.FastaParser.FastaParser;
 import MSUmpire.PeakDataStructure.PeakCluster;
-import MSUmpire.SortedListLib.SortedList;
+import ExtPackages.SortedListLib.SortedList;
 import com.compomics.util.experiment.biology.AminoAcid;
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.PTM;
@@ -971,49 +971,6 @@ public class LCMSID implements Serializable {
         writer.close();
     }
 
-    protected void CreatePepFragmentTable(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP TABLE IF EXISTS " + FilenameUtils.getBaseName(mzXMLFileName) + "_PepFragments;");
-        connection.createStatement().execute("CREATE TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_PepFragments (PepIndex INT NOT NULL, IonType VARCHAR(4) NOT NULL, fragMZ DOUBLE NOT NULL,ObservedMZ DOUBLE NOT NULL, Charge INT NOT NULL, Intensity DOUBLE NOT NULL, Correlation DOUBLE NOT NULL,PPM DOUBLE NOT NULL, ApexDelta DOUBLE NOT NULL,RTOverlapP DOUBLE NOT NULL, PRIMARY KEY (PepIndex,IonType,Charge));");
-    }
-
-    protected void CreateMappedPepFragmentTable(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP TABLE IF EXISTS " + FilenameUtils.getBaseName(mzXMLFileName) + "_MappedPepFragments;");
-        connection.createStatement().execute("CREATE TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_MappedPepFragments (PepIndex INT NOT NULL, IonType VARCHAR(4) NOT NULL, fragMZ DOUBLE NOT NULL,ObservedMZ DOUBLE NOT NULL, Charge INT NOT NULL, Intensity DOUBLE NOT NULL, Correlation DOUBLE NOT NULL,PPM DOUBLE NOT NULL,ApexDelta DOUBLE NOT NULL,RTOverlapP DOUBLE NOT NULL, PRIMARY KEY (PepIndex,IonType,Charge));");
-    }
-
-    protected void CreateMappedPepIonTable(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP TABLE IF EXISTS " + FilenameUtils.getBaseName(mzXMLFileName) + "_MappedPepIonIDs;");
-        connection.createStatement().execute("CREATE TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_MappedPepIonIDs (PepIndex INT NOT NULL, Sequence VARCHAR(100) NOT NULL, ModSeq VARCHAR(200) NOT NULL, TPPModSeq VARCHAR(200) NOT NULL, ModInfo TEXT, Charge INT NOT NULL, mz DOUBLE NOT NULL, PredictRT VARCHAR(200), PeakRT DOUBLE NOT NULL, MS1ClusIndex VARCHAR(100),MS2ClusIndex VARCHAR(100),PeakScore DOUBLE,PeakHeight1 DOUBLE, PeakHeight2 DOUBLE, PeakHeight3 DOUBLE, PeakArea1 DOUBLE, PeakArea2 DOUBLE, PeakArea3 DOUBLE, MS1AlignmentProb DOUBLE,MS1AlignmentLProb DOUBLE,MS2AlignmentProb DOUBLE,MS2AlignmentLProb DOUBLE,PRIMARY KEY (ModSeq, Charge));");
-    }
-
-    protected void CreatePepIonTable(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP TABLE IF EXISTS " + FilenameUtils.getBaseName(mzXMLFileName) + "_PepIonIDs;");
-        connection.createStatement().execute("CREATE TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_PepIonIDs (PepIndex INT NOT NULL, Sequence VARCHAR(100) NOT NULL, ModSeq VARCHAR(200) NOT NULL,TPPModSeq VARCHAR(200) NOT NULL, LuciphorScore DOUBLE NOT NULL,LuciphorLFLR DOUBLE NOT NULL,LuciphorFLR DOUBLE NOT NULL,  IsNonDegenerate TINYINT(1) NOT NULL,Charge INT NOT NULL, mz DOUBLE NOT NULL, IDRT DOUBLE NOT NULL,PeakRT DOUBLE NOT NULL, NoPSMs INT NOT NULL, MS1ClusIndex VARCHAR(100),MS2ClusIndex VARCHAR(100), PeakScore DOUBLE, PeakHeight1 DOUBLE, PeakHeight2 DOUBLE, PeakHeight3 DOUBLE, PeakArea1 DOUBLE, PeakArea2 DOUBLE, PeakArea3 DOUBLE, PRIMARY KEY (ModSeq, Charge));");
-    }
-
-    protected void CreateProtIDTable(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP TABLE IF EXISTS " + FilenameUtils.getBaseName(mzXMLFileName) + "_ProtIDs;");
-        connection.createStatement().execute("CREATE TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_ProtIDs (AccNo VARCHAR(50) NOT NULL,UniProtID VARCHAR(20),ProteinLength INT NOT NULL,ProteinGroup TEXT,IndisProt TEXT, Description TEXT,Mass DOUBLE NOT NULL,Score DOUBLE NOT NULL,Peptides TEXT NOT NULL,Sequence TEXT, PRIMARY KEY (AccNo));");
-    }
-
-    protected void CreatePepPSMTable(Connection connection) throws SQLException {
-        connection.createStatement().execute("DROP TABLE IF EXISTS " + FilenameUtils.getBaseName(mzXMLFileName) + "_PSMs;");
-        connection.createStatement().execute("CREATE TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_PSMs (SpecID VARCHAR(100) NOT NULL, Sequence VARCHAR(100) NOT NULL, ModSeq VARCHAR(200) NOT NULL, TPPModSeq VARCHAR(200) NOT NULL, LuciphorScore DOUBLE NOT NULL,LuciphorLFLR DOUBLE NOT NULL,LuciphorFLR DOUBLE NOT NULL,Modification  TEXT, Charge INT NOT NULL, mz DOUBLE NOT NULL, NeutralPepMass DOUBLE NOT NULL, ObservedMass DOUBLE NOT NULL, RT DOUBLE NOT NULL, AdjustedRT DOUBLE, Rank INT NOT NULL, ScanNo INT NOT NULL, PreAA VARCHAR(2), NextAA VARCHAR(2), MissedCleavage INT NOT NULL, ExpectValue DOUBLE NOT NULL, MassError DOUBLE NOT NULL, Prob DOUBLE NOT NULL, Rawname VARCHAR(50) NOT NULL, ParentPepIndex INT NOT NULL, PRIMARY KEY (SpecID, Charge));");
-    }
-
-    protected void ExportTableDBBulkLoader(String TableSuffix, Connection connection, boolean filedelete) throws SQLException {
-
-        Logger.getRootLogger().info("Writing " + TableSuffix + " result to MySQL DB:" + FilenameUtils.getBaseName(mzXMLFileName) + "_" + TableSuffix + "...");
-
-        Statement state = connection.createStatement();
-        state.executeUpdate("LOAD DATA LOCAL INFILE '" + FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(mzXMLFileName)) + FilenameUtils.getBaseName(mzXMLFileName) + "_" + TableSuffix + ".csv'" + " INTO TABLE " + FilenameUtils.getBaseName(mzXMLFileName) + "_" + TableSuffix + " FIELDS TERMINATED BY ','" + " LINES TERMINATED BY '\\n' IGNORE 1 LINES");
-        state.close();
-        File file = new File(FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(mzXMLFileName)) + FilenameUtils.getBaseName(mzXMLFileName) + "_" + TableSuffix + ".csv");
-        if (filedelete) {
-            file.delete();
-        }
-    }
-
     public PepIonID GetPepID(PSM psm) {
         return PepIonList.get(psm.GetPepKey());
     }
@@ -1043,8 +1000,9 @@ public class LCMSID implements Serializable {
                             } else {
                                 Logger.getRootLogger().error("Can't find sequence in fasta file for protein:" + protID.getAccNo());
                             }
-                        } catch (Exception e) {
+                        } catch (Exception ex) {
                             Logger.getRootLogger().error("Can't find sequence in fasta file for protein:" + protID.getAccNo());
+                            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
                         }
                     }
                 }
@@ -1957,56 +1915,6 @@ public class LCMSID implements Serializable {
         }
     }
 
-    public void FilterPepIonByRefID(LCMSID RefID) {
-        ArrayList<PepIonID> removelist = new ArrayList<>();
-        for (PepIonID pep : GetPepIonList().values()) {
-            if (!RefID.ProtXMLPepIonList.containsKey(pep.GetKey())) {
-                removelist.add(pep);
-            }
-        }
-        for (PepIonID pep : removelist) {
-            GetPepIonList().remove(pep.GetKey());
-        }
-    }
-
-    public void FilterBySpecDecoyFDR(String DecoyTag, float fdr) {
-        this.DecoyTag = DecoyTag;
-        this.FDR = fdr;
-        //FindExpectThresholdByFDR();
-        //RemoveHighExpPSM();
-        FindSpecProbThresholdByFDR();
-        RemoveLowProbPSM();
-        //RemoveDecoy();
-    }
-
-    public void GenerateIndisProtMap() {
-        IndisProteinIDList.clear();
-        for (ProtID protID : ProteinList.values()) {
-            for (String id : protID.IndisProteins) {
-                if (!id.startsWith(DecoyTag)) {
-                    IndisProteinIDList.put(id, protID);
-                }
-            }
-        }
-    }
-
-    public void FilterByProteinDecoyFDRUsingMaxLocalPW(ArrayList<LCMSID> ProtIDList, String DecoyTag, float fdr) {
-        this.DecoyTag = DecoyTag;
-        this.ProteinFDR = fdr;
-        for (ProtID protein : ProteinList.values()) {
-
-            for (LCMSID protid : ProtIDList) {
-                if (protid.IndisProteinIDList.containsKey(protein.getAccNo())) {
-                    if (protein.MaxLocalPW < protid.IndisProteinIDList.get(protein.getAccNo()).Probability) {
-                        protein.MaxLocalPW = protid.IndisProteinIDList.get(protein.getAccNo()).Probability;
-                    }
-                }
-            }
-        }
-        FindProteinMaxLocalPWThresholdByFDR();
-        RemoveLowMaxLocaPWProteinDecoy();
-    }
-
     public void UpdateProteinKey() throws ClassNotFoundException, InterruptedException, IOException, XmlPullParserException {
         ArrayList<ProtID> temp = new ArrayList<>();
         for (ProtID protein : ProteinList.values()) {
@@ -2079,34 +1987,7 @@ public class LCMSID implements Serializable {
         RemoveLowMaxIniProbProteinDecoy();
     }
 
-    public void FilterByProteinDecoyFDRUsingLocalPW(String DecoyTag, float fdr) {
-        this.DecoyTag = DecoyTag;
-        this.ProteinFDR = fdr;
-        FindLocalPWThresholdByFDR();
-        RemoveLowProbProteinDecoy();
-    }
-
-    public void GeneratePepXMLProtList() {
-        PepXMLProteinList = new HashMap<>();
-        for (PepIonID pepIonID : PepIonList.values()) {
-            InsertProteinPepXML(pepIonID);
-        }
-    }
-
-    private void InsertProteinPepXML(PepIonID pepIonID) {
-        for (String prot : pepIonID.ParentProtID_PepXML) {
-            if (!PepXMLProteinList.containsKey(prot)) {
-                ProtID protein = new ProtID();
-                protein.setAccNo(prot);
-                PepXMLProteinList.put(prot, protein);
-            }
-
-            if (!PepXMLProteinList.get(prot).PeptideID.containsKey(pepIonID.GetKey())) {
-                PepXMLProteinList.get(prot).PeptideID.put(pepIonID.GetKey(), pepIonID);
-            }
-        }
-    }
-
+    
     public void AddPeptideID(PepIonID pepID) {
         if (!PepIonList.containsKey(pepID.GetKey())) {
             pepID.Index = PepIonList.size();

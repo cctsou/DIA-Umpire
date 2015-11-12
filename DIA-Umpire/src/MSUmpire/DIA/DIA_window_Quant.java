@@ -62,14 +62,6 @@ public class DIA_window_Quant implements  Runnable{
     }
     @Override
     public void run() {
-        
-        //System.out.println("Assigning clusters for peak groups in MS2 isolation window:" + FilenameUtils.getBaseName(DIAWindow.ScanCollectionName));
-        //Restore serialization files for old projects
-        //DIAWindow.ReadPeakFromDB();
-        //DIAWindow.WritePeakClusterSerialization();
-        //DIAWindow.WritePrecursorFragmentGrouping();
-        ////////////////////////////////////
-        //Needed to reactivate
        
         if(!DIAWindow.ReadPeakCluster()){
             Logger.getRootLogger().error("Reading Peak cluster result for " + DIAWindow.ScanCollectionName + " failed");

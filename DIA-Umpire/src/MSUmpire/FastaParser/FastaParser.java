@@ -21,14 +21,15 @@ package MSUmpire.FastaParser;
 
 import MSUmpire.PSMDataStructure.EnzymeManager;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -47,13 +48,16 @@ public class FastaParser implements Serializable{
         try {
             Parse(filename);
         } catch (IOException ex) {
-            Logger.getLogger(FastaParser.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
     }
     
     private void Parse(String filename) throws FileNotFoundException, IOException {
 
-        BufferedReader reader = new BufferedReader(new FileReader(filename));
+        if(!new File(filename).exists()){
+            Logger.getRootLogger().warn("Fasta file cannot be found: "+filename);
+        }
+        BufferedReader reader = new BufferedReader(new FileReader(filename));        
         String line = "";
         String ACC = "";
         String des="";
@@ -61,7 +65,7 @@ public class FastaParser implements Serializable{
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(">")) {
                 if (!"".equals(ACC) && !"".equals(Seq.toString())) {
-                    ProteinList.put(ACC, new String[]{Seq.toString(),des});
+                    ProteinList.put(ACC, new String[]{Seq.toString().replace("*", ""),des});
                     Seq=new StringBuilder();
                 }
                 ACC = line.trim().split(" ")[0].substring(1);
@@ -73,7 +77,7 @@ public class FastaParser implements Serializable{
             }
         }
         if (!"".equals(ACC) && !"".equals(Seq.toString())) {
-            ProteinList.put(ACC, new String[]{Seq.toString(),des});
+            ProteinList.put(ACC, new String[]{Seq.toString().replace("*", ""),des});
         }
         reader.close();
     }

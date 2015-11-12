@@ -100,19 +100,6 @@ public class FragmentLibManager implements Serializable {
         FSFragmentLibWrite(path, LibID);
     }
 
-    private void JavaSerializationFragmentLibWrite(String path, String LibID1) {
-        try {
-            Logger.getRootLogger().info("Writing FragmentLib to file:" + path + LibID1 + ".ser...");
-            FileOutputStream fout = new FileOutputStream(path + LibID1 + ".ser", false);
-            ObjectOutputStream oos = new ObjectOutputStream(fout);
-            oos.writeObject(this);
-            oos.close();
-            fout.close();
-        } catch (Exception ex) {
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-        }
-    }
-
     private void FSFragmentLibWrite(String path, String LibID1) {
         try {
             Logger.getRootLogger().info("Writing FragmentLib to file:" + path + LibID1 + ".serFS...");
@@ -179,25 +166,6 @@ public class FragmentLibManager implements Serializable {
         }
     }
 
-    private static FragmentLibManager JavaSerializationFragmentLibRead(String path, String LibID1) {
-        if (!new File("Reading FragmentLib from file:" + path + LibID1 + ".ser...").exists()) {
-            return null;
-        }
-        try {
-            Logger.getRootLogger().info("Reading FragmentLib from file:" + path + LibID1 + ".ser...");
-            FileInputStream fileIn = new FileInputStream(path + LibID1 + ".ser");
-            ObjectInputStream in = new ObjectInputStream(fileIn);
-            FragmentLibManager FragLib = (FragmentLibManager) in.readObject();
-            in.close();
-            fileIn.close();
-            return FragLib;
-        } catch (Exception ex) {
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-            return null;
-        }
-    }
-
-    
 
     public PepFragmentLib GetFragmentLib(String PepKey) {
         return PeptideFragmentLib.get(PepKey);
@@ -302,8 +270,7 @@ public class FragmentLibManager implements Serializable {
         writer.close();
         writer2.close();
     }
-    
-    
+        
     public void ImportFragLibByTSV(String tsv) throws IOException, XmlPullParserException,MatrixLoaderException {
         Logger.getRootLogger().info("Parsing " + tsv);
         BufferedReader reader=new BufferedReader(new FileReader(tsv));

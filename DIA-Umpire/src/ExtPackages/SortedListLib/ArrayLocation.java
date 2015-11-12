@@ -1,4 +1,4 @@
-package MSUmpire.SortedListLib;
+package ExtPackages.SortedListLib;
 
 /**
  * Simple class to define a location within the a patch work array.

@@ -19,7 +19,7 @@
  */
 package MSUmpire.PSMDataStructure;
 
-import MSUmpire.SortedListLib.SortedList;
+import ExtPackages.SortedListLib.SortedList;
 import java.util.Comparator;
 
 /**

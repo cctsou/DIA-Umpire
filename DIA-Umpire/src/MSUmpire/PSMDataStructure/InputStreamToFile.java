@@ -36,9 +36,7 @@ public class InputStreamToFile {
 
         File Path=new File(getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
         File file = new File(Path.getParent()+ "/"+tmpname);
-//        if (file.exists()) {
-//            return file;
-//        }
+
         OutputStream outputStream = new FileOutputStream(file);
         int read = 0;
         byte[] bytes = new byte[1024];

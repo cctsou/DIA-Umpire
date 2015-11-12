@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.log4j.Logger;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
 import org.xmlpull.v1.XmlPullParserException;
@@ -77,7 +78,7 @@ public class FastaParser_V2 implements Serializable{
         try {
             Parse(filename);
         } catch (IOException ex) {
-            System.out.println("");
+           Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
     }
     
@@ -120,6 +121,9 @@ public class FastaParser_V2 implements Serializable{
     
     private void Parse(String filename) throws FileNotFoundException, IOException {
 
+        if(!new File(filename).exists()){
+            org.apache.log4j.Logger.getRootLogger().warn("Fasta file cannot be found: "+filename);
+        }
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line = "";
         String ACC = "";
@@ -131,7 +135,7 @@ public class FastaParser_V2 implements Serializable{
                     ProteinEntry protein = new ProteinEntry();
                     protein.ACC = ACC;
                     protein.Des = des;
-                    protein.Seq = Seq.toString();
+                    protein.Seq = Seq.toString().replace("*", "");
                     ProteinList.put(ACC, protein);
                     Seq = new StringBuilder();
                 }
@@ -147,7 +151,7 @@ public class FastaParser_V2 implements Serializable{
             ProteinEntry protein = new ProteinEntry();
             protein.ACC = ACC;
             protein.Des = des;
-            protein.Seq = Seq.toString();
+            protein.Seq = Seq.toString().replace("*", "");
             ProteinList.put(ACC, protein);
         }
         reader.close();

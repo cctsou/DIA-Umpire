@@ -19,7 +19,7 @@
  */
 package MSUmpire.PeakDataStructure;
 
-import MSUmpire.SortedListLib.SortedList;
+import ExtPackages.SortedListLib.SortedList;
 import java.io.Serializable;
 import java.util.Comparator;
 

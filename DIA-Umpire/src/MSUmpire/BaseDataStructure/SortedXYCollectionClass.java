@@ -22,7 +22,7 @@ package MSUmpire.BaseDataStructure;
  * 
  */
 
-import MSUmpire.SortedListLib.SortedList;
+import ExtPackages.SortedListLib.SortedList;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;

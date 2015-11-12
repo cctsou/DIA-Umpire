@@ -26,7 +26,6 @@ import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.BaseDataStructure.XYPointCollection;
 import MSUmpire.DIA.DIAPack;
 import MSUmpire.DIA.PseudoMSMSProcessing;
-import MSUmpire.MSMSDBSearch.DBSearchParam;
 import MSUmpire.MathPackage.MassDefect;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PeakCurve;
@@ -55,7 +54,6 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  *
@@ -63,7 +61,6 @@ import org.xmlpull.v1.XmlPullParserException;
  */
 public class LCMSPeakDIAMS2 extends LCMSPeakBase {
 
-    //public HashMap<String, PeakCluster> UnIDpeakClusters;    
     public XYData DIA_MZ_Range;
     public XYData Last_MZ_Range;
     public String WindowID;
@@ -264,8 +261,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
             }
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
@@ -316,33 +311,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         return (ReadPrecursorFragmentClu2Cur() & ReadPeakCluster());
     }
 
-//<editor-fold defaultstate="collapsed" desc="DB process">
-//    private void ReadFragmentClu2CluFromDB() throws SQLException {
-//        Connection connection = connectionManager.GetConnection();
-//        Statement state = connection.createStatement();
-//        FragmentsClu2Clu = new HashMap<>();
-//        //state.execute("Delete From "+FilenameUtils.getBaseName(ScanCollectionName) + "_SwathPeakCorr where Corr<0.2");
-//        ResultSet rsCluster = state.executeQuery("SELECT * FROM " + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Clus");
-//        while (rsCluster.next()) {
-//            PrecursorFragmentPairEdge framentClusterUnit = new PrecursorFragmentPairEdge();
-//            framentClusterUnit.PeakCurveIndexA = rsCluster.getInt("PeakClusterA");
-//            framentClusterUnit.PeakCurveIndexB = rsCluster.getInt("PeakClusterB");
-//            framentClusterUnit.Correlation = rsCluster.getFloat("Corr");
-//            framentClusterUnit.FragmentMz = rsCluster.getFloat("FragmentMz");
-//            framentClusterUnit.Intensity = rsCluster.getFloat("FragInt");
-//            //framentClusterUnit.FragmentGroupidx=rsCluster.getInt("FragGrpIdx");
-//            //framentClusterUnit.FragmentConsensusCorr=rsCluster.getFloat("FragCorr");
-//
-//            if (!FragmentsClu2Clu.containsKey(framentClusterUnit.PeakCurveIndexA)) {
-//                ArrayList<PrecursorFragmentPairEdge> list = new ArrayList<>();
-//                FragmentsClu2Clu.put(framentClusterUnit.PeakCurveIndexA, list);
-//            }
-//            FragmentsClu2Clu.get(framentClusterUnit.PeakCurveIndexA).add(framentClusterUnit);
-//        }
-//        state.close();
-//        connectionManager.CloseConnection();
-//    }
-    
     HashMap<Integer, ArrayList<Float>> FragmentMS1Ranking;
     HashMap<Integer, ArrayList<Float>> FragmentUnfragRanking;
     

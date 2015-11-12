@@ -25,7 +25,6 @@ import jsc.datastructures.PairedData;
 import jsc.regression.PearsonCorrelation;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 /**
  *

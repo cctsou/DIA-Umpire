@@ -138,44 +138,6 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         para.PepXMLPath = GetDefaultPepXML();
         para.ProtXMLPath = GetDefaultProtXML();
     }
-
-    public void ParseTPP(DBSearchParam para, boolean UserDefinedPath) throws ParserConfigurationException, IOException, InterruptedException, ClassNotFoundException, XmlPullParserException, SAXException {
-        this.IDsummary = new LCMSID(ScanCollectionName,para.DecoyPrefix,para.FastaPath);        
-        if (!UserDefinedPath) {
-            SetDefaultPath(para);
-        }
-        TPPResult tppresult = new TPPResult(para.PepFDR, para.ProtFDR, para.DecoyPrefix);
-        ParseLuciphor(IDsummary);
-        tppresult.ReadSearchResult(IDsummary, para.PepXMLPath, para.ProtXMLPath);
-    }
-
-    public void ParseTPP(DBSearchParam para) throws ParserConfigurationException, IOException, InterruptedException, ClassNotFoundException, XmlPullParserException, SAXException {
-        ParseTPP(para, false);
-    }
-
-    public void ParseTPPByRefID(DBSearchParam para, LCMSID ReferenceID) throws ParserConfigurationException, IOException, InterruptedException, XmlPullParserException, SAXException, ClassNotFoundException {
-        SetDefaultPath(para);
-        //para.PepXMLPath = FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(ScanCollectionName)  + FilenameUtils.getBaseName(ScanCollectionName) + ".Comet.pep.xml");
-        this.IDsummary = new LCMSID(ScanCollectionName,para.DecoyPrefix,para.FastaPath);        
-        TPPResult tppresult = new TPPResult(para.PepFDR, para.ProtFDR,para.DecoyPrefix);
-        ParseLuciphor(IDsummary);
-        tppresult.ReadSearchResultByRefID(IDsummary, para.PepXMLPath, para.ProtXMLPath, ReferenceID);
-    }
-
-    public void ParseLuciphor(LCMSID IDsummary) throws FileNotFoundException, IOException {
-        if (!new File(ScanCollectionName.replace(".mzXML", ".luciphor.tsv")).exists()) {
-            return;
-        }
-        IDsummary.LuciphorResult = new HashMap<>();
-        BufferedReader reader = new BufferedReader(new FileReader(ScanCollectionName.replace(".mzXML", ".luciphor.tsv")));
-        String line = "";
-        reader.readLine();
-        while ((line = reader.readLine()) != null) {
-            IDsummary.LuciphorResult.put(line.split("\t")[0], line);
-        }
-        reader.close();
-    }
-
     
      public void AssignMS1Cluster() {
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
@@ -195,11 +157,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
             }
         }
     }
-
-    public void AssignIDResult(LCMSID summary) {
-        this.IDsummary = summary;
-    }
-
+  
     public void SetmzXML(mzXMLParser mzxml) {
         this.mzxml = mzxml;
     }
@@ -252,7 +210,6 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         MapScanNoForPeakClusters();
         
         if (ExportPeakClusterTable) {
-            //ExportPeakCurveResult();
             ExportPeakClusterResultCSV();
         }
         
@@ -388,30 +345,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         }
         IDsummary.WriteLCMSIDSerialization(ParentmzXMLName,tag);
     }
-
-    public void GenerateMassCalibrationMWMap() throws IOException {
-        //FileWriter writer = new FileWriter(FilenameUtils.getFullPath(ScanCollectionName) + "/" + FilenameUtils.getBaseName(ScanCollectionName) + "_masscali.txt");
-        String pngfile = FilenameUtils.getFullPath(ScanCollectionName) + "/" + FilenameUtils.getBaseName(ScanCollectionName) + "_masscaliMW.png";
-        XYSeries series = new XYSeries("PSM");
-        XYSeriesCollection xySeriesCollection = new XYSeriesCollection();
-        for (PSM psm : this.IDsummary.PSMList.values()) {
-            float ppm = InstrumentParameter.CalcSignedPPM(psm.ObserPrecursorMass, psm.NeutralPepMass);
-            series.add(new XYDataItem(psm.NeutralPepMass, ppm));
-        }
-        xySeriesCollection.addSeries(series);
-        JFreeChart chart = ChartFactory.createScatterPlot("Mass calibration", "Mass", "Mass error (ppm)", xySeriesCollection,
-                PlotOrientation.VERTICAL, true, true, false);
-        XYPlot xyPlot = (XYPlot) chart.getPlot();
-        xyPlot.setDomainCrosshairVisible(true);
-        xyPlot.setRangeCrosshairVisible(true);
-        XYItemRenderer renderer = xyPlot.getRenderer();
-        renderer.setSeriesPaint(0, Color.blue);
-        renderer.setSeriesShape(0, new Ellipse2D.Double(0, 0, 3, 3));
-        renderer.setSeriesStroke(0, new BasicStroke(1.0f));
-        xyPlot.setBackgroundPaint(Color.white);
-        ChartUtilities.saveChartAsPNG(new File(pngfile), chart, 1000, 600);
-    }
-
+    
     public void GenerateMassCalibrationRTMap() throws IOException {
         String pngfile = FilenameUtils.getFullPath(ScanCollectionName) + "/" + FilenameUtils.getBaseName(ScanCollectionName) + "_masscaliRT.png";
         XYSeries series = new XYSeries("PSM");
@@ -463,11 +397,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         xyPlot.setBackgroundPaint(Color.white);
         ChartUtilities.saveChartAsPNG(new File(pngfile), chart, 1000, 600);
     }
-   
-    public void ReplaceProtByRefID(LCMSID protID) {
-        IDsummary.GenerateProteinByRefIDByPepSeq(protID, UseMappedIon);
-    }
-
+       
     public String GetIPROPHETPepXML(){
         return FilenameUtils.getFullPath(ParentmzXMLName) + "interact-"+FilenameUtils.getBaseName(ParentmzXMLName) + ".iproph.pep.xml";
     }
@@ -475,33 +405,13 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
     public String GetIPROPHETProtXML(){
         return FilenameUtils.getFullPath(ParentmzXMLName) + "interact-"+FilenameUtils.getBaseName(ParentmzXMLName) + ".iproph.prot.xml";
     }
-
-    public void ParseiProphet(DBSearchParam param) throws ParserConfigurationException, IOException, SAXException, XmlPullParserException, ClassNotFoundException, InterruptedException {
-        ParseiProphet(param,null);
-    }
-    
-    public void ParseiProphet(DBSearchParam param,LCMSID RefPepID) throws ParserConfigurationException, IOException, SAXException, XmlPullParserException, ClassNotFoundException, InterruptedException {
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName),param.DecoyPrefix,param.FastaPath);                
-        TPPResult tppresult = new TPPResult(param.PepFDR,param.ProtFDR, param.DecoyPrefix);
-        if (RefPepID == null) {
-            tppresult.ReadSearchResult(IDsummary, GetIPROPHETPepXML(), GetIPROPHETProtXML());
-        } else {
-            tppresult.ReadSearchResultByRefPepID(IDsummary, GetIPROPHETPepXML(), GetIPROPHETProtXML(), RefPepID);
-        }
-        CheckPSMRT();
-    }
     
     public void ParsePepXML(DBSearchParam param, float prob) throws ParserConfigurationException, IOException, SAXException, XmlPullParserException, ClassNotFoundException, InterruptedException {
         IDsummary = new LCMSID(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName),param.DecoyPrefix,param.FastaPath);                
         PepXMLParser pepxmlparser = new PepXMLParser(IDsummary, param.InteractPepXMLPath, prob);
         CheckPSMRT();
     }
-    public void ParseiProphetPepXML(DBSearchParam param, float prob) throws ParserConfigurationException, IOException, SAXException, XmlPullParserException, ClassNotFoundException, InterruptedException {
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName),param.DecoyPrefix,param.FastaPath);                
-        PepXMLParser pepxmlparser = new PepXMLParser(IDsummary, GetIPROPHETPepXML(), prob);
-        CheckPSMRT();
-    }
-
+  
     private void CheckPSMRT() {
         for(PSM psm : IDsummary.PSMList.values()){
             if(psm.RetentionTime==-1f){

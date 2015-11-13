@@ -60,9 +60,6 @@ public class PSM implements Serializable{
     public float xscore;
     public float expect;
     public PepIonID pepIonID;
-    public float LuciphorLFLR;
-    public float LuciphorFLR;
-    public float LuciphorScore;
 
     public String GetRawNameString() {
         return SpecNumber.substring(0, SpecNumber.indexOf("."));

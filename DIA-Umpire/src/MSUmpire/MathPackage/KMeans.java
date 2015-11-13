@@ -19,7 +19,7 @@
  */
 package MSUmpire.MathPackage;
 
-import ExtPackages.jMEF.PVector;
+import ExternalPackages.jMEF.PVector;
 
 import java.util.Arrays;
 import java.util.Random;

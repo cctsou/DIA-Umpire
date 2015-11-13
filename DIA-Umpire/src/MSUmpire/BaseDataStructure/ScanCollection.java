@@ -20,7 +20,6 @@
 package MSUmpire.BaseDataStructure;
 
 import java.util.*;
-import java.util.Map.Entry;
 import org.apache.avalon.framework.activity.Disposable;
 
 /**
@@ -96,10 +95,7 @@ public class ScanCollection implements Disposable{
         }
     }
 
-    public ScanData GetParentMSScan(int ScanNo) {
-        //ScanData scan = null;
-        //Entry<Integer, ScanData> floorEntry = ScanHashMap.floorEntry(ScanNo);
-        //Set entryset = ScanHashMap.entrySet();
+    public ScanData GetParentMSScan(int ScanNo) {        
         Integer preScanNo = null;
         ScanData PreScan = null;
         while ((preScanNo = ScanHashMap.lowerKey(ScanNo)) != null) {
@@ -149,8 +145,8 @@ public class ScanCollection implements Disposable{
         if (endTime == -1) {
             endTime = 9999999f;
         }
+        
         //Find the start scan num and end scan num
-
         int StartScanNo = 0;
         int EndScanNo = 0;
 
@@ -232,6 +228,7 @@ public class ScanCollection implements Disposable{
         }
     }
 
+    //Remove peaks whose the intensity low than the threshold
     public void RemoveBackground(int mslevel, float background) {
         for (ScanData scan : ScanHashMap.values()) {
             if(scan.MsLevel==mslevel){

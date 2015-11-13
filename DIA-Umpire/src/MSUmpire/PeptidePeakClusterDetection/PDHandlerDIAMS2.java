@@ -70,8 +70,7 @@ public class PDHandlerDIAMS2 extends PDHandlerBase {
                         PrecursorFragmentPair.RTOverlapP = 1f;
                         PrecursorFragmentPair.ApexDelta = Math.abs(peakCluster.MonoIsotopePeak.ApexRT - scan.RetentionTime);
                         float rtrange = peakCluster.endRT - peakCluster.startRT;
-                        PrecursorFragmentPair.Correlation = (rtrange - PrecursorFragmentPair.ApexDelta) / rtrange;
-                        //FragmentPeaks.put(peakCurve.Index, peakCurve);
+                        PrecursorFragmentPair.Correlation = (rtrange - PrecursorFragmentPair.ApexDelta) / rtrange;                        
                         ResultList.add(PrecursorFragmentPair);
                     }
                 }
@@ -83,21 +82,18 @@ public class PDHandlerDIAMS2 extends PDHandlerBase {
     }
     
     public void DetectPeakCurves(ScanCollection scanCollection) throws FileNotFoundException, IOException {        
-        //ReadFragIsoPatternMap();
+        
         LCMSPeakBase.UnSortedPeakCurves = new ArrayList<>();
         FindAllPeakCurve(scanCollection);
-        //PeaksCheckingStage1AND2(1);
         PeakCurveSmoothing();
-        //CreateSortedPeakCurveList();
         ClearRawPeaks();
         ReadPepIsoMS1PatternMap();
-        PeakCurveCorrClustering_V2(DIAWindowMz);
+        PeakCurveCorrClustering(DIAWindowMz);
     }
         
     public void FragmentGrouping() throws SQLException, IOException {
         PrecursorFragmentPairBuildingForMS1();
         PrecursorFragmentPairBuildingForUnfragmentedIon();
-        //PrecursorFragmentPairBuildingForIsolatedPeakCurve();
     }
 
 
@@ -118,8 +114,7 @@ public class PDHandlerDIAMS2 extends PDHandlerBase {
             executorPool.execute(unit);
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
+
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
@@ -137,8 +132,7 @@ public class PDHandlerDIAMS2 extends PDHandlerBase {
         ((LCMSPeakDIAMS2) LCMSPeakBase).BuildFragmentUnfragranking();
         ((LCMSPeakDIAMS2) LCMSPeakBase).FilterByCriteriaUnfrag();
         ((LCMSPeakDIAMS2) LCMSPeakBase).ExportUnfragmentedClusterCurve();
-        //ExportParentClusterCurveCorrToDB(ResultArrayList);
-        //GenerateMGF(ResultArrayList);
+        
         UnfragmentedIonPairList.clear();
         UnfragmentedIonPairList = null;
         executorPool = null;

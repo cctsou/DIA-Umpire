@@ -37,19 +37,6 @@ public class KernelDensityEstimator {
     private EmpiricalDist empiricalDist;
     private KernelDensityGen kernelDensityGen;
     private int ObsDataSize=0;
-
-    private double [] GussianRandomPointGenerator(int NoPoints) {           
-        RandomStream stream = new MRG31k3p();
-        NormalGen normalKernelDensityGen = new NormalGen(stream);
-        kernelDensityGen = new KernelDensityGen(stream, empiricalDist, normalKernelDensityGen);
-        double[] randomSamples = new double[NoPoints];
-        
-        for (int i = 0; i < NoPoints; i++) {
-            double nextDouble = kernelDensityGen.nextDouble();
-            randomSamples[i] = nextDouble;
-        }
-        return randomSamples;        
-    }
     
     public void SetData(double [] data){
         Arrays.sort(data);

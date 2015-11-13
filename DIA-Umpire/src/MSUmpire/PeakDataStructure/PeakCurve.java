@@ -23,17 +23,10 @@ import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.BaseDataStructure.XYPointCollection;
 import MSUmpire.BaseDataStructure.XYZData;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.PriorityQueue;
-import org.apache.commons.io.FilenameUtils;
 import org.jfree.data.xy.XYSeries;
 
 /**
@@ -558,26 +551,6 @@ public class PeakCurve implements Serializable  {
         this.PeakRegionList = null;
         this.PeakRidgeList = null;
         this.waveletMassDetector = null;
-    }
-
-    public XYSeries GetChartXYDatasetRAW() {
-        XYSeries series1 = new XYSeries("Curve:" + Index + "_RAW");
-        for (XYZData xYZPoint : PeakList) {
-            series1.add(xYZPoint.getX(), xYZPoint.getZ());
-        }
-        return series1;
-    }
-
-    public XYSeries GetChartXYDatasetSmooth(String titleString) {
-        XYSeries series1 = new XYSeries("Curve(" + TargetMz + "):" + Index);
-        if (titleString != null) {
-            series1.setKey(titleString);
-        }
-        for (int i = 0; i < SmoothData.PointCount(); i++) {
-            XYData xYPoint = SmoothData.Data.get(i);
-            series1.add(xYPoint.getX(), xYPoint.getY());
-        }
-        return series1;
     }
 
     public void AddPeak(XYZData xYZPoint) {

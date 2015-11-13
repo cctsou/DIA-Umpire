@@ -33,10 +33,11 @@ import org.xmlpull.v1.XmlPullParserException;
  *
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
-public class ProtID implements Serializable{
+public class ProtID implements Serializable {
+
     private static final long serialVersionUID = 863236278237L;
 
-    public transient boolean IDByDBSearch=false;
+    public transient boolean IDByDBSearch = false;
     public ArrayList<String> IndisProteins;
     public transient ArrayList<String> IndisProtDes;
     private String AccNo;
@@ -48,7 +49,7 @@ public class ProtID implements Serializable{
     public float Mass;
     public float Probability;
     public float GroupProb;
-    public float MaxLocalPW; 
+    public float MaxLocalPW;
     public float MaxIniProb = 0f;
     public String Sequence;
     public HashMap<String, PepIonID> PeptideID;
@@ -71,14 +72,14 @@ public class ProtID implements Serializable{
             GeneName = Description.substring(Description.indexOf("GeneName=") + 9, Description.indexOf("OtherGeneNames") - 2).trim();
         }
     }
-    
+
     public ProtID CloneProtein() {
         ProtID newprotein = new ProtID();
         try {
             if (Sequence != null) {
                 newprotein.SetSequence(Sequence);
             } else {
-                Logger.getRootLogger().error("Sequence of protein:"+getAccNo()+" is null");
+                Logger.getRootLogger().error("Sequence of protein:" + getAccNo() + " is null");
             }
         } catch (Exception ex) {
             Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
@@ -100,10 +101,11 @@ public class ProtID implements Serializable{
     }
 
     public float GetAbundanceByTopPepFrag(int toppep, int topfrag) {
-        return GetAbundanceByTopPepFrag(toppep,topfrag,-1f);
+        return GetAbundanceByTopPepFrag(toppep, topfrag, -1f);
     }
+
     public float GetAbundanceByTopPepFrag(int toppep, int topfrag, float pepweight) {
-         if(PeptideID.isEmpty()){
+        if (PeptideID.isEmpty()) {
             return 0;
         }
         PriorityQueue<Float> TopQueue = new PriorityQueue<>(PeptideID.size(), Collections.reverseOrder());
@@ -121,50 +123,15 @@ public class ProtID implements Serializable{
         return totalabundance / num;
     }
 
-    public float GetAbundanceByAllFragment_IBAQ() {
-        return GetAbundanceByAllFragment_IBAQ(-1);
-    }
-    
-    public float GetAbundanceByAllFragment_IBAQ(float pepweight) {
-        float totalabundance = 0f;
-        for (PepIonID peptide : PeptideID.values()) {
-            if (peptide.FilteringWeight>pepweight) {
-                totalabundance += peptide.GetPepAbundanceByAllFragments();
-            }
-        }
-        return totalabundance / TheoPeptides.size();
-    }
-
-     public int GetSILAC_H_Count(String Mod) {
-        int spc = 0;
-        for (PepIonID pep : PeptideID.values()) {
-            if (pep.ModSequence.contains(Mod)) {
-                spc += pep.GetSpectralCount();
-            }
-        }
-        return spc;
-    }
-     
-    public int GetSILAC_L_Count(String AA, String Mod) {
-        int spc = 0;
-        for (PepIonID pep : PeptideID.values()) {
-            if (pep.ModSequence.contains(AA) && !pep.ModSequence.contains(Mod)) {
-                spc += pep.GetSpectralCount();
-            }
-        }
-        return spc;
-    }
-    
-    
     public int GetSpectralCount() {
         int spc = 0;
         for (PepIonID pep : PeptideID.values()) {
-            spc += pep.GetSpectralCount();            
+            spc += pep.GetSpectralCount();
         }
         return spc;
     }
-    
-      public int GetFragCount() {
+
+    public int GetFragCount() {
         int frag = 0;
         for (PepIonID pep : PeptideID.values()) {
             frag += pep.GetFragCount();
@@ -172,34 +139,14 @@ public class ProtID implements Serializable{
         return frag;
     }
 
-    public float GetAbundanceByMS1_IBAQ_SILAC_H(String Mod) {
-        float totalabundance = 0f;
-        for (PepIonID peptide : PeptideID.values()) {
-            if (peptide.PeakHeight != null && peptide.ModSequence.contains(Mod)) {
-                totalabundance += peptide.PeakHeight[0];
-            }
-        }
-        return totalabundance / TheoPeptides.size();
-    }
-
-    public float GetAbundanceByMS1_IBAQ_SILAC_L(String AA, String Mod) {
-        float totalabundance = 0f;
-        for (PepIonID peptide : PeptideID.values()) {
-            if (peptide.PeakHeight != null && peptide.ModSequence.contains(AA) && !peptide.ModSequence.contains(Mod)) {
-                totalabundance += peptide.PeakHeight[0];
-            }
-        }
-        return totalabundance / TheoPeptides.size();
-    }
-      
     public float GetAbundanceByMS1_IBAQ() {
         return GetAbundanceByMS1_IBAQ(-1f);
     }
-    
+
     public float GetAbundanceByMS1_IBAQ(float pepweight) {
         float totalabundance = 0f;
         for (PepIonID peptide : PeptideID.values()) {
-            if (peptide.PeakHeight != null && peptide.FilteringWeight>pepweight) {
+            if (peptide.PeakHeight != null && peptide.FilteringWeight > pepweight) {
                 totalabundance += peptide.PeakHeight[0];
             }
         }
@@ -207,15 +154,16 @@ public class ProtID implements Serializable{
     }
 
     public float GetAbundanceByMS1_TopN(int topN) {
-        return GetAbundanceByMS1_TopN(topN,-1f);
+        return GetAbundanceByMS1_TopN(topN, -1f);
     }
+
     public float GetAbundanceByMS1_TopN(int topN, float pepweight) {
-        if(PeptideID.isEmpty()){
+        if (PeptideID.isEmpty()) {
             return 0;
         }
-        PriorityQueue<Float> TopQueue =  new PriorityQueue<>(PeptideID.size(), Collections.reverseOrder());
+        PriorityQueue<Float> TopQueue = new PriorityQueue<>(PeptideID.size(), Collections.reverseOrder());
         for (PepIonID peptide : PeptideID.values()) {
-            if (peptide.PeakHeight != null && peptide.FilteringWeight>pepweight) {
+            if (peptide.PeakHeight != null && peptide.FilteringWeight > pepweight) {
                 TopQueue.add(peptide.PeakHeight[0]);
             }
         }
@@ -229,7 +177,7 @@ public class ProtID implements Serializable{
         return totalabundance / num;
     }
 
-     public float GetAbundanceByTopAcrossSample(ArrayList<String> ProPep) {
+    public float GetAbundanceByTopAcrossSample(ArrayList<String> ProPep) {
         float totalabundance = 0f;
         if (ProPep != null) {
             for (PepIonID pepIonID : PeptideID.values()) {
@@ -240,41 +188,25 @@ public class ProtID implements Serializable{
         }
         return totalabundance;
     }
-     
-     public float GetAbundanceByTopAcrossSampleTopN(ArrayList<String> ProPep, int TopN) {
-        float totalabundance = 0f;
-        if (ProPep != null) {
-            for (PepIonID pepIonID : PeptideID.values()) {
-                if (ProPep.contains(pepIonID.GetKey())) {
-                    totalabundance += pepIonID.PeakHeight[0];
-                }
-            }
-        }
-        return totalabundance;
-    }
-          
-    
+
     public float GetAbundanceByTopCorrFragAcrossSample(ArrayList<String> ProPep, HashMap<String, ArrayList<String>> PepFrag) {
         float totalabundance = 0f;
-        int count=0;
+        int count = 0;
         if (ProPep != null) {
             for (PepIonID pepIonID : PeptideID.values()) {
                 if (ProPep.contains(pepIonID.GetKey())) {
-                    totalabundance += pepIonID.GetPepAbundanceByTopCorrFragAcrossSample(PepFrag.get(pepIonID.GetKey()));                    
+                    totalabundance += pepIonID.GetPepAbundanceByTopCorrFragAcrossSample(PepFrag.get(pepIonID.GetKey()));
                     count++;
                 }
             }
         }
-//        if(count<2){
-//            totalabundance=0;
-//        }
         return totalabundance;
     }
-        
+
     public ProtID() {
         PeptideID = new HashMap<>();
         IndisProteins = new ArrayList<>();
-        IndisProtDes=new ArrayList<>();
+        IndisProtDes = new ArrayList<>();
         ProtPeptideID = new HashMap<>();
         ProtPepSeq = new ArrayList<>();
     }
@@ -291,17 +223,17 @@ public class ProtID implements Serializable{
     }
 
     public void InsilicosDigestion(int missedcleave, int minlength, int maxlength) throws XmlPullParserException, IOException {
-        TheoPeptides = EnzymeManager.GetInstance().GetTrypsin().digest(Sequence, missedcleave, minlength, maxlength);        
+        TheoPeptides = EnzymeManager.GetInstance().GetTrypsin().digest(Sequence, missedcleave, minlength, maxlength);
         if (String.valueOf(Sequence.charAt(0)).equals("M")) {
-            int mc=0;
+            int mc = 0;
             for (int i = 1; i < Sequence.length(); i++) {
                 if (String.valueOf(Sequence.charAt(i)).equals("K") || String.valueOf(Sequence.charAt(i)).equals("R")) {
                     mc++;
-                    if(mc>missedcleave){
+                    if (mc > missedcleave) {
                         return;
                     }
-                    String pep=Sequence.substring(1,i+1);
-                    if (pep.length()>=minlength && pep.length()<=maxlength && !TheoPeptides.contains(pep)) {                        
+                    String pep = Sequence.substring(1, i + 1);
+                    if (pep.length() >= minlength && pep.length() <= maxlength && !TheoPeptides.contains(pep)) {
                         TheoPeptides.add(pep);
                     }
                 }
@@ -327,7 +259,6 @@ public class ProtID implements Serializable{
      * @return the AccNo
      */
     public String getAccNo() {
-        //return AccNo.replace("|", "_");
         return AccNo;
     }
 
@@ -337,8 +268,7 @@ public class ProtID implements Serializable{
     public void setAccNo(String AccNo) {
         this.AccNo = AccNo;
     }
-    
-    
+
     public void UpdateMaxIniProb() {
         MaxIniProb = 0f;
         for (PepIonID pepion : PeptideID.values()) {
@@ -347,24 +277,24 @@ public class ProtID implements Serializable{
             }
         }
     }
-    
+
     public void RemoveLowWeightPepID(float threshold) {
-        ArrayList<PepIonID> removelist=new ArrayList<>();
-        MaxIniProb=0f;
-        for(PepIonID pepion: PeptideID.values()){
-            if(pepion.FilteringWeight<threshold){
+        ArrayList<PepIonID> removelist = new ArrayList<>();
+        MaxIniProb = 0f;
+        for (PepIonID pepion : PeptideID.values()) {
+            if (pepion.FilteringWeight < threshold) {
                 removelist.add(pepion);
             }
         }
-        for(PepIonID pepIonID : removelist){
+        for (PepIonID pepIonID : removelist) {
             PeptideID.remove(pepIonID.GetKey());
         }
-         for(PepIonID pepion: ProtPeptideID.values()){
-            if(pepion.FilteringWeight<threshold){
+        for (PepIonID pepion : ProtPeptideID.values()) {
+            if (pepion.FilteringWeight < threshold) {
                 removelist.add(pepion);
             }
         }
-        for(PepIonID pepIonID : removelist){
+        for (PepIonID pepIonID : removelist) {
             ProtPeptideID.remove(pepIonID.GetKey());
         }
     }

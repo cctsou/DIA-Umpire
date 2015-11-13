@@ -31,12 +31,9 @@ import MSUmpire.PSMDataStructure.FragmentPeak;
 import MSUmpire.PSMDataStructure.LCMSID;
 import MSUmpire.PSMDataStructure.PSM;
 import MSUmpire.PSMDataStructure.PepIonID;
-import MSUmpire.PSMDataStructure.ProtID;
-import MSUmpire.PSMDataStructure.SortedPepListMass;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PrecursorFragmentPairEdge;
 import MSUmpire.SearchResultParser.PepXMLParser;
-import MSUmpire.SearchResultParser.TPPResult;
 import MSUmpire.SearchResultWriter.PepXMLWriter;
 import MSUmpire.SpectrumParser.DIA_Setting;
 import MSUmpire.SpectrumParser.mzXMLParser;
@@ -52,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -61,7 +57,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.DataFormatException;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -197,7 +192,6 @@ public class DIAPack {
     public void process() throws SQLException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, FileNotFoundException, DataFormatException, Exception {
         BuildDIAWindows();
         MS1PeakDetection();
-        //ms1lcms.ExportPeakClusterResultCSV();
         DIAMS2PeakDetection();
     }
 
@@ -211,7 +205,7 @@ public class DIAPack {
                 LastWinMz = (XYData) WindowRange[i + 1];
             }
             LCMSPeakDIAMS2 diawindow = new LCMSPeakDIAMS2(Filename, this, parameter, DiaWinMz, LastWinMz, GetMzXML(), NoCPUs);
-            //diawindow.SetMySQLConnection(connectionManager);
+            
             diawindow.datattype = dIA_Setting.dataType;
             diawindow.ExportPeakCurveTable = ExportFragmentPeak;
             diawindow.ExportPeakClusterTable = ExportPrecursorPeak;
@@ -317,28 +311,6 @@ public class DIAPack {
         reader4.close();
     }
 
-    public void LinkIDClustersToScanKey() {
-        HashMap<Integer, Integer> Q1Hash = new HashMap<>();
-        HashMap<Integer, Integer> Q2Hash = new HashMap<>();
-
-        for (Integer ScanNo : ScanClusterMap_Q1.keySet()) {
-            Q1Hash.put(ScanClusterMap_Q1.get(ScanNo), ScanNo);
-        }
-        for (Integer ScanNo : ScanClusterMap_Q2.keySet()) {
-            Q2Hash.put(ScanClusterMap_Q2.get(ScanNo), ScanNo);
-        }
-
-        for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            for (PeakCluster peakCluster : pepIonID.MS1PeakClusters) {
-                if (peakCluster.IsoPeakIndex[2] != 0) {
-                    peakCluster.SpectrumKey = GetQ1Name() + "." + Q1Hash.get(peakCluster.Index) + "." + Q1Hash.get(peakCluster.Index) + "." + peakCluster.Charge;
-                } else {
-                    peakCluster.SpectrumKey = GetQ2Name() + "." + Q2Hash.get(peakCluster.Index) + "." + Q2Hash.get(peakCluster.Index) + "." + peakCluster.Charge;
-                }
-            }
-        }
-    }
-
      public String GetForLibQ1Name() {
         //return FilenameUtils.getBaseName(ScanCollectionName) + ".Q1";
         return FilenameUtils.getBaseName(Filename) + ".ForLibQ1";
@@ -369,11 +341,6 @@ public class DIAPack {
         return FilenameUtils.getBaseName(Filename) + "_Q3";
     }
 
-    public String GetQ4Name() {
-        //return FilenameUtils.getBaseName(ScanCollectionName) + ".Q4";
-        return FilenameUtils.getBaseName(Filename) + "_Q4";
-    }
-    
     public String GetiProphExtPepxml(String tag) {
         return FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_"+tag+".iproph.pep.xml");
     }
@@ -488,412 +455,7 @@ public class DIAPack {
         }
         ReadScanNoMapping();
     }
-
-    public void FilterDeamidateGlycoPep() throws IOException {
-        HashSet<Integer> PeakCurveIndexMS1 = new HashSet<>();
-        ArrayList<Integer> SharedPeakCurveMS1 = new ArrayList<>();
-        HashSet<Integer> PeakCurveIndexMS2 = new HashSet<>();
-        ArrayList<Integer> SharedPeakCurveMS2 = new ArrayList<>();
-        ArrayList<Integer> IDPeakClusterMS1 = new ArrayList<>();
-        ArrayList<Integer> IDPeakClusterMS2 = new ArrayList<>();
-        ArrayList<String> AllPepSeq = new ArrayList<>();
-        for (String PepSeq : IDsummary.PeptideList.keySet()) {
-            if (!AllPepSeq.contains(PepSeq)) {
-                AllPepSeq.add(PepSeq);
-            }
-        }
-        for (String PepSeq : IDsummary.MappedPeptideList.keySet()) {
-            if (!AllPepSeq.contains(PepSeq)) {
-                AllPepSeq.add(PepSeq);
-            }
-        }
-        for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            if (!pepIonID.MS1PeakClusters.isEmpty()) {
-                pepIonID.GlycoMS1Valid = true;
-            }
-            if (!pepIonID.MS2UnfragPeakClusters.isEmpty()) {
-                pepIonID.GlycoMS2Valid = true;
-            }
-        }
-        for (PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()) {
-            if (!pepIonID.MS1PeakClusters.isEmpty()) {
-                pepIonID.GlycoMS1Valid = true;
-            }
-            if (!pepIonID.MS2UnfragPeakClusters.isEmpty()) {
-                pepIonID.GlycoMS2Valid = true;
-            }
-        }
-
-        FileWriter writer = new FileWriter(FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename) + "_GlycoSharePeakResult.xls");
-        writer.write("MSlevel\tSharedPeakCurve\tPeptideIndex\tSequence\tPepModSeq\tMass\tCharge\tmz\tRT\tNoClusters\tClusterIndex\tIsoScore\tIDIsoScore\tValid\n");
-
-        for (String PepSeq : AllPepSeq) {
-            PeakCurveIndexMS1.clear();
-            SharedPeakCurveMS1.clear();
-            PeakCurveIndexMS2.clear();
-            SharedPeakCurveMS2.clear();
-            IDPeakClusterMS1.clear();
-            IDPeakClusterMS2.clear();
-
-            if (IDsummary.PeptideList.containsKey(PepSeq)) {
-                for (PepIonID pepion : IDsummary.PeptideList.get(PepSeq).values()) {
-                    AddShareIndexMS1(pepion, PeakCurveIndexMS1, SharedPeakCurveMS1);
-                    AddShareIndexMS2(pepion, PeakCurveIndexMS2, SharedPeakCurveMS2);
-                    for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                        cluster.IDIsoPatternProb = cluster.GetChiSquareProbByTheoIso(pepion.IsotopicDistrubtion(parameter.MinNoPeakCluster));
-                        IDPeakClusterMS1.add(cluster.Index);
-                    }
-                    for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                        cluster.IDIsoPatternProb = cluster.GetChiSquareProbByTheoIso(pepion.IsotopicDistrubtion(parameter.MinNoPeakCluster));
-                        IDPeakClusterMS2.add(cluster.Index);
-                    }
-                }
-            }
-            if (IDsummary.MappedPeptideList.containsKey(PepSeq)) {
-                for (PepIonID pepion : IDsummary.MappedPeptideList.get(PepSeq).values()) {
-                    for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                        cluster.IDIsoPatternProb = cluster.GetChiSquareProbByTheoIso(pepion.IsotopicDistrubtion(parameter.MinNoPeakCluster));
-                        if (IDPeakClusterMS1.contains(cluster.Index)) {
-                            pepion.GlycoMS1Valid = false;
-                        }
-                    }
-                    for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                        cluster.IDIsoPatternProb = cluster.GetChiSquareProbByTheoIso(pepion.IsotopicDistrubtion(parameter.MinNoPeakCluster));
-                        if (IDPeakClusterMS2.contains(cluster.Index)) {
-                            pepion.GlycoMS2Valid = false;
-                        }
-                    }
-                    if (pepion.GlycoMS1Valid) {
-                        AddShareIndexMS1(pepion, PeakCurveIndexMS1, SharedPeakCurveMS1);
-                    }
-                    if (pepion.GlycoMS2Valid) {
-                        AddShareIndexMS2(pepion, PeakCurveIndexMS2, SharedPeakCurveMS2);
-                    }
-                }
-            }
-
-            for (Integer sharedindex : SharedPeakCurveMS1) {
-                //System.out.println("Share MS1 peak curve index :" +sharedindex);
-                SortedPepListMass ShareIDs = new SortedPepListMass();
-                if (IDsummary.PeptideList.containsKey(PepSeq)) {
-                    for (PepIonID pepion : IDsummary.PeptideList.get(PepSeq).values()) {
-                        for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                            AddShareID(cluster, sharedindex, pepion, ShareIDs);
-                        }
-                    }
-                }
-                if (IDsummary.MappedPeptideList.containsKey(PepSeq)) {
-                    for (PepIonID pepion : IDsummary.MappedPeptideList.get(PepSeq).values()) {
-                        for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                            AddShareID(cluster, sharedindex, pepion, ShareIDs);
-                        }
-                    }
-                }
-                boolean CorrectFound = false;
-                float CorrectMass = 0f;
-                for (PepIonID pepion : ShareIDs) {
-                    writer.write("MS1\t" + sharedindex + "\t" + pepion.Index + "\t" + pepion.Sequence + "\t" + pepion.ModSequence + "\t" + pepion.CalcNeutralPepMass() + "\t" + pepion.Charge + "\t" + pepion.ObservedMz + "\t" + pepion.PeakRT + "\t" + pepion.MS1PeakClusters.size() + "\t");
-                    PeakCluster targetcluster = null;
-
-                    for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                        for (int i = 0; i < cluster.IsoPeakIndex.length; i++) {
-                            Integer index = cluster.IsoPeakIndex[i];
-                            if (Objects.equals(sharedindex, index)) {
-                                writer.write(cluster.Index + "_" + cluster.mz[i] + ";");
-                                if (targetcluster == null || targetcluster.IDIsoPatternProb < cluster.IDIsoPatternProb) {
-                                    targetcluster = cluster;
-                                }
-                            }
-                        }
-                    }
-                    if ((CorrectFound && pepion.NeutralPrecursorMz() > CorrectMass) || targetcluster.IDIsoPatternProb < 0.8f) {
-                        pepion.GlycoMS1Valid = false;
-                    } else {
-                        CorrectFound = true;
-                        CorrectMass = pepion.NeutralPrecursorMz();
-                    }
-                    writer.write("\t" + targetcluster.IsoMapProb + "\t" + targetcluster.IDIsoPatternProb + "\t" + pepion.GlycoMS1Valid + "\n");
-                }
-            }
-            for (Integer sharedindex : SharedPeakCurveMS2) {
-                //System.out.println("Share MS2 peak curve index :" + sharedindex);
-                SortedPepListMass ShareIDs = new SortedPepListMass();
-                if (IDsummary.PeptideList.containsKey(PepSeq)) {
-                    for (PepIonID pepion : IDsummary.PeptideList.get(PepSeq).values()) {
-                        for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                            AddShareID(cluster, sharedindex, pepion, ShareIDs);
-                        }
-                    }
-                }
-
-                if (IDsummary.MappedPeptideList.containsKey(PepSeq)) {
-                    for (PepIonID pepion : IDsummary.MappedPeptideList.get(PepSeq).values()) {
-                        for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                            AddShareID(cluster, sharedindex, pepion, ShareIDs);
-                        }
-                    }
-                }
-
-                /////MS2
-                boolean CorrectFound = false;
-                float CorrectMass = 0f;
-                for (PepIonID pepion : ShareIDs) {
-                    writer.write("MS2\t" + sharedindex + "\t" + pepion.Index + "\t" + pepion.Sequence + "\t" + pepion.ModSequence + "\t" + pepion.CalcNeutralPepMass() + "\t" + pepion.Charge + "\t" + pepion.ObservedMz + "\t" + pepion.PeakRT + "\t" + pepion.MS1PeakClusters.size() + "\t");
-
-                    PeakCluster targetcluster = null;
-                    for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                        for (int i = 0; i < cluster.IsoPeakIndex.length; i++) {
-                            Integer index = cluster.IsoPeakIndex[i];
-                            if (Objects.equals(sharedindex, index)) {
-                                writer.write(cluster.Index + "_" + cluster.mz[i] + ";");
-                                if (targetcluster == null || targetcluster.IDIsoPatternProb < cluster.IDIsoPatternProb) {
-                                    targetcluster = cluster;
-                                }
-                            }
-                        }
-                    }
-                    if ((CorrectFound && pepion.NeutralPrecursorMz() > CorrectMass) || targetcluster.IDIsoPatternProb < 0.8f) {
-                        pepion.GlycoMS2Valid = false;
-                    } else {
-                        CorrectFound = true;
-                        CorrectMass = pepion.NeutralPrecursorMz();
-                    }
-                    writer.write("\t" + targetcluster.IsoMapProb + "\t" + targetcluster.IDIsoPatternProb + "\t" + pepion.GlycoMS2Valid + "\n");
-                }
-            }
-        }
-        writer.close();
-
-        HashMap<String, ArrayList<PepIonID>> DeglycoSeq = new HashMap<>();
-        HashMap<Integer, Boolean> NIndex = new HashMap<>();
-        for (String PepSeq : AllPepSeq) {
-            DeglycoSeq.clear();
-            if (IDsummary.PeptideList.containsKey(PepSeq)) {
-                for (PepIonID pepion : IDsummary.PeptideList.get(PepSeq).values()) {
-                    String deglyco = pepion.ModSequence.replace("[0.984(N)]", "") + "_" + pepion.Charge;
-                    if (!DeglycoSeq.containsKey(deglyco)) {
-                        DeglycoSeq.put(deglyco, new ArrayList<PepIonID>());
-                    }
-                    DeglycoSeq.get(deglyco).add(pepion);
-                }
-            }
-            if (IDsummary.MappedPeptideList.containsKey(PepSeq)) {
-                for (PepIonID pepion : IDsummary.MappedPeptideList.get(PepSeq).values()) {
-                    String deglyco = pepion.ModSequence.replace("[0.984(N)]", "") + "_" + pepion.Charge;
-                    if (!DeglycoSeq.containsKey(deglyco)) {
-                        DeglycoSeq.put(deglyco, new ArrayList<PepIonID>());
-                    }
-                    DeglycoSeq.get(deglyco).add(pepion);
-                }
-            }
-
-            for (ArrayList<PepIonID> list : DeglycoSeq.values()) {
-                //Multiple glyco forms                
-                NIndex.clear();
-                for (int i = 0; i < list.get(0).Sequence.length(); i++) {
-                    if (String.valueOf(list.get(0).Sequence.charAt(i)).equals("N")) {
-                        NIndex.put(i + 1, false);
-                    }
-                }
-                for (PepIonID pepIonID : list) {
-                    for (Integer site : NIndex.keySet()) {
-                        NIndex.put(site, false);
-                    }
-                    for (FragmentPeak frag : pepIonID.FragmentPeaks) {
-                        String type = String.valueOf(frag.IonType.charAt(0));
-                        Integer matchindex = Integer.parseInt(frag.IonType.substring(1));
-                        if ("b".equals(type)) {
-                            for (Integer index : NIndex.keySet()) {
-                                if (index <= matchindex) {
-                                    NIndex.put(index, true);
-                                }
-                            }
-                        } else if ("y".equals(type)) {
-                            for (Integer index : NIndex.keySet()) {
-                                if (index <= matchindex) {
-                                    NIndex.put(index, true);
-                                }
-                            }
-                        }
-                    }
-                    pepIonID.NoNsite = NIndex.size();
-                    pepIonID.NoNsiteFragObs = 0;
-                    for (Boolean obs : NIndex.values()) {
-                        if (obs) {
-                            pepIonID.NoNsiteFragObs++;
-                        }
-                    }
-                }
-            }
-        }
-        FileWriter writer2 = new FileWriter(FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename) + "_GlycoAllResult.xls");
-        writer2.write("PeptideIndex\tSequence\tPepModSeq\tMass\tCharge\tmz\tRT\tMS1IsoScore\tMS1IDIsoScore\tMS2IsoScore\tMS2IDIsoScore\tGlycoMS1Valid\tGlycoMS2Valid\tNoSite\tNoSiteObs\n");
-        for (PepIonID pepion : IDsummary.GetPepIonList().values()) {
-            writer2.write("ID_" + pepion.Index + "\t" + pepion.Sequence + "\t" + pepion.ModSequence + "\t" + pepion.CalcNeutralPepMass() + "\t" + pepion.Charge + "\t" + pepion.ObservedMz + "\t" + pepion.PeakRT + "\t");
-            PeakCluster targetcluster = null;
-            float IsoMapProb = 0f;
-            float IDIsoPatternProb = 0f;
-            for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                if (targetcluster == null || targetcluster.IDIsoPatternProb < cluster.IDIsoPatternProb) {
-                    targetcluster = cluster;
-                }
-            }
-            if (targetcluster != null) {
-                IsoMapProb = targetcluster.IsoMapProb;
-                IDIsoPatternProb = targetcluster.IDIsoPatternProb;
-            }
-            writer2.write(IsoMapProb + "\t" + IDIsoPatternProb + "\t");
-            IsoMapProb = 0f;
-            IDIsoPatternProb = 0f;
-            for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                if (targetcluster == null || targetcluster.IDIsoPatternProb < cluster.IDIsoPatternProb) {
-                    targetcluster = cluster;
-                }
-            }
-            if (targetcluster != null) {
-                IsoMapProb = targetcluster.IsoMapProb;
-                IDIsoPatternProb = targetcluster.IDIsoPatternProb;
-            }
-            writer2.write(IsoMapProb + "\t" + IDIsoPatternProb + "\t" + pepion.GlycoMS1Valid + "\t" + pepion.GlycoMS2Valid + "\t" + pepion.NoNsite + "\t" + pepion.NoNsiteFragObs + "\n");
-        }
-        for (PepIonID pepion : IDsummary.GetMappedPepIonList().values()) {
-            writer2.write("ID_" + pepion.Index + "\t" + pepion.Sequence + "\t" + pepion.ModSequence + "\t" + pepion.CalcNeutralPepMass() + "\t" + pepion.Charge + "\t" + pepion.ObservedMz + "\t" + pepion.PeakRT + "\t");
-            PeakCluster targetcluster = null;
-            float IsoMapProb = 0f;
-            float IDIsoPatternProb = 0f;
-            for (PeakCluster cluster : pepion.MS1PeakClusters) {
-                if (targetcluster == null || targetcluster.IDIsoPatternProb < cluster.IDIsoPatternProb) {
-                    targetcluster = cluster;
-                }
-            }
-            if (targetcluster != null) {
-                IsoMapProb = targetcluster.IsoMapProb;
-                IDIsoPatternProb = targetcluster.IDIsoPatternProb;
-            }
-            writer2.write(IsoMapProb + "\t" + IDIsoPatternProb + "\t");
-            IsoMapProb = 0f;
-            IDIsoPatternProb = 0f;
-            for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-                if (targetcluster == null || targetcluster.IDIsoPatternProb < cluster.IDIsoPatternProb) {
-                    targetcluster = cluster;
-                }
-            }
-            if (targetcluster != null) {
-                IsoMapProb = targetcluster.IsoMapProb;
-                IDIsoPatternProb = targetcluster.IDIsoPatternProb;
-            }
-            writer2.write(IsoMapProb + "\t" + IDIsoPatternProb + "\t" + pepion.GlycoMS1Valid + "\t" + pepion.GlycoMS2Valid + "\t" + pepion.NoNsite + "\t" + pepion.NoNsiteFragObs + "\n");
-        }
-
-        writer2.close();
-
-        Logger.getRootLogger().info("No. of ID peptide ions:" + IDsummary.GetPepIonList().size() + " No. of mapped ions:" + IDsummary.GetMappedPepIonList().size());
-        ArrayList<PepIonID> removlist = new ArrayList<>();
-
-        for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            if (!pepIonID.GlycoMS1Valid && !pepIonID.GlycoMS2Valid) {
-                removlist.add(pepIonID);
-            }
-        }
-        for (PepIonID pepIonID : removlist) {
-            IDsummary.GetPepIonList().remove(pepIonID.GetKey());
-            IDsummary.PeptideList.get(pepIonID.Sequence).remove(pepIonID.GetKey());
-        }
-        removlist.clear();
-        for (PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()) {
-            if (!pepIonID.GlycoMS1Valid && !pepIonID.GlycoMS2Valid) {
-                removlist.add(pepIonID);
-            }
-        }
-        for (PepIonID pepIonID : removlist) {
-            IDsummary.GetMappedPepIonList().remove(pepIonID.GetKey());
-            IDsummary.MappedPeptideList.get(pepIonID.Sequence).remove(pepIonID.GetKey());
-        }
-
-        Logger.getRootLogger().info("No. of ID peptide ions:" + IDsummary.GetPepIonList().size() + " No. of mapped ions:" + IDsummary.GetMappedPepIonList().size());
-
-//        removlist=new ArrayList<>();
-//                
-//        for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-//            if (pepIonID.NoNsiteFragObs == 0) {
-//                removlist.add(pepIonID);
-//            }
-//        }
-//        for(PepIonID pepIonID : removlist){
-//            IDsummary.GetPepIonList().remove(pepIonID.GetKey());
-//            IDsummary.PeptideList.get(pepIonID.Sequence).remove(pepIonID.GetKey());
-//        }
-//        removlist.clear();
-//        for(PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()){
-//             if (pepIonID.NoNsiteFragObs == 0) {
-//                removlist.add(pepIonID);
-//            }
-//        }
-//        for(PepIonID pepIonID : removlist){
-//            IDsummary.GetMappedPepIonList().remove(pepIonID.GetKey());
-//            IDsummary.MappedPeptideList.get(pepIonID.Sequence).remove(pepIonID.GetKey());
-//        }
-//        
-//        System.out.println("No. of ID peptide ions:"+IDsummary.GetPepIonList().size() +" No. of mapped ions:"+IDsummary.GetMappedPepIonList().size());
-//        
-        IDsummary.ClearProPeplist();
-        IDsummary.AssignProtForPepIon();
-        IDsummary.AssignProtForMappedIon();
-        IDsummary.GenearteAssignIonList();
-    }
-
-    private void AddShareID(PeakCluster cluster, Integer sharedindex, PepIonID pepion, SortedPepListMass ShareIDs) {
-        for (Integer index : cluster.IsoPeakIndex) {
-            if (Objects.equals(sharedindex, index)) {
-                ShareIDs.add(pepion);
-            }
-        }
-    }
-
-    private void AddShareIndexMS1(PepIonID pepion, HashSet<Integer> PeakCurveIndexMS1, ArrayList<Integer> SharedPeakCurveMS1) {
-        for (PeakCluster cluster : pepion.MS1PeakClusters) {
-            for (Integer index : cluster.IsoPeakIndex) {
-                if (index > 0) {
-                    if (!PeakCurveIndexMS1.contains(index)) {
-                        PeakCurveIndexMS1.add(index);
-                    } else {
-                        SharedPeakCurveMS1.add(index);
-                    }
-                }
-            }
-        }
-    }
-
-    private void AddShareIndexMS2(PepIonID pepion, HashSet<Integer> PeakCurveIndexMS2, ArrayList<Integer> SharedPeakCurveMS2) {
-
-        for (PeakCluster cluster : pepion.MS2UnfragPeakClusters) {
-            for (Integer index : cluster.IsoPeakIndex) {
-                if (index > 0) {
-                    if (!PeakCurveIndexMS2.contains(index)) {
-                        PeakCurveIndexMS2.add(index);
-                    } else {
-                        SharedPeakCurveMS2.add(index);
-                    }
-                }
-            }
-        }
-    }
-
-    public void MapPSM2Cluster() throws IOException, SQLException {
-        GenerateClusterScanNomapping();
-        for (PSM psm : IDsummary.PSMList.values()) {
-            int ClusterIndex = -1;
-            if (psm.GetRawNameString().equals(FilenameUtils.getBaseName(GetQ1Name()))) {
-                ClusterIndex = ScanClusterMap_Q1.get(psm.ScanNo);
-                PeakCluster Cluster = ms1lcms.PeakClusters.get(ClusterIndex - 1);
-                Cluster.AssignedPepIon = psm.Sequence;
-            } else if (psm.GetRawNameString().equals(FilenameUtils.getBaseName(GetQ2Name()))) {
-                ClusterIndex = ScanClusterMap_Q2.get(psm.ScanNo);
-                PeakCluster Cluster = ms1lcms.PeakClusters.get(ClusterIndex - 1);
-                Cluster.AssignedPepIon = psm.Sequence;
-            }
-        }
-    }
+    
 
     public void AssignQuant() throws IOException, SQLException {
         AssignQuant(true);
@@ -902,51 +464,35 @@ public class DIAPack {
     public void AssignQuant(boolean export) throws IOException, SQLException {
         Logger.getRootLogger().info("Assign peak cluster to identified peptides");
         GenerateClusterScanNomapping();
-        //ReadScanNomapping();
+        
         ExecutorService executorPool = null;
         for (PeakCluster cluster : ms1lcms.PeakClusters) {
             cluster.Identified = false;
         }
-        //UpdateProcess progress = new UpdateProcess();
-        //progress.SetTotal(IDsummary.GetPepIonList().size());
-        //Thread thread = new Thread(progress);
-        //thread.start();
-        //executorPool = Executors.newFixedThreadPool(NoCPUs);
+        
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
             pepIonID.MS1PeakClusters = new ArrayList<>();
             pepIonID.MS2UnfragPeakClusters = new ArrayList<>();
         }
-        for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {
-            //if (DIAWindow.DIA_MZ_Range.getX() < 401f) {
-            DIA_window_Quant dia_w = new DIA_window_Quant(GetQ1Name(), GetQ2Name(), GetQ3Name(), ScanClusterMap_Q1, ScanClusterMap_Q2, ScanClusterMap_Q3, ms1lcms, DIAWindow, IDsummary, NoCPUs);
-            //executorPool.execute(dia_w);
-            dia_w.run();
-            //}
+        for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {            
+            DIA_window_Quant dia_w = new DIA_window_Quant(GetQ1Name(), GetQ2Name(), GetQ3Name(), ScanClusterMap_Q1, ScanClusterMap_Q2, ScanClusterMap_Q3, ms1lcms, DIAWindow, IDsummary, NoCPUs);            
+            dia_w.run();            
         }
-//        executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
 
         executorPool = Executors.newFixedThreadPool(NoCPUs);
-        //executorPool = Executors.newFixedThreadPool(1);
+
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
             DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, ms1lcms, parameter);
             executorPool.execute(quantunit);
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
+
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             Logger.getRootLogger().info("interrupted..");
         }
-        //thread = null;
-        //progress.ClearMSG();
-        //progress = null;
 
-        //ms1lcms.DetermineMS1PeakClusterScore();
-        //ms1lcms.ExportPeakCluster();
         if (export) {
             ExportID();
         }
@@ -969,14 +515,7 @@ public class DIAPack {
         }
         parameter.RT_window_Targeted=RTWindow;
         GenerateClusterScanNomapping();
-//        FragmentLibManager libManager = new FragmentLibManager(LibID,connectionManager);
-//        libManager.ReadFromDB();        
         ExecutorService executorPool = null;
-
-        //UpdateProcess progress = new UpdateProcess();
-        //progress.SetTotal(IDsummary.GetMappedPepIonList().size());
-        //Thread thread = new Thread(progress);
-        //thread.start();
         
         TScoring = new TargetMatchScoring(Filename, libManager.LibID);
 
@@ -1011,18 +550,15 @@ public class DIAPack {
 
             executorPool = Executors.newFixedThreadPool(NoCPUs);
             for (PepIonID pepIonID : SearchList) {
-                //if(pepIonID.GetKey().equals("ELVLDN[57.021(C)]CK_2")){
                 if (DIAWindow.DIA_MZ_Range.getX() <= pepIonID.NeutralPrecursorMz() && DIAWindow.DIA_MZ_Range.getY() >= pepIonID.NeutralPrecursorMz()) {
                     if (libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() >= 3) {
                         UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(ms1lcms, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
-                        executorPool.execute(matchunit);
-                        //matchunit.run();
+                        executorPool.execute(matchunit);                        
                         TScoring.libTargetMatches.add(matchunit);
                     } else {
                         Logger.getRootLogger().warn("skipping " + pepIonID.GetKey() + ", it has only " + libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() + " matched fragments");
                     }
                 }
-                //}
             }
 
             for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
@@ -1038,8 +574,7 @@ public class DIAPack {
                 }
             }
             executorPool.shutdown();
-//            while (!executorPool.isTerminated()) {
-//            }
+
             try {
                 executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             } catch (InterruptedException e) {
@@ -1071,158 +606,15 @@ public class DIAPack {
             executorPool.execute(quantunit);
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
+
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             Logger.getRootLogger().info("interrupted..");
         }
-        //thread = null;
-        //progress.ClearMSG();
-        //progress = null;
+        
         if (export) {
             ExportID();
-//            if (connectionManager != null) {
-//                ExportMappedIDQuant();
-//            }
-        }
-    }
-
-    public void ExtractFragmentForMS1PeakCluster() {
-        for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {
-            Logger.getRootLogger().info("Extracting fragments for MS1 clusters in MS2 isolation window:" + FilenameUtils.getBaseName(DIAWindow.ScanCollectionName));
-
-            if (!DIAWindow.ReadPrecursorFragmentClu2Cur()) {
-                Logger.getRootLogger().error("Reading results for " + DIAWindow.ScanCollectionName + " failed");
-                System.exit(2);
-            }
-            for (PeakCluster cluster : ms1lcms.PeakClusters) {
-                DIAWindow.ExtractFragmentForPeakCluser(cluster);
-            }
-        }
-    }
-
-//    public void ReadIDFromDBAndSkylineQuant(String mzxmlname, String SkylineExport, LCMSID RefProtID) throws SQLException, IOException {
-//
-//        this.IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(mzxmlname),RefProtID.DecoyTag, RefProtID.FastaPath);        
-//        this.IDsummary.ReadFromSkylineExport(SkylineExport);
-//        this.IDsummary.CreateProtByRefID(RefProtID);
-//        this.IDsummary.GenearteAssignIonList();
-//        connectionManager.CloseConnection();
-//    }
-
-    private void AssignMS2Cluster() throws SQLException {
-        for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {
-            DIAWindow.ReadPeakCluster();
-            for (PepIonID peptide : IDsummary.GetPepIonList().values()) {
-                if (DIAWindow.DIA_MZ_Range.getX() <= peptide.ObservedMz && DIAWindow.DIA_MZ_Range.getY() >= peptide.ObservedMz) {
-
-                    for (String indexint : peptide.MS2ClusIndex.split(";")) {
-                        if (!"".equals(indexint)) {
-                            try {
-                                PeakCluster cluster = DIAWindow.PeakClusters.get(Integer.parseInt(indexint) - 1);
-                                if (Math.abs(cluster.TargetMz() - peptide.ObservedMz) < 0.1f && cluster.Charge == peptide.Charge) {
-                                    peptide.MS2UnfragPeakClusters.add(cluster);
-                                }
-                            } catch (Exception e) {
-                                //System.err.println(peptide.ObservedMz+"\t"+DIAWindow.DIA_MZ_Range.getX()+"\t"+DIAWindow.DIA_MZ_Range.getY());
-                            }
-                        }
-                    }
-                }
-                if (peptide.PeakRT == -1f) {
-                    PeakCluster target = null;
-                    for (PeakCluster cluster : peptide.MS2UnfragPeakClusters) {
-                        if (target == null || cluster.PeakHeight[0] > target.PeakHeight[0]) {
-                            target = cluster;
-                        }
-                    }
-                    if (target != null) {
-                        peptide.PeakRT = target.PeakHeightRT[0];
-                        peptide.ObservedMz = target.mz[0];
-                    }
-                }
-            }
-            if (IDsummary.GetMappedPepIonList() != null) {
-                for (PepIonID peptide : IDsummary.GetMappedPepIonList().values()) {
-                    if (DIAWindow.DIA_MZ_Range.getX() <= peptide.ObservedMz && DIAWindow.DIA_MZ_Range.getY() >= peptide.ObservedMz) {
-                        for (String indexint : peptide.MS2ClusIndex.split(";")) {
-                            if (!"".equals(indexint)) {
-                                try {
-                                    PeakCluster cluster = DIAWindow.PeakClusters.get(Integer.parseInt(indexint) - 1);
-                                    if (Math.abs(cluster.TargetMz() - peptide.ObservedMz) < 0.1f && cluster.Charge == peptide.Charge) {
-                                        peptide.MS2UnfragPeakClusters.add(cluster);
-                                    }
-                                } catch (Exception e) {
-                                    //System.err.println(peptide.ObservedMz + "\t" + DIAWindow.DIA_MZ_Range.getX() + "\t" + DIAWindow.DIA_MZ_Range.getY());
-                                }
-                            }
-                        }
-                    }
-                    if (peptide.PeakRT == -1f) {
-                        PeakCluster target = null;
-                        for (PeakCluster cluster : peptide.MS2UnfragPeakClusters) {
-                            if (target == null || cluster.PeakHeight[0] > target.PeakHeight[0]) {
-                                target = cluster;
-                            }
-                        }
-                        if (target != null) {
-                            peptide.PeakRT = target.PeakHeightRT[0];
-                            peptide.ObservedMz = target.mz[0];
-                        }
-                    }
-                }
-            }
-        }
-        for (PepIonID peptide : IDsummary.GetMappedPepIonList().values()) {
-            if (StringUtils.countMatches(peptide.MS2ClusIndex, ";") != peptide.MS2UnfragPeakClusters.size()) {
-                System.err.println("MS2 peak cluster not found " + peptide.GetKey() + ";" + peptide.MS2ClusIndex);
-            }
-        }
-        for (PepIonID peptide : IDsummary.GetPepIonList().values()) {
-            if (StringUtils.countMatches(peptide.MS2ClusIndex, ";") != peptide.MS2UnfragPeakClusters.size()) {
-                System.err.println("MS2 peak cluster not found " + peptide.GetKey() + ";" + peptide.MS2ClusIndex);
-            }
-        }
-    }
-
-    private void CheckPSM() {
-        for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            if (pepIonID.GetPSMList().isEmpty()) {
-                for (PSM psm : templcmsid.PSMList.values()) {
-                    if ((psm.Sequence == null ? pepIonID.Sequence == null : psm.Sequence.equals(pepIonID.Sequence)) && psm.Charge == pepIonID.Charge) {
-                        if (Math.abs(pepIonID.NeutralPrecursorMz() - psm.NeutralPrecursorMz()) < 0.1f) {
-                            psm.ModSeq = pepIonID.ModSequence;
-                            pepIonID.AddPSM(psm);
-                        }
-                    }
-                }
-                if (pepIonID.GetPSMList().isEmpty()) {
-                    Logger.getRootLogger().error("PSM list is empty:" + pepIonID.GetKey());
-                }
-            }
-            if (Math.abs(pepIonID.ObservedMass() - pepIonID.CalcNeutralPepMass()) > 0.1f) {
-                Logger.getRootLogger().error(pepIonID.ObservedMass());
-                float mass = pepIonID.CalcNeutralPepMass();
-                Logger.getRootLogger().error(mass);
-                pepIonID.GetPepFactory().estimateTheoreticMass();
-                mass = pepIonID.CalcNeutralPepMass();
-                Logger.getRootLogger().error(mass);
-            }
-        }
-    }
-
-    private void CheckOverlap() {
-        for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            if (IDsummary.GetMappedPepIonList().containsKey(pepIonID.GetKey())) {
-                Logger.getRootLogger().error("overlap");
-            }
-        }
-        for (PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()) {
-            if (IDsummary.GetPepIonList().containsKey(pepIonID.GetKey())) {
-                Logger.getRootLogger().error("overlap");
-            }
         }
     }
 
@@ -1242,18 +634,6 @@ public class DIAPack {
         this.IDsummary.mzXMLFileName=Filename;
         return true;
     }
-
-    public void ParseCombinePepXML(DBSearchParam searchPara, LCMSID ReferenceID) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException {
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),searchPara.DecoyPrefix,searchPara.FastaPath);        
-        TPPResult tppresult = new TPPResult(searchPara.PepFDR, searchPara.ProtFDR, searchPara.DecoyPrefix);
-        tppresult.ReadSearchResultByRefIDProt(IDsummary, GetCombinePepXML(), ReferenceID);
-        Logger.getRootLogger().info("No. of peptide ions:" + IDsummary.ProteinList.size() + "; Assigned Peptide No.:" + IDsummary.AssignedPepIonList.size() + "; All peptide No.:" + IDsummary.GetPepIonList().size());
-        if (ms1lcms != null) {
-            this.ms1lcms.IDsummary = IDsummary;
-        }
-    }
-    LCMSID templcmsid;
-
     
     public void SetPepXMLPath(){
         iProphPepXMLs = new ArrayList<String>();
@@ -1352,72 +732,6 @@ public class DIAPack {
         }
     }
 
-    public void LableMatchedFragmentFromUnfragMS1Cluster(String mgfname, HashMap<Integer, String> ScanClusterMap) {
-        for (PepIonID peptide : IDsummary.GetPepIonList().values()) {
-            PSM psm = null;
-            for (PSM psm2 : peptide.GetPSMList()) {
-                if (psm == null || psm2.Probability > psm.Probability) {
-                    psm = psm2;
-                }
-            }
-            if (psm != null && psm.GetRawNameString().equals(mgfname)) {
-                int ClusterIndex = Integer.parseInt(ScanClusterMap.get(psm.ScanNo));
-                for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {
-                    if (DIAWindow.DIA_MZ_Range.getX() <= psm.ObserPrecursorMz() && DIAWindow.DIA_MZ_Range.getY() >= psm.ObserPrecursorMz()) {
-                        if (DIAWindow.UnFragIonClu2Cur.containsKey(ClusterIndex)) {
-                            for (PrecursorFragmentPairEdge fragmentClusterUnit : DIAWindow.UnFragIonClu2Cur.get(ClusterIndex)) {
-                                for (FragmentPeak frag : peptide.FragmentPeaks) {
-                                    if (InstrumentParameter.CalcPPM(fragmentClusterUnit.FragmentMz, frag.FragMZ) < parameter.MS2PPM) {
-                                        if (!DIAWindow.MatchedFragmentMap.containsKey(fragmentClusterUnit.PeakCurveIndexB)) {
-                                            ArrayList<PrecursorFragmentPairEdge> ClusterList = new ArrayList<>();
-                                            DIAWindow.MatchedFragmentMap.put(fragmentClusterUnit.PeakCurveIndexB, ClusterList);
-                                        }
-                                        DIAWindow.MatchedFragmentMap.get(fragmentClusterUnit.PeakCurveIndexB).add(fragmentClusterUnit);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public void ReportSharedFrag() throws InterruptedException, IOException, ParserConfigurationException, SAXException, FileNotFoundException, ExecutionException, XmlPullParserException, DataFormatException, ClassNotFoundException {
-        Logger.getRootLogger().info("Removing matched fragments for 2nd stage searching.......");
-        for (LCMSPeakDIAMS2 DIAwindow : DIAWindows) {
-            DIAwindow.ReadIfProcessed();
-        }
-        LableMatchedFragmentFromMS1Cluster(GetQ1Name(), ScanClusterMap_Q1);
-        LableMatchedFragmentFromMS1Cluster(GetQ2Name(), ScanClusterMap_Q2);
-        //LableMatchedFragmentFromUnfragMS1Cluster(GetQ3Name(), ScanClusterMap_Q3);
-        //ms1lcms.ReadPeakCluster();
-        FileWriter writer = new FileWriter(FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename) + "_SharedFragment.xls");
-        writer.write("ID\tWindow\tFragIndex\tPrecursorIndex\tmz\tCorr\tApexDelta\tintensity\tPrecursorMz\tPrecursorCharge\n");
-        for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {
-            for (ArrayList<PrecursorFragmentPairEdge> fragmments : DIAWindow.MatchedFragmentMap.values()) {
-                for (PrecursorFragmentPairEdge frag : fragmments) {
-                    //PeakCluster cluster=ms1lcms.PeakClusters.get(frag.PeakCurveIndexA-1);
-                    writer.write(DIAWindow.WindowID + "_" + frag.PeakCurveIndexB + "\t" + DIAWindow.WindowID + "\t" + frag.PeakCurveIndexB + "\t" + frag.PeakCurveIndexA + "\t" + frag.FragmentMz + "\t" + frag.Correlation + "\t" + frag.ApexDelta + "\t" + frag.Intensity + "\n");
-                    //writer.write(DIAWindow.WindowID+"_"+ frag.PeakCurveIndexB+"\t"+DIAWindow.WindowID+"\t"+frag.PeakCurveIndexB+"\t"+frag.PeakCurveIndexA+"\t"+frag.FragmentMz+"\t"+frag.Correlation+"\t"+frag.ApexDelta+"\t"+frag.Intensity+"\t"+cluster.TargetMz()+"\t"+cluster.Charge+"\n");
-                }
-            }
-        }
-        writer.close();
-    }
-
-    public void RemoveMatchedFragment() throws InterruptedException, IOException, ParserConfigurationException, SAXException, FileNotFoundException, ExecutionException, XmlPullParserException, DataFormatException, ClassNotFoundException {
-        Logger.getRootLogger().info("Removing matched fragments for 2nd stage searching.......");
-        for (LCMSPeakDIAMS2 DIAwindow : DIAWindows) {
-            DIAwindow.ReadIfProcessed();
-        }
-        LableMatchedFragmentFromMS1Cluster(GetQ1Name(), ScanClusterMap_Q1);
-        LableMatchedFragmentFromMS1Cluster(GetQ2Name(), ScanClusterMap_Q2);
-        LableMatchedFragmentFromUnfragMS1Cluster(GetQ3Name(), ScanClusterMap_Q3);
-        GenerateMGF_2ndStage();
-    }
-
     private String GetSkylineFolder(){
         return FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_Skyline/";
     }
@@ -1484,8 +798,6 @@ public class DIAPack {
             Logger.getRootLogger().info("(Memory usage:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB)");
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
 
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -1578,13 +890,6 @@ public class DIAPack {
         mgfWriter3.close();
     }
 
-    public void GenerateMGF_2ndStage() throws IOException, InterruptedException {
-        for (LCMSPeakDIAMS2 DIAwindow : DIAWindows) {
-            DIAwindow.GenerateMGF(ms1lcms);
-        }
-        RenameMGF("_RC");
-    }
-
     private void FindPSMRT(){        
         try {
             if(!new File(FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".mzXML").exists()){
@@ -1617,31 +922,7 @@ public class DIAPack {
             Logger.getRootLogger().warn("Exception trying to fill PSM RTs");
         }
     }
-    public void ParseSearchEngineResultiProphet(DBSearchParam param) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException, Exception {
-        ParseSearchEngineResultiProphet(param,null);
-    }
-    
-    public void SetIPROPHETPepXML(){
-        iProphPepXMLs = new ArrayList<String>();
-        iProphPepXMLs.add(FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".iproph.pep.xml");
-        iProphPepXMLs.add(FilenameUtils.getFullPath(Filename) + GetQ2Name() + ".iproph.pep.xml");
-        iProphPepXMLs.add(FilenameUtils.getFullPath(Filename) + GetQ3Name() + ".iproph.pep.xml");
-    }
-    public void ParseSearchEngineResultiProphet(DBSearchParam param, final LCMSID RefPepID) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException, Exception {
-        SetIPROPHETPepXML();
-        TPPResult tppresult = new TPPResult(param.PepFDR, param.ProtFDR, param.DecoyPrefix);
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),param.DecoyPrefix,param.FastaPath);        
-        if (RefPepID != null) {
-            tppresult.ReadSearchResultByRefPepID(IDsummary, iProphPepXMLs, GetCombineiProphProtXML(), RefPepID);
-        } else {
-            tppresult.ReadSearchResult(IDsummary, iProphPepXMLs, GetCombineiProphProtXML());
-        }        
-        CheckPSMRT();
-        if (ms1lcms != null) {
-            this.ms1lcms.IDsummary = IDsummary;
-        }
-    }
-
+   
     public void CheckPSMRT() {
         boolean PSMRT0=false;
         for(PSM psm : IDsummary.PSMList.values()){
@@ -1654,46 +935,8 @@ public class DIAPack {
             FindPSMRT();
         }
     }
-    public void ParseiProphetPepXML(DBSearchParam param) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException, Exception {
-        iProphPepXMLs = new ArrayList<String>();
-        iProphPepXMLs.add(FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".iproph.pep.xml");
-        iProphPepXMLs.add(FilenameUtils.getFullPath(Filename) + GetQ2Name() + ".iproph.pep.xml");
-        iProphPepXMLs.add(FilenameUtils.getFullPath(Filename) + GetQ3Name() + ".iproph.pep.xml");
-        TPPResult tppresult = new TPPResult(param.PepFDR, param.ProtFDR, param.DecoyPrefix);
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),param.DecoyPrefix,param.FastaPath);        
-        for (String pepxml : iProphPepXMLs) {
-            LCMSID pepxmlid = new LCMSID(pepxml, IDsummary.DecoyTag, IDsummary.FastaPath);
-            PepXMLParser pepxmlparser = new PepXMLParser(pepxmlid, pepxml, 0f);
-            for (PepIonID pepion : pepxmlid.GetPepIonList().values()) {
-                IDsummary.AddPeptideID(pepion);
-            }
-        }
-        CheckPSMRT();        
-        if (ms1lcms != null) {
-            this.ms1lcms.IDsummary = IDsummary;
-        }
-    }
-
-    public void ParseTPP(DBSearchParam searchPara) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException {
-
-        iProphPepXMLs = new ArrayList<String>();
-        String PepXMLPath1 = FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(Filename) + "interact-" + GetQ1Name() + ".pep.xml");
-        String PepXMLPath2 = FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(Filename) + "interact-" + GetQ2Name() + ".pep.xml");
-        String PepXMLPath3 = FilenameUtils.separatorsToUnix(FilenameUtils.getFullPath(Filename) + "interact-" + GetQ3Name() + ".pep.xml");
-        iProphPepXMLs.add(PepXMLPath1);
-        iProphPepXMLs.add(PepXMLPath2);
-        iProphPepXMLs.add(PepXMLPath3);
-        TPPResult tppresult = new TPPResult(searchPara.PepFDR, searchPara.ProtFDR, searchPara.DecoyPrefix);
-
-        String CombinedProt = FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_combine.prot.xml";
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),searchPara.DecoyPrefix,searchPara.FastaPath);        
-        tppresult.ReadSearchResult(IDsummary, iProphPepXMLs, CombinedProt);
-        if (ms1lcms != null) {
-            this.ms1lcms.IDsummary = IDsummary;
-        }
-    }
-
-
+    
+    
     public void ClearStructure() {
         ms1lcms = null;
         DIAWindows = null;
@@ -1702,18 +945,16 @@ public class DIAPack {
     }
 
     public void BuildStructure() throws SQLException, FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException {
-        //System.out.println("building peak clusters.....");
+        
         LoadDIASetting();
         ms1lcms = new LCMSPeakMS1(Filename, NoCPUs);
         ms1lcms.datattype = dIA_Setting.dataType;
         ms1lcms.SetParameter(parameter);
-        //ms1lcms.SetMySQLConnection(connectionManager);
-
+        
         if (IDsummary != null) {
             ms1lcms.IDsummary = IDsummary;
         }
 
-        //System.out.print("Querying SWATH:");
         if (dIA_Setting.DIAWindows == null || dIA_Setting.DIAWindows.isEmpty()) {
             GetMzXML();
         }
@@ -1732,14 +973,13 @@ public class DIAPack {
         ms1lcms = new LCMSPeakMS1(Filename, NoCPUs);
         ms1lcms.datattype = dIA_Setting.dataType;
         ms1lcms.SetParameter(parameter);
-        //ms1lcms.SetMySQLConnection(connectionManager);
+        
         ms1lcms.SetMS1Windows(dIA_Setting.MS1Windows);
         ms1lcms.CreatePeakFolder();
         ms1lcms.ExportPeakCurveTable = false;
-        //ms1lcms.SwathWindows = DIAWindows;
+        
         ms1lcms.SetmzXML(GetMzXML());
-        Logger.getRootLogger().info("Processing MS1 peak detection");
-        //ms1lcms.AssignIDResult(DDAIDsummary);
+        Logger.getRootLogger().info("Processing MS1 peak detection");        
         ms1lcms.ExportPeakClusterTable = ExportPrecursorPeak;
         ms1lcms.PeakClusterDetection();
 
@@ -1813,7 +1053,6 @@ public class DIAPack {
             Logger.getRootLogger().info("==================================================================================");
         }
         RenameMGF("");
-        //}
     }
 
     private void RenameMGF(String tag) {
@@ -1848,8 +1087,7 @@ public class DIAPack {
     }
 
     public void ReplaceProtByRefIDByTheoPep(LCMSID protID) {
-        IDsummary.GenerateProteinByRefIDByPepSeq(protID, UseMappedIon);
-        //IDsummary.GenearteAssignIonList();        
+        IDsummary.GenerateProteinByRefIDByPepSeq(protID, UseMappedIon);         
     }
 
     public void SaveParams() {
@@ -1872,93 +1110,5 @@ public class DIAPack {
 
     public InstrumentParameter GetParameter() {
         return parameter;
-    }
-
-    public void ParseiProphet(DBSearchParam param) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException {
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),param.DecoyPrefix,param.FastaPath);        
-        TPPResult tppresult = new TPPResult(param.PepFDR, param.ProtFDR, param.DecoyPrefix);
-        tppresult.ReadSearchResult(IDsummary, GetIPROPHETPepXML(), GetIPROPHETProtXML());
-    }
-
-    public void ExportSkylineFilesProt() throws IOException, XmlPullParserException {
-          
-        FileWriter writerT =new FileWriter(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_ProtTransitions.tsv");
-        FileWriter writerP =new FileWriter(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_PeakBoundary.txt");
-        writerP.write("PeptideModifiedSequence\tPrecursorCharge\tMinStartTime\tMaxEndTime\tFileName\n");
-        //writerT.write("PeptideModifiedSequence\tPrecursorCharge\tPrecursorMZ\tTransitionMZ\tLibraryIntensity\tTr_recalibrated\n");
-        //writerT.write("PeptideModifiedSequence\tPrecursorMZ\tTransitionMZ\tLibraryIntensity\tTr_recalibrated\n");
-        writerT.write("Protein\tPeptideModifiedSequence\tPrecursorMZ\tTransitionMZ\tTr_recalibrated\n");
-        for (ProtID prot : IDsummary.ProteinList.values()) {
-            for (PepIonID pep : prot.PeptideID.values()) {
-                ExportSkylineForPepProt(prot, pep, writerP, writerT);
-            }
-        }
-        writerP.close();
-        writerT.close();
-    }
-    
-    public void ExportSkylineFiles() throws IOException, XmlPullParserException {
-          
-        FileWriter writerT =new FileWriter(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_TransitionsRT.tsv");
-        FileWriter writerP =new FileWriter(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_PeakBoundary.txt");
-        writerP.write("PeptideModifiedSequence\tPrecursorCharge\tMinStartTime\tMaxEndTime\tFileName\n");
-        writerT.write("PeptideModifiedSequence\tPrecursorMZ\tTransitionMZ\tTr_recalibrated\n");
-        for (PepIonID pep : IDsummary.GetPepIonList().values()) {
-            ExportSkylineForPep(pep, writerP, writerT);
-        }
-        for (PepIonID pep : IDsummary.GetMappedPepIonList().values()) {            
-            ExportSkylineForPep(pep, writerP, writerT);     
-        }
-        writerP.close();
-        writerT.close();
-    }
-
-    private void ExportSkylineForPepProt(ProtID protein, PepIonID pep, FileWriter writerP, FileWriter writerT) throws IOException, XmlPullParserException {
-        PeakCluster targetcluster = null;
-        for (PeakCluster cluster : pep.MS2UnfragPeakClusters) {
-            if (targetcluster == null || targetcluster.PeakHeight[0] < cluster.PeakHeight[0]) {
-                targetcluster = cluster;
-            }
-        }
-        for (PeakCluster cluster : pep.MS1PeakClusters) {
-            if (targetcluster == null || targetcluster.PeakHeight[0] < cluster.PeakHeight[0]) {
-                targetcluster = cluster;
-            }
-        }
-        writerP.write(pep.GetSkylineModSeq() + "\t" + pep.Charge + "\t" + targetcluster.startRT + "\t" + targetcluster.endRT + "\t" + FilenameUtils.getName(Filename) + "\n");
-        for (int i = 0; i < targetcluster.PeakHeight.length; i++) {
-            //writerT.write(pep.GetSkylineModSeq() + "\t" + pep.Charge + "\t" + pep.NeutralPrecursorMz() + "\t" + targetcluster.mz[i] + "\t" + targetcluster.PeakHeight[i] + "\t" + targetcluster.PeakHeightRT[i]  + "\n");
-            //writerT.write(pep.GetSkylineModSeq() + "\t" + pep.NeutralPrecursorMz() + "\t" + targetcluster.mz[i]  + "\n");
-            writerT.write(protein.getAccNo()+"\t"+ pep.GetSkylineModSeq() + "\t" + pep.NeutralPrecursorMz() + "\t" + targetcluster.mz[i]  + "\t" + targetcluster.PeakHeightRT[0]  + "\n");
-        }
-        for (FragmentPeak frag : pep.FragmentPeaks) {
-            writerT.write(protein.getAccNo()+"\t"+pep.GetSkylineModSeq() + "\t" + pep.NeutralPrecursorMz() + "\t" + frag.FragMZ + "\t" + targetcluster.PeakHeightRT[0]  +  "\n");
-        }
-    }
-    private void ExportSkylineForPep(PepIonID pep, FileWriter writerP, FileWriter writerT) throws IOException, XmlPullParserException {
-        PeakCluster targetcluster = null;
-        for (PeakCluster cluster : pep.MS2UnfragPeakClusters) {
-            if (targetcluster == null || targetcluster.PeakHeight[0] < cluster.PeakHeight[0]) {
-                targetcluster = cluster;
-            }
-        }
-        for (PeakCluster cluster : pep.MS1PeakClusters) {
-            if (targetcluster == null || targetcluster.PeakHeight[0] < cluster.PeakHeight[0]) {
-                targetcluster = cluster;
-            }
-        }    
-        if(targetcluster==null){
-            Logger.getRootLogger().warn("Peptide "+ pep.ModSequence+" doesn't have peak cluster assigned.");
-            return;
-        }
-        writerP.write(pep.GetSkylineModSeq() + "\t" + pep.Charge + "\t" + targetcluster.startRT + "\t" + targetcluster.endRT + "\t" + FilenameUtils.getName(Filename) + "\n");
-        for (int i = 0; i < targetcluster.PeakHeight.length; i++) {
-            //writerT.write(pep.GetSkylineModSeq() + "\t" + pep.Charge + "\t" + pep.NeutralPrecursorMz() + "\t" + targetcluster.mz[i] + "\t" + targetcluster.PeakHeight[i] + "\t" + targetcluster.PeakHeightRT[i]  + "\n");
-            //writerT.write(pep.GetSkylineModSeq() + "\t" + pep.NeutralPrecursorMz() + "\t" + targetcluster.mz[i]  + "\n");
-            writerT.write(pep.GetSkylineModSeq() + "\t" + pep.NeutralPrecursorMz() + "\t" + targetcluster.mz[i]  + "\t" + targetcluster.PeakHeightRT[0]  + "\n");
-        }
-        for (FragmentPeak frag : pep.FragmentPeaks) {
-            writerT.write(pep.GetSkylineModSeq() + "\t" + pep.NeutralPrecursorMz() + "\t" + frag.FragMZ + "\t" + targetcluster.PeakHeightRT[0]  +  "\n");
-        }
     }
 }

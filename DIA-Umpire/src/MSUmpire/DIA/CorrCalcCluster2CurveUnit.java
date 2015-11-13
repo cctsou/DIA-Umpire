@@ -38,16 +38,14 @@ public class CorrCalcCluster2CurveUnit implements Runnable {
 
     public PeakCluster MS1PeakCluster;
     private SortedCurveCollectionApexRT PeakCurveSortedListApexRT;
-    InstrumentParameter parameter;
-    //HashMap<Integer, PeakCurve> FragmentPeaks = new HashMap<>();
+    InstrumentParameter parameter;    
     public ArrayList<PrecursorFragmentPairEdge> GroupedFragmentList = new ArrayList<>();
-    //TreeMap<Float, XYPoint>[] IsotopePatternMap;
+    
 
     public CorrCalcCluster2CurveUnit(PeakCluster MS1PeakCluster, SortedCurveCollectionApexRT PeakCurveSortedListApexRT, InstrumentParameter parameter) {
         this.MS1PeakCluster = MS1PeakCluster;
         this.PeakCurveSortedListApexRT = PeakCurveSortedListApexRT;
         this.parameter = parameter;
-        //this.IsotopePatternMap = IsotopePatternMap;
     }
 
     @Override
@@ -55,11 +53,8 @@ public class CorrCalcCluster2CurveUnit implements Runnable {
 
         int startRTidx = PeakCurveSortedListApexRT.BinarySearchLower(MS1PeakCluster.PeakHeightRT[0] - parameter.ApexDelta);
         int endRTidx = PeakCurveSortedListApexRT.BinarySearchHigher(MS1PeakCluster.PeakHeightRT[0] + parameter.ApexDelta);
-        //XYPoint[] PatternRange = MS1PeakCluster.GetPatternRange(IsotopePatternMap);
         PeakCurve targetMS1Curve = MS1PeakCluster.MonoIsotopePeak;
-//        if (PatternRange[0].Y > 1) {
-//            targetMS1Curve = MS1PeakCluster.IsoPeaksCurves[1];
-//        }
+
         float ms1rtrange = targetMS1Curve.EndRT() - targetMS1Curve.StartRT();
         int highCorrCnt = 0;
         

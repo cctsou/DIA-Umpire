@@ -25,7 +25,6 @@ import MSUmpire.PSMDataStructure.PSM;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PeakCurve;
-import MSUmpire.PeakDataStructure.SortedClusterCollectionClassApexRT;
 import MSUmpire.PeakDataStructure.SortedCurveCollectionApexRT;
 import MSUmpire.SpectrumParser.mzXMLParser;
 import java.io.File;
@@ -35,7 +34,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import net.sf.javaml.core.kdtree.KDTree;
@@ -55,8 +53,7 @@ import org.nustaq.serialization.FSTObjectOutput;
  */
 public class LCMSPeakBase {
 
-    public ArrayList<PeakCluster> PeakClusters = new ArrayList<>(1000);        
-    private SortedClusterCollectionClassApexRT PeakClusterListRT=null;
+    public ArrayList<PeakCluster> PeakClusters = new ArrayList<>(1000);            
     private KDTree PeakClusterMassSearchTree=null;    
     private KDTree PeakCurveSearchTree=null;
     public String ScanCollectionName;
@@ -85,7 +82,6 @@ public class LCMSPeakBase {
     }
     public void BaseClearAllPeaks() {        
         PeakClusters = null;
-        PeakClusterListRT = null;
         PeakCurveListRT = null;
         UnSortedPeakCurves=null;
         PeakCurveSearchTree=null;
@@ -144,37 +140,6 @@ public class LCMSPeakBase {
             }
         }
         return allclusterList;
-    }
-
-    public ArrayList<PeakCurve> FindPeakCurveByMZRT(float mz, float RT, float ppm) {
-        ArrayList<PeakCurve> ReturnList = new ArrayList<>();
-        float lowrt = RT - parameter.MaxCurveRTRange;
-        float highrt = RT + parameter.MaxCurveRTRange;
-        float lowmz = InstrumentParameter.GetMzByPPM(mz, 1, ppm);
-        float highmz = InstrumentParameter.GetMzByPPM(mz, 1, -ppm);
-       
-        Object[] found=null;
-        try {
-            found = GetPeakCurveSearchTree().range(new double[]{lowrt,lowmz}, new double[]{highrt,highmz});
-        } catch (KeySizeException ex) {
-            
-        }
-        if(found==null || found.length==0){
-            return ReturnList;
-        }
-       for(Object obj : found){         
-            PeakCurve peakcurve = (PeakCurve)obj;
-            if (InstrumentParameter.CalcPPM(peakcurve.TargetMz, mz) < ppm) {
-                if (peakcurve.StartRT() <= RT && peakcurve.EndRT() >= RT) {
-                    ReturnList.add(peakcurve);
-                }
-            } else {
-                if (peakcurve.TargetMz > mz) {
-                    return ReturnList;
-                }
-            }
-        }
-        return ReturnList;
     }
     
     public ArrayList<PeakCluster> FindPeakClustersByMassIDTime(float mass, int charge, float RT, float RTtol) {
@@ -324,7 +289,6 @@ public class LCMSPeakBase {
         writer.close();
         //System.out.print("Finished multithreading\n");
     }
-
     
     public void ExportPeakCluster() throws IOException {
         WritePeakClusterSerialization();      
@@ -499,12 +463,4 @@ public class LCMSPeakBase {
         }
         return PeakCurveListRT;
     }
-     public SortedClusterCollectionClassApexRT GetPeakClusterListRT() {
-        if (PeakClusterListRT == null) {
-            PeakClusterListRT=new SortedClusterCollectionClassApexRT();
-            PeakClusterListRT.addAll(PeakClusters);
-        }
-        return PeakClusterListRT;
-    }
-
 }

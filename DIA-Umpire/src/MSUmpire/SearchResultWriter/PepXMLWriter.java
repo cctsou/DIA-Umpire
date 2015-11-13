@@ -20,7 +20,7 @@
 package MSUmpire.SearchResultWriter;
 
 import MSUmpire.BaseDataStructure.UmpireInfo;
-import MSUmpire.FastaParser.FastaParser_V2;
+import MSUmpire.FastaParser.FastaParser;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.Utility.DateTimeTag;
 import java.io.FileWriter;
@@ -82,9 +82,9 @@ public class PepXMLWriter {
             }
         }
         
-        FastaParser_V2 fastaparser = FastaParser_V2.FasterSerialzationRead(Fasta);
+        FastaParser fastaparser = FastaParser.FasterSerialzationRead(Fasta);
         if (fastaparser == null) {
-            fastaparser = new FastaParser_V2(Fasta);
+            fastaparser = new FastaParser(Fasta);
             fastaparser.digestion(maxmiss, minlength, maxlength,"DECOY");
         }
         Header();

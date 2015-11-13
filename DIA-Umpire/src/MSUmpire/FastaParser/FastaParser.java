@@ -22,14 +22,19 @@ package MSUmpire.FastaParser;
 import MSUmpire.PSMDataStructure.EnzymeManager;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
+import org.nustaq.serialization.FSTObjectInput;
+import org.nustaq.serialization.FSTObjectOutput;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -39,37 +44,103 @@ import org.xmlpull.v1.XmlPullParserException;
 public class FastaParser implements Serializable{
     private static final long serialVersionUID = 19398249L;
 
-    public HashMap<String, String[]> ProteinList;
-    public transient HashMap<String, ArrayList<String>> PeptideList;
+    public HashMap<String, ProteinEntry> ProteinList;
+    public HashMap<String, PeptideEntry> PeptideList;
+
+    public void RemoveDecoy(String DecoyTag) {
+        HashMap<String, ProteinEntry> newlist=new HashMap<>();
+        for(ProteinEntry protein : ProteinList.values()){
+            if(!protein.ACC.startsWith(DecoyTag)){
+                newlist.put(protein.ACC, protein);
+            }
+        }
+        ProteinList=newlist;
+    }
+        
     
+    public class ProteinEntry implements Serializable{
+        private static final long serialVersionUID = -2002064228475586294L;
+        public String ACC;
+        public String Des;
+        public String Seq;
+        public ArrayList<String> Peptides=new ArrayList<>();
+    }
+    
+    public class PeptideEntry implements Serializable {
+        private static final long serialVersionUID = -6343751134961266096L;
+        public ArrayList<String> Proteins=new ArrayList<>();
+        public String Sequence;
+        public String Decoy;
+    }
     
     public FastaParser(String filename){
         ProteinList=new HashMap<>();
         try {
             Parse(filename);
         } catch (IOException ex) {
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
+           Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
+    }
+    
+    
+     public static FastaParser FasterSerialzationRead(String Filename) throws FileNotFoundException {
+
+        if (!new File(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename)+ ".FastaSer").exists()) {
+            return null;
+        }
+        FastaParser fastareader=null;
+        try {
+            org.apache.log4j.Logger.getRootLogger().info("Loading fasta serialization to file:" + FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename)+ ".FastaSer..");
+            FileInputStream fileIn = new FileInputStream(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename)+ ".FastaSer");
+            FSTObjectInput in = new FSTObjectInput(fileIn);
+            fastareader = (FastaParser) in.readObject();
+            in.close();
+            fileIn.close();
+        } catch (Exception ex) {
+            org.apache.log4j.Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
+            return null;
+        }
+        
+        return fastareader;
+    }
+
+    public boolean FasterSerialzationWrite(String Filename) throws FileNotFoundException {
+        try {
+            org.apache.log4j.Logger.getRootLogger().info("Writing fasta serialization to file:" + FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename)+ ".FastaSer...");
+            FileOutputStream fout = new FileOutputStream(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename)+ ".FastaSer", false);
+            FSTObjectOutput out = new FSTObjectOutput(fout);
+            out.writeObject(this);
+            out.close();
+            fout.close();
+        } catch (Exception ex) {
+            org.apache.log4j.Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
+            return false;
+        }        
+        return true;
     }
     
     private void Parse(String filename) throws FileNotFoundException, IOException {
 
         if(!new File(filename).exists()){
-            Logger.getRootLogger().warn("Fasta file cannot be found: "+filename);
+            org.apache.log4j.Logger.getRootLogger().warn("Fasta file cannot be found: "+filename);
         }
-        BufferedReader reader = new BufferedReader(new FileReader(filename));        
+        BufferedReader reader = new BufferedReader(new FileReader(filename));
         String line = "";
         String ACC = "";
-        String des="";
+        String des = "";
         StringBuilder Seq = new StringBuilder();
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(">")) {
                 if (!"".equals(ACC) && !"".equals(Seq.toString())) {
-                    ProteinList.put(ACC, new String[]{Seq.toString().replace("*", ""),des});
-                    Seq=new StringBuilder();
+                    ProteinEntry protein = new ProteinEntry();
+                    protein.ACC = ACC;
+                    protein.Des = des;
+                    protein.Seq = Seq.toString().replace("*", "");
+                    ProteinList.put(ACC, protein);
+                    Seq = new StringBuilder();
                 }
                 ACC = line.trim().split(" ")[0].substring(1);
-                des=line.replace(">"+ACC+" ", "");
+                des = line.replace(">" + ACC + " ", "");
             } else {
                 if (!"".equals(line.trim())) {
                     Seq.append(line);
@@ -77,22 +148,37 @@ public class FastaParser implements Serializable{
             }
         }
         if (!"".equals(ACC) && !"".equals(Seq.toString())) {
-            ProteinList.put(ACC, new String[]{Seq.toString().replace("*", ""),des});
+            ProteinEntry protein = new ProteinEntry();
+            protein.ACC = ACC;
+            protein.Des = des;
+            protein.Seq = Seq.toString().replace("*", "");
+            ProteinList.put(ACC, protein);
         }
         reader.close();
     }
         
-    public void digestion(int missedcleave, int minlength, int maxlength) throws XmlPullParserException, IOException {
+    public void digestion(int missedcleave, int minlength, int maxlength, String Decoytag) throws XmlPullParserException, IOException {
         PeptideList=new HashMap<>();
-        for (String acc : ProteinList.keySet()) {
-            String Sequence = ProteinList.get(acc)[0];            
+        for (ProteinEntry protein : ProteinList.values()) {
+            if(protein.ACC.startsWith(Decoytag)){
+                continue;
+            }
+            String Sequence = protein.Seq;            
             ArrayList<String> TheoPeptides = EnzymeManager.GetInstance().GetTrypsinNoP().digest(Sequence, missedcleave, minlength, maxlength);
             AddFirstMetDroppedPep(Sequence, missedcleave, minlength, maxlength, TheoPeptides);
             for (String pep : TheoPeptides) {
                 if (!PeptideList.containsKey(pep)) {
-                    PeptideList.put(pep, new ArrayList<String>());
+                    PeptideEntry pepentry=new PeptideEntry();
+                    pepentry.Sequence=pep;
+                    String rev=new StringBuilder(pepentry.Sequence.subSequence(0, pepentry.Sequence.length()-1)).reverse().toString();
+                    if (Sequence.indexOf(pepentry.Sequence) > 0) {
+                        rev += String.valueOf(Sequence.charAt(Sequence.indexOf(pepentry.Sequence) - 1));
+                    }
+                    pepentry.Decoy=rev;
+                    PeptideList.put(pep, pepentry);
                 }
-                PeptideList.get(pep).add(acc);
+                PeptideList.get(pep).Proteins.add(protein.ACC);
+                protein.Peptides.add(pep);
             }
         }
     }

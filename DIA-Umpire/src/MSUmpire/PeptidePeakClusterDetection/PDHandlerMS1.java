@@ -42,7 +42,7 @@ public class PDHandlerMS1 extends PDHandlerBase {
 
     public void DetectPeakClusters(ArrayList<ScanCollection> scanCollections) throws InterruptedException, ExecutionException, IOException {        
         DetectSingleMZTraces(scanCollections);
-        PeakCurveCorrClustering_V2(new XYData(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY));
+        PeakCurveCorrClustering(new XYData(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY));
     }
 
     public void DetectSingleMZTraces(ArrayList<ScanCollection> scanCollections) throws IOException {
@@ -53,7 +53,6 @@ public class PDHandlerMS1 extends PDHandlerBase {
         }
         Logger.getRootLogger().info("Inclusion mz values found: "+InclusionCheckInfo());        
         PeakCurveSmoothing();      
-        //CreateSortedPeakCurveList();
         ClearRawPeaks();
     }
     

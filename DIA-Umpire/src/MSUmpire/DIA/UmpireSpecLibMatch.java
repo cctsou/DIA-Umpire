@@ -157,12 +157,6 @@ public class UmpireSpecLibMatch implements Runnable, Serializable{
             matchFragments.add(new MatchFragment(frag, bestfragment));
         }
 
-        //float maxint = 0f;
-//        for (MatchFragment matchFragment : matchFragments) {
-//            if (matchFragment.peakfrag != null && matchFragment.peakfrag.Intensity > maxint) {
-//                maxint = matchFragment.peakfrag.Intensity;
-//            }
-//        }
         for (MatchFragment matchFragment : matchFragments) {
             if (matchFragment.peakfrag != null) {
                 pointset.AddPoint(matchFragment.libfrag.GetAvgInt(), matchFragment.peakfrag.Intensity);
@@ -210,12 +204,6 @@ public class UmpireSpecLibMatch implements Runnable, Serializable{
         if (fragmentLib != null) {
             if (IdentifiedPeptideIon) {
                 IDPeak();
-//                if (decoyfragmentLib != null) {
-//                    Decoy();
-//                }
-//                else{
-//                    Logger.getRootLogger().error("decoy spectrum is null : "+pepIonID.GetKey());
-//                }
             } else {
                 Target();
                 if (decoyfragmentLib != null) {

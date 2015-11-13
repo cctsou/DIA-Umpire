@@ -19,11 +19,11 @@
  */
 package MSUmpire.SeqUtility;
 
-import ExtPackages.JAligner.Alignment;
-import ExtPackages.JAligner.NeedlemanWunschGotoh;
-import ExtPackages.JAligner.Sequence;
-import ExtPackages.JAligner.matrix.Matrix;
-import ExtPackages.JAligner.matrix.MatrixLoaderException;
+import ExternalPackages.JAligner.Alignment;
+import ExternalPackages.JAligner.NeedlemanWunschGotoh;
+import ExternalPackages.JAligner.Sequence;
+import ExternalPackages.JAligner.matrix.Matrix;
+import ExternalPackages.JAligner.matrix.MatrixLoaderException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.logging.Level;

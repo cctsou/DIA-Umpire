@@ -30,7 +30,6 @@ import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.vseravno.solna.SolnaHandler;
 import java.io.IOException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,7 +52,6 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
     float EndRT;
     float threshold;
     boolean CorrectMassDiff=true;
-    //public String FileBaseNameFilter="";
     LCMSID singleLCMSID;
 
     @Override
@@ -125,12 +123,6 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
                     }
                     float massdiff = Float.parseFloat(node.getChildNodes().item(k).getAttributes().getNamedItem("massdiff").getNodeValue());
                     CheckAndAddModification(site, massdiff);
-//                    PTM ptm = PTMManager.GetInstance().GetPTM(site, massdiff);
-//                    if (ptm == null) {
-//                        Logger.getRootLogger().warn("Warning! term-modification:" + site + "(" + massdiff + ") cannot be found in the library.\n");
-//                    } else {
-//                        singleLCMSID.AddModification(ptm, site);
-//                    }
                 }
             }
         }
@@ -148,12 +140,6 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
     }
 
     private void ParseSpectrumNode(Element spectrum) throws XmlPullParserException, IOException {
-
-//        if(!"".equals(FileBaseNameFilter)){
-//            if(!spectrum.getAttributes().getNamedItem("spectrum").getNodeValue().substring(0, spectrum.getAttributes().getNamedItem("spectrum").getNodeValue().indexOf(".")).startsWith(FileBaseNameFilter)){
-//                return;
-//            }
-//        }
                 
         PSM psm = new PSM();
         psm.SpecNumber = spectrum.getAttributes().getNamedItem("spectrum").getNodeValue();
@@ -386,68 +372,5 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
         }
         psmid.ModSeq = modseq;
         psmid.TPPModSeq = TPPmodseq;
-        //UpdateFromLuciphor(psmid, modseq);
     }
-
-    private void UpdateFromLuciphor(PSM psmid, String modseq) throws NumberFormatException {
-        if (singleLCMSID.LuciphorResult != null && singleLCMSID.LuciphorResult.containsKey(psmid.SpecNumber)) {
-            String line = singleLCMSID.LuciphorResult.get(psmid.SpecNumber);
-            if (Integer.parseInt(line.split("\t")[5]) < Integer.parseInt(line.split("\t")[6])) {
-                for (int i = 0; i < 2; i++) {
-                    boolean isdecoy = line.split("\t")[12 + i].equals("1");
-                    if (!isdecoy) {
-                        String lumodseq = line.split("\t")[2 + i];
-                        String resultseq = modseq.replace("[79.96637(S)]", "").replace("[79.96637(Y)]", "").replace("[79.96633(T)]", "");
-
-                        while (lumodseq.contains("[167]")) {
-                            int aaindex = StringUtils.countMatches(lumodseq.substring(0, lumodseq.indexOf("[167]")).replaceAll("\\[(.*?)\\]", "$1"), "S");
-                            int cont = 0;
-                            for (int idx = 0; idx < resultseq.length(); idx++) {
-                                if ("S".equals(String.valueOf(resultseq.charAt(idx)))) {
-                                    cont++;
-                                    if (cont == aaindex) {
-                                        resultseq = resultseq.substring(0, idx) + "[79.96637(S)]" + resultseq.substring(idx);
-                                    }
-                                }
-                            }
-                            lumodseq = lumodseq.substring(0, lumodseq.indexOf("[167]")) + lumodseq.substring(lumodseq.indexOf("[167]") + 5);
-                        }
-                        while (lumodseq.contains("[181]")) {
-                            int aaindex = StringUtils.countMatches(lumodseq.substring(0, lumodseq.indexOf("[181]")).replaceAll("\\[(.*?)\\]", "$1"), "T");
-                            int cont = 0;
-                            for (int idx = 0; idx < resultseq.length(); idx++) {
-                                if ("T".equals(String.valueOf(resultseq.charAt(idx)))) {
-                                    cont++;
-                                    if (cont == aaindex) {
-                                        resultseq = resultseq.substring(0, idx) + "[79.96633(T)]" + resultseq.substring(idx);
-                                    }
-                                }
-                            }
-                            lumodseq = lumodseq.substring(0, lumodseq.indexOf("[181]")) + lumodseq.substring(lumodseq.indexOf("[181]") + 5);
-                        }
-                        while (lumodseq.contains("[243]")) {
-                            int aaindex = StringUtils.countMatches(lumodseq.substring(0, lumodseq.indexOf("[243]")).replaceAll("\\[(.*?)\\]", "$1"), "Y");
-                            int cont = 0;
-                            for (int idx = 0; idx < resultseq.length(); idx++) {
-                                if ("Y".equals(String.valueOf(resultseq.charAt(idx)))) {
-                                    cont++;
-                                    if (cont == aaindex) {
-                                        resultseq = resultseq.substring(0, idx) + "[79.96637(Y)]" + resultseq.substring(idx);
-                                    }
-                                }
-                            }
-                            lumodseq = lumodseq.substring(0, lumodseq.indexOf("[243]")) + lumodseq.substring(lumodseq.indexOf("[243]") + 5);
-                        }
-                        psmid.LuciphorLFLR = Float.parseFloat(line.split("\t")[7].replace("NA", "1"));
-                        psmid.LuciphorFLR = Float.parseFloat(line.split("\t")[8].replace("NA", "1"));
-                        psmid.LuciphorScore = Float.parseFloat(line.split("\t")[10 + i].replace("NA", "0"));
-                        psmid.ModSeq = resultseq;
-                        psmid.TPPModSeq = lumodseq;
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
 }

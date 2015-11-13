@@ -76,8 +76,7 @@ public class DIA_window_Quant implements  Runnable{
             }
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }
+
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {

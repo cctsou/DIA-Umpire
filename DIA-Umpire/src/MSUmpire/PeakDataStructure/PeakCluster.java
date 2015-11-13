@@ -72,7 +72,6 @@ public class PeakCluster implements Serializable {
     public float RightInt;
     public boolean Identified;
     public String AssignedPepIon = "";
-    //public PeakOverlapRegion[] overlapRegions;
     public ArrayList<PrecursorFragmentPairEdge> GroupedFragmentPeaks = new ArrayList<>();
     public float MS1Score;
     public float MS1ScoreLocalProb;
@@ -96,7 +95,6 @@ public class PeakCluster implements Serializable {
         for (int i = 0; i < IsotopicNum; i++) {
             SNR[i] = -1f;
         }
-        //overlapRegions = new PeakOverlapRegion[IsotopicNum - 1];
         this.Charge = Charge;
     }
 
@@ -416,7 +414,6 @@ public class PeakCluster implements Serializable {
         return prob;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="comment">
     public boolean IsotopeComplete(int minIsonum) {
         for (int i = 0; i < minIsonum; i++) {
             if ((IsoPeaksCurves==null || IsoPeaksCurves[i] == null) && mz[i] == 0.0f) {
@@ -425,7 +422,6 @@ public class PeakCluster implements Serializable {
         }
         return true;
     }
-    //</editor-fold>
 
     public void CreateLock() {
         lock=new ReentrantReadWriteLock();

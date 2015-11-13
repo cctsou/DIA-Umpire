@@ -43,18 +43,7 @@ public abstract class DBSearchParam implements Cloneable{
     public int MissCleavage = 1;
     public boolean SemiCleavage = false;
     public boolean NonSpecificCleavage=false;
-    public boolean IsotopeError = false;
-    
-    //<editor-fold defaultstate="collapsed" desc="[-inst InstrumentID] (0: Low-res LCQ/LTQ (Default), 1: High-res LTQ, 2: TOF, 3: Q-Exactive)">
-    // [-m FragmentMethodID] (0: As written in the spectrum or CID if no info (Default), 1: CID, 2: ETD, 3: HCD)
-    //[-inst MS2DetectorID] (0: Low-res LCQ/LTQ (Default), 1: Orbitrap/FTICR, 2: TOF, 3: Q-Exactive)
-    //[-e EnzymeID] (0: unspecific cleavage, 1: Trypsin (Default), 2: Chymotrypsin, 3: Lys-C, 4: Lys-N, 5: glutamyl endopeptidase, 6: Arg-C, 7: Asp-N, 8: alphaLP, 9: no cleavage)
-    public int MSGFInstrumentID=2;
-    public int MSGFFragmentMethodID=0;
-    public int MSGFEnzymeID=1;
-    
-//</editor-fold>
-    
+    public boolean IsotopeError = false;    
     public String parameterPath;
     public String templateParamFile;
     public SearchInstrumentType defaultType;
@@ -62,11 +51,7 @@ public abstract class DBSearchParam implements Cloneable{
     public float PepFDR = 0.01f;
     public float ProtFDR = 0.01f;
     public boolean Overwrite = false;
-    public String xinteractpath = "C:/inetpub/tpp-bin/xinteract";
-    public String msconvertpath = "C:/inetpub/tpp-bin/msconvert";
     public String DecoyPrefix="rev_";
-    public String xinteractpara = "-OpdEAP -PPM -drev -p0.1";
-   
     
     public enum SearchInstrumentType {
         Orbitrap,
@@ -87,8 +72,7 @@ public abstract class DBSearchParam implements Cloneable{
 
     public abstract void SetResultFilePath(String mzXMLfile);
     public abstract void SetCombineFileName(String filename, String tag);
-    public abstract void GenerateParamFile();
-        
+            
     protected void SetParameter(SearchInstrumentType type) {
         switch (type) {
             case Orbit_Velos: {

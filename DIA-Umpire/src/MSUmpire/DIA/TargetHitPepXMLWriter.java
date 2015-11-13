@@ -20,7 +20,7 @@
 package MSUmpire.DIA;
 
 import MSUmpire.BaseDataStructure.UmpireInfo;
-import MSUmpire.FastaParser.FastaParser_V2;
+import MSUmpire.FastaParser.FastaParser;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.Utility.DateTimeTag;
 import java.io.FileWriter;
@@ -78,9 +78,9 @@ public class TargetHitPepXMLWriter {
             }
         }
 
-        FastaParser_V2 fastaparser = new FastaParser_V2(Fasta);
+        FastaParser fastaparser = new FastaParser(Fasta);
         fastaparser.RemoveDecoy(Decoytag);
-        //FastaParser_V2 fastaparser = FastaParser_V2.FasterSerialzationRead(Fasta);        
+        //FastaParser_V2 fastaparser = FastaParser.FasterSerialzationRead(Fasta);        
         fastaparser.digestion(maxmiss, minlength, maxlength,Decoytag);
 
         Header();
@@ -274,15 +274,6 @@ public class TargetHitPepXMLWriter {
                 + "<search_summary base_name=\"" + FilenameUtils.getBaseName(Filename) + "\" search_engine=\"Umpire\" precursor_mass_type=\"monoisotopic\" fragment_mass_type=\"monoisotopic\" search_id=\"1\">\n"
                 + "<search_database local_path=\"" + Fasta + "\" type=\"AA\"/>\n"
                 + "<enzymatic_search_constraint enzyme=\"trypsin\" max_num_internal_cleavages=\"1\" min_number_termini=\"2\"/>\n"
-//                + "<aminoacid_modification aminoacid=\"C\" massdiff=\"57.0215\" mass=\"160.0306\" variable=\"N\"/>\n"
-//                + "<aminoacid_modification aminoacid=\"C\" massdiff=\"-17.0265\" mass=\"143.0041\" variable=\"Y\" symbol=\"^\"/>\n"
-//                + "<!--X! Tandem n-terminal AA variable modification-->\n"
-//                + "<aminoacid_modification aminoacid=\"E\" massdiff=\"-18.0106\" mass=\"111.0320\" variable=\"Y\" symbol=\"^\"/>\n"
-//                + "<!--X! Tandem n-terminal AA variable modification-->\n"
-//                + "<aminoacid_modification aminoacid=\"M\" massdiff=\"15.9949\" mass=\"147.0354\" variable=\"Y\"/>\n"
-//                + "<aminoacid_modification aminoacid=\"Q\" massdiff=\"-17.0265\" mass=\"111.0321\" variable=\"Y\" symbol=\"^\"/>\n"
-//                + "<!--X! Tandem n-terminal AA variable modification-->\n"
-//                + "<terminal_modification terminus=\"n\" massdiff=\"42.0106\" mass=\"43.0184\" protein_terminus=\"N\" variable=\"Y\" symbol=\"^\"/>\n"
                 + "    </search_summary>\n");
     }
 

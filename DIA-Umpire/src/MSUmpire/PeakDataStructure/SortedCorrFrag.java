@@ -19,7 +19,7 @@
  */
 package MSUmpire.PeakDataStructure;
 
-import ExtPackages.SortedListLib.SortedList;
+import ExternalPackages.SortedListLib.SortedList;
 import java.util.Comparator;
 
 /**

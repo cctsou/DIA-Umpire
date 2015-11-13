@@ -23,7 +23,6 @@ import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.IonFactory;
-import com.compomics.util.experiment.biology.PTM;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
@@ -31,13 +30,11 @@ import com.compomics.util.experiment.identification.matches.ModificationMatch;
 import com.compomics.util.general.IsotopicDistribution;
 import com.compomics.util.protein.AASequenceImpl;
 import com.compomics.util.protein.MolecularFormula;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import org.apache.log4j.Logger;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  *
@@ -76,10 +73,9 @@ public class PepIonID implements Serializable {
     private float RT = -1f;
     public float PeakRT = -1f;
     public ArrayList<Float> PredictRT = new ArrayList<>();
-    //public int PeakClusterIndex = -1;
+    
     private float RTSD = -1f;
     private ArrayList<Ion> Fragments;
-    private SortedFragmentSet FragmentMZSet;
     public ArrayList<ModificationMatch> Modifications = new ArrayList<>();
     public ArrayList<FragmentPeak> FragmentPeaks = new ArrayList<>();    
     private Peptide peptide = null;
@@ -127,42 +123,6 @@ public class PepIonID implements Serializable {
     public float GetMS1PPM(){
         float ppm = InstrumentParameter.CalcSignedPPM(ObservedMass(), CalcNeutralPepMass());
         return ppm;
-    }
-    
-    public String GetSkylineModSeq() throws XmlPullParserException, IOException {
-        if (skylinemod == null || "".equals(skylinemod)) {
-            skylinemod = Sequence;
-            
-            double FirstAAmoddiff=0d;
-            for (ModificationMatch mod : Modifications) {
-                int site = mod.getModificationSite() - 1;
-                PTM ptm = PTMManager.GetInstance().GetPTMByName(mod.getTheoreticPtm());
-                double massdiff = ptm.getMass();                
-                if (mod.getTheoreticPtm().contains("n-term") || site == 0) {
-                    FirstAAmoddiff += massdiff;
-                } else {
-                    String modstring = "";
-                    if (massdiff > 0) {
-                        modstring = "[+" + massdiff + "]";
-                    } else {
-                        modstring = "[" + massdiff + "]";
-                    }
-                    skylinemod = ModStringConvert.AddModIntoSeqAfterSite(skylinemod, modstring, site);
-                }
-            }
-            
-            if (FirstAAmoddiff != 0d) {
-                String modstring = "";
-                if (FirstAAmoddiff > 0) {
-                    modstring = "[+" + FirstAAmoddiff + "]";
-                } else {
-                    modstring = "[" + FirstAAmoddiff + "]";
-                }
-                skylinemod = ModStringConvert.AddModIntoSeqAfterSite(skylinemod, modstring, 0);
-            }
-
-        }
-        return skylinemod;
     }
     
     transient int fragcount=-1;
@@ -217,42 +177,11 @@ public class PepIonID implements Serializable {
     
     public void ClearPepFragFactory(){
         peptide=null;
-        FragmentMZSet=null;
         Fragments=null;
     }
-
-    public float GetMaxLuciphorScore() {
-        float score = 0f;
-        for (PSM psm : PSMList) {
-            if (psm.LuciphorScore > score) {
-                score = psm.LuciphorScore;
-            }
-        }
-        return score;
-    }
-
-    public float GetMinLuciphorLFLR() {
-        float flr = 1f;
-        for (PSM psm : PSMList) {
-            if (psm.LuciphorLFLR < flr) {
-                flr = psm.LuciphorLFLR;
-            }
-        }
-        return flr;
-    }
-    
+ 
     public float TargetedProbability(){
         return Math.max(MS1AlignmentLocalProbability, MS2AlignmentLocalProbability);
-    }
-
-    public float GetMinLuciphorFLR() {
-        float flr = 1f;
-        for (PSM psm : PSMList) {
-            if (psm.LuciphorFLR < flr) {
-                flr = psm.LuciphorFLR;
-            }
-        }
-        return flr;
     }
 
     public void ReFreshPepFactory() {
@@ -289,9 +218,6 @@ public class PepIonID implements Serializable {
             newpeptide.PeakArea = new float[PeakArea.length];
             newpeptide.PeakHeight = new float[PeakHeight.length];
         }
-//        if (PSMList != null) {
-//            newpeptide.PSMList = (ArrayList<PSM>) PSMList.clone();
-//        }
         return newpeptide;
     }
 
@@ -314,32 +240,9 @@ public class PepIonID implements Serializable {
                 }
             }
         }
-//        if(count<2){
-//            totalabundance=0;
-//        }
         return totalabundance;
     }
     
-    public float GetPepAbundanceByTopCorrFragments(int topN) {        
-        ArrayList<FragmentPeak> includelist = new ArrayList<>();
-        for (int i = 0; i < topN; i++) {
-            FragmentPeak bestfrag=null;
-            for (FragmentPeak fragment : FragmentPeaks) {
-                if (!includelist.contains(fragment) && (bestfrag == null || fragment.intensity > bestfrag.intensity)) {
-                    bestfrag = fragment;
-                }
-            }
-            if (bestfrag != null) {
-                includelist.add(bestfrag);
-            }
-        }
-        float totalabundance = 0f;
-        for (FragmentPeak frag : includelist ) {
-            totalabundance+=frag.intensity;
-        }
-        return totalabundance;
-    }
-     
     public float GetPepAbundanceByTopFragments(int topN) {        
         ArrayList<FragmentPeak> includelist = new ArrayList<>();
         for (int i = 0; i < topN; i++) {
@@ -356,14 +259,6 @@ public class PepIonID implements Serializable {
         float totalabundance = 0f;
         for (FragmentPeak frag : includelist ) {
             totalabundance+=frag.intensity;
-        }
-        return totalabundance;
-    }
-
-    public float GetPepAbundanceByAllFragments() {
-        float totalabundance = 0f;
-        for (FragmentPeak fragment : FragmentPeaks) {
-            totalabundance += fragment.intensity;
         }
         return totalabundance;
     }
@@ -414,31 +309,6 @@ public class PepIonID implements Serializable {
             }
         }
         return 0f;
-    }
-
-    public SortedFragmentSet GetFragmentMZ() {
-
-        if (FragmentMZSet == null) {
-            FragmentMZSet = new SortedFragmentSet();
-            double protonMass = ElementaryIon.proton.getTheoreticMass();
-            for (Ion frag : GetFragments()) {
-                float targetmz = (float) frag.getTheoreticMz(1);
-                PeptideFragment fragment = new PeptideFragment();
-                fragment.IonType = frag.getSubTypeAsString() + ((PeptideFragmentIon) frag).getNumber();
-                fragment.Charge = 1;
-                fragment.FragMZ = targetmz;
-                //fragment.Number = ((PeptideFragmentIon) frag).getNumber();
-                FragmentMZSet.add(fragment);
-                float targetmz2 = (float) frag.getTheoreticMz(2);
-                PeptideFragment fragment2 = new PeptideFragment();
-                fragment2.IonType = frag.getSubTypeAsString() + ((PeptideFragmentIon) frag).getNumber();
-                fragment2.Charge = 2;
-                fragment2.FragMZ = targetmz2;
-                //fragment2.Number = ((PeptideFragmentIon) frag).getNumber();
-                FragmentMZSet.add(fragment2);
-            }
-        }
-        return FragmentMZSet;
     }
     
     private void SetFragments() {
@@ -558,13 +428,7 @@ public class PepIonID implements Serializable {
         }
     }
 
-    
-    //private transient int spc=-1;
-    
     public int GetSpectralCount(){
-//        if(spc==-1){
-//            spc=PSMList.size();
-//        }
         return PSMList.size();
     }
     
@@ -609,8 +473,7 @@ public class PepIonID implements Serializable {
     }
 
     public MolecularFormula GetMolecularFormula() {
-        MolecularFormula formula = new MolecularFormula(GetAASequenceImpl());
-        //formula.addMolecularFormula(GetModMolecularFormula());
+        MolecularFormula formula = new MolecularFormula(GetAASequenceImpl());        
         return formula;
     }
     AASequenceImpl AAimple = null;

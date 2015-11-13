@@ -25,7 +25,7 @@ import MSUmpire.BaseDataStructure.ScanData;
 import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.FastaParser.FastaParser;
 import MSUmpire.PeakDataStructure.PeakCluster;
-import ExtPackages.SortedListLib.SortedList;
+import ExternalPackages.SortedListLib.SortedList;
 import com.compomics.util.experiment.biology.AminoAcid;
 import com.compomics.util.experiment.biology.Ion;
 import com.compomics.util.experiment.biology.PTM;
@@ -73,16 +73,10 @@ public class LCMSID implements Serializable {
     private HashMap<String, PepIonID> PepIonList;
     private HashMap<Integer, PepIonID> PepIonIndexList;
     public HashMap<String, HashMap<String, PepIonID>> PeptideList;
-//    
+
     private HashMap<String, PepIonID> MappedPepIonList;
     private HashMap<Integer, PepIonID> MappedPepIonIndexList;
     public HashMap<String, HashMap<String, PepIonID>> MappedPeptideList;
-//    
-//    private HashMap<String, PepIonID> ExtLibPepIonList;
-//    private HashMap<Integer, PepIonID> ExtLibPepIonIndexList;
-//    public HashMap<String, HashMap<String, PepIonID>> ExtLibPeptideSeqList;
-
-    
     
     public HashMap<String, PepIonID> AssignedPepIonList;
     public HashMap<String, PepIonID> ProtXMLPepIonList;
@@ -111,11 +105,9 @@ public class LCMSID implements Serializable {
     public String DecoyTag = "rev_";
     public String FastaPath;
     private float NorFactor = 1f;
-    //SequenceFactory sequenceFactory = null;
-    FastaParser fastaParser;
-    //transient FastaParser_V2 fastaParser;//removed 02032015
+    private transient FastaParser fastaParser;
     public HashMap<String, String> LuciphorResult;
-    public String Filename; //added 0828, needs to set as transient for older serialization
+    public String Filename; 
 
     private FastaParser GetFastaParser() {
         if (fastaParser == null) {
@@ -645,14 +637,7 @@ public class LCMSID implements Serializable {
                 psm.NeutralPepMass = rsQuery.getFloat("NeutralPepMass");
             } catch (Exception e) {
             }
-            try {
-                psm.LuciphorScore = rsQuery.getFloat("LuciphorScore");
-                psm.LuciphorLFLR = rsQuery.getFloat("LuciphorLFLR");
-                psm.LuciphorFLR = rsQuery.getFloat("LuciphorFLR");
-
-            } catch (Exception ex) {
-                Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-            }
+            
             psm.Charge = rsQuery.getInt("Charge");
             psm.RetentionTime = rsQuery.getFloat("RT");
             psm.ObserPrecursorMass = rsQuery.getFloat("ObservedMass");
@@ -892,10 +877,10 @@ public class LCMSID implements Serializable {
         }        
         Logger.getRootLogger().info("Writing PSM result to file:" + folder + FilenameUtils.getBaseName(mzXMLFileName) + "_PSMs.csv...");
         FileWriter writer = new FileWriter(folder + FilenameUtils.getBaseName(mzXMLFileName) + "_PSMs.csv");
-        writer.write("SpecID,Sequence,ModSeq,TPPModSeq,LuciphorScore,LuciphorLFLR,LuciphorFLR,Modification,Charge,mz,NeutralPepMass,ObservedMass,RT,AdjustedRT,Rank,ScanNo,PreAA,NextAA,MissedCleavage,ExpectValue,MassError,Prob,Rawname,ParentPepIndex,MS1Quant\n");
+        writer.write("SpecID,Sequence,ModSeq,TPPModSeq,Modification,Charge,mz,NeutralPepMass,ObservedMass,RT,AdjustedRT,Rank,ScanNo,PreAA,NextAA,MissedCleavage,ExpectValue,MassError,Prob,Rawname,ParentPepIndex,MS1Quant\n");
         for (PepIonID pepion : PepIonList.values()) {
             for (PSM psm : pepion.GetPSMList()) {
-                writer.write(psm.SpecNumber + "," + psm.Sequence + "," + psm.ModSeq + "," + psm.TPPModSeq + "," + psm.LuciphorScore + "," + psm.LuciphorLFLR + "," + psm.LuciphorFLR + "," + psm.GetModificationString() + "," + psm.Charge + "," + psm.ObserPrecursorMz() + "," + psm.NeutralPepMass + "," + psm.ObserPrecursorMass + "," + psm.RetentionTime + "," + psm.NeighborMaxRetentionTime + "," + psm.Rank + "," + psm.ScanNo + "," + psm.PreAA + "," + psm.NextAA + "," + psm.MissedCleavage + "," + psm.expect + "," + psm.MassError + "," + psm.Probability + "," + psm.RawDataName + "," + pepion.Index + "," + pepion.GetMS1() + "\n");
+                writer.write(psm.SpecNumber + "," + psm.Sequence + "," + psm.ModSeq + "," + psm.TPPModSeq + "," +  psm.GetModificationString() + "," + psm.Charge + "," + psm.ObserPrecursorMz() + "," + psm.NeutralPepMass + "," + psm.ObserPrecursorMass + "," + psm.RetentionTime + "," + psm.NeighborMaxRetentionTime + "," + psm.Rank + "," + psm.ScanNo + "," + psm.PreAA + "," + psm.NextAA + "," + psm.MissedCleavage + "," + psm.expect + "," + psm.MassError + "," + psm.Probability + "," + psm.RawDataName + "," + pepion.Index + "," + pepion.GetMS1() + "\n");
             }
         }
         writer.close();
@@ -919,9 +904,9 @@ public class LCMSID implements Serializable {
         
         Logger.getRootLogger().info("Writing PepIon result to file:" + folder + FilenameUtils.getBaseName(mzXMLFileName) + "_PepIonIDs.csv...");
         FileWriter writer = new FileWriter(folder + FilenameUtils.getBaseName(mzXMLFileName) + "_PepIonIDs.csv");
-        writer.write("PepIndex,Sequence,ModSeq,TPPModSeq,LuciphorScore,LuciphorLFLR,LuciphorFLR, IsNonDegenerate,Charge,mz,IDRT,PeakRT,NoPSMs,MS1ClusIndex,MS2ClusIndex,PeakScore,PeakHeight1,PeakHeight2,PeakHeight3,PeakArea1,PeakArea2,PeakArea3\n");
+        writer.write("PepIndex,Sequence,ModSeq,TPPModSeq,IsNonDegenerate,Charge,mz,IDRT,PeakRT,NoPSMs,MS1ClusIndex,MS2ClusIndex,PeakScore,PeakHeight1,PeakHeight2,PeakHeight3,PeakArea1,PeakArea2,PeakArea3\n");
         for (PepIonID pepion : PepIonList.values()) {
-            writer.write(pepion.Index + "," + pepion.Sequence + "," + pepion.ModSequence + "," + pepion.TPPModSeq + "," + pepion.GetMaxLuciphorScore() + "," + pepion.GetMinLuciphorLFLR() + "," + pepion.GetMinLuciphorFLR() + "," + (pepion.Is_NonDegenerate ? 1 : 0) + "," + pepion.Charge + "," + pepion.NeutralPrecursorMz() + "," + pepion.GetIDRT() + "," + pepion.PeakRT + "," + pepion.GetSpectralCount() + "," + pepion.GetMS1ClusIndex() + "," + pepion.GetMS2ClusIndex() + "," + pepion.PeakClusterScore + "," + pepion.PeakHeight[0] + "," + pepion.PeakHeight[1] + "," + pepion.PeakHeight[2] + "," + pepion.PeakArea[0] + "," + pepion.PeakArea[1] + "," + pepion.PeakArea[2] + "\n");
+            writer.write(pepion.Index + "," + pepion.Sequence + "," + pepion.ModSequence + "," + pepion.TPPModSeq + "," + (pepion.Is_NonDegenerate ? 1 : 0) + "," + pepion.Charge + "," + pepion.NeutralPrecursorMz() + "," + pepion.GetIDRT() + "," + pepion.PeakRT + "," + pepion.GetSpectralCount() + "," + pepion.GetMS1ClusIndex() + "," + pepion.GetMS2ClusIndex() + "," + pepion.PeakClusterScore + "," + pepion.PeakHeight[0] + "," + pepion.PeakHeight[1] + "," + pepion.PeakHeight[2] + "," + pepion.PeakArea[0] + "," + pepion.PeakArea[1] + "," + pepion.PeakArea[2] + "\n");
         }
         writer.close();
     }
@@ -994,7 +979,7 @@ public class LCMSID implements Serializable {
                         //String Sequence = GetSequenceFactory().getProtein(protID.UniProtID).getSequence();                    
                         //String Sequence = GetFastaParser().ProteinList.get(protID.getAccNo()).Seq;
                         try {
-                            String Sequence = GetFastaParser().ProteinList.get(protID.getAccNo())[0];
+                            String Sequence = GetFastaParser().ProteinList.get(protID.getAccNo()).Seq;
                             if (Sequence != null) {
                                 protID.SetSequence(Sequence);
                             } else {
@@ -1024,27 +1009,6 @@ public class LCMSID implements Serializable {
             }
         }
         return psms;
-    }
-
-    private void FindSpecExpectThresholdByFDR() {
-
-        SortedPSMListEvalue sortedlist = new SortedPSMListEvalue();
-        sortedlist.addAll(PSMList.values());
-
-        int positive = 0;
-        int negative = 0;
-        for (int i = 0; i < sortedlist.size(); i++) {
-            PSM psm = sortedlist.get(i);
-            if (psm.IsDecoy(DecoyTag)) {
-                negative++;
-            } else {
-                positive++;
-            }
-            if ((float) negative / (float) (positive + negative) >= FDR) {
-                ExpectThreshold = psm.expect;
-                return;
-            }
-        }
     }
 
     public void ROCProtByMaxIniProb(String decoytag) throws IOException {
@@ -1154,107 +1118,6 @@ public class LCMSID implements Serializable {
         Logger.getRootLogger().info("Protein maxiniprob threshold=" + ProteinProbThreshold + " Estimated raw protein FDR:" + (float) negative / (float) (positive) + "(Target/Decoy)=(" + positive + "/" + negative + ")");
     }
 
-    private void FindLocalPWThresholdByFDR() {
-        //FileWriter writer = null;
-        //try {
-        if (ProteinList.isEmpty()) {
-            return;
-        }
-        SortedProteinListProb sortedlist = new SortedProteinListProb();
-        sortedlist.addAll(ProteinList.values());
-
-        //writer = new FileWriter(FilenameUtils.getFullPath(mzXMLFileName)+"/" + FilenameUtils.getBaseName(mzXMLFileName)+"_Pro.txt");
-        int positive = 0;
-        int negative = 0;
-        ProtID protein = sortedlist.get(0);
-        if (protein.IsDecoy(DecoyTag)) {
-            negative++;
-        } else {
-            positive++;
-        }
-        for (int i = 1; i < sortedlist.size(); i++) {
-            protein = sortedlist.get(i);
-            if (protein.IsDecoy(DecoyTag)) {
-                negative++;
-                //System.out.println(protein.getAccNo()+"-"+protein.ProteinGroup+"-Decoy");
-            } else {
-                positive++;
-                //System.out.println(protein.getAccNo()+"-"+ protein.ProteinGroup);
-            }
-            if (protein.Probability < sortedlist.get(i - 1).Probability && (float) negative / (float) (positive) >= ProteinFDR) {
-                ProteinProbThreshold = protein.Probability;
-                Logger.getRootLogger().info("Protein probability threshold=" + ProteinProbThreshold + " Estimated raw protein FDR:" + (float) negative / (float) (positive) + "(Target/Decoy)=(" + positive + "/" + negative + ")");
-                return;
-            }
-        }
-    }
-
-    private void FindProteinMaxLocalPWThresholdByFDR() {
-        if (ProteinList.isEmpty()) {
-            return;
-        }
-        SortedProteinListMaxLocalPW sortedlist = new SortedProteinListMaxLocalPW();
-        sortedlist.addAll(ProteinList.values());
-
-        //writer = new FileWriter(FilenameUtils.getFullPath(mzXMLFileName)+"/" + FilenameUtils.getBaseName(mzXMLFileName)+"_Pro.txt");
-        int positive = 0;
-        int negative = 0;
-        ProtID protein = sortedlist.get(0);
-        if (protein.IsDecoy(DecoyTag)) {
-            negative++;
-        } else {
-            positive++;
-        }
-        for (int i = 1; i < sortedlist.size(); i++) {
-            protein = sortedlist.get(i);
-            if (protein.IsDecoy(DecoyTag)) {
-                negative++;
-            } else {
-                positive++;
-                //System.out.println(protein.getAccNo()+"-"+ protein.ProteinGroup);
-            }
-            if (protein.MaxLocalPW < sortedlist.get(i - 1).MaxLocalPW && (float) negative / (float) (positive) >= ProteinFDR) {
-                ProteinProbThreshold = protein.MaxLocalPW;
-                Logger.getRootLogger().info("Protein probability threshold=" + ProteinProbThreshold + " Estimated raw protein FDR:" + (float) negative / (float) (positive) + "(Target/Decoy)=(" + positive + "/" + negative + ")");
-                return;
-            }
-        }
-    }
-
-    private void FindSpecProbThresholdByFDR() {
-        if (PSMList.isEmpty()) {
-            return;
-        }
-        SortedPSMListProb sortedlist = new SortedPSMListProb();
-        sortedlist.addAll(PSMList.values());
-
-        //writer = new FileWriter(FilenameUtils.getFullPath(mzXMLFileName)+"/" + FilenameUtils.getBaseName(mzXMLFileName)+"_Pep.txt");
-        int positive = 0;
-        int negative = 0;
-        PSM psm = sortedlist.get(0);
-        if (psm.IsDecoy(DecoyTag)) {
-            negative++;
-        } else {
-            positive++;
-        }
-        for (int i = 1; i < sortedlist.size(); i++) {
-            psm = sortedlist.get(i);
-            if (psm.Probability < 0.1f) {
-                break;
-            }
-            if (psm.IsDecoy(DecoyTag)) {
-                negative++;
-            } else {
-                positive++;
-            }
-            if (psm.Probability < sortedlist.get(i - 1).Probability && ((float) negative / (float) (positive) >= FDR)) {
-                SpecProbThreshold = psm.Probability;
-                Logger.getRootLogger().info("Spectrum probability threshold=" + SpecProbThreshold + " Estimated Spectrum FDR:" + (float) negative / (float) (positive) + "(Target/Decoy)=(" + positive + "/" + negative + ")");
-                return;
-            }
-        }
-    }
-
     public void ClearPeakData() {
         for (PepIonID pepIonID : PepIonList.values()) {
             for (PeakCluster peak : pepIonID.MS1PeakClusters) {
@@ -1326,15 +1189,7 @@ public class LCMSID implements Serializable {
         GenearteAssignIonList();
     }
 
-    public void RemoveRedundantFrag() {
-        for (PepIonID pep : GetPepIonList().values()) {
-            pep.RemoveRedundantFrag();
-        }
-        for (PepIonID pep : GetMappedPepIonList().values()) {
-            pep.RemoveRedundantFrag();
-        }
-    }
-
+   
     public void SetFilterByGroupWeight() {
         for (PepIonID pep : GetPepIonList().values()) {
             pep.FilteringWeight = pep.GroupWeight;

@@ -35,9 +35,9 @@ import com.compomics.util.experiment.biology.IonFactory;
 import com.compomics.util.experiment.biology.Peptide;
 import com.compomics.util.experiment.biology.ions.PeptideFragmentIon;
 import com.compomics.util.experiment.identification.matches.ModificationMatch;
-import ExtPackages.JAligner.matrix.Matrix;
-import ExtPackages.JAligner.matrix.MatrixLoader;
-import ExtPackages.JAligner.matrix.MatrixLoaderException;
+import ExternalPackages.JAligner.matrix.Matrix;
+import ExternalPackages.JAligner.matrix.MatrixLoader;
+import ExternalPackages.JAligner.matrix.MatrixLoaderException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,8 +45,6 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,14 +52,14 @@ import java.util.Random;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
-import ExtPackages.org.hupo.psi.ms.traml.CvParamType;
-import ExtPackages.org.hupo.psi.ms.traml.ModificationType;
-import ExtPackages.org.hupo.psi.ms.traml.PeptideType;
-import ExtPackages.org.hupo.psi.ms.traml.RetentionTimeType;
-import ExtPackages.org.hupo.psi.ms.traml.TransitionType;
+import ExternalPackages.org.hupo.psi.ms.traml.CvParamType;
+import ExternalPackages.org.hupo.psi.ms.traml.ModificationType;
+import ExternalPackages.org.hupo.psi.ms.traml.PeptideType;
+import ExternalPackages.org.hupo.psi.ms.traml.RetentionTimeType;
+import ExternalPackages.org.hupo.psi.ms.traml.TransitionType;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
-import ExtPackages.org.systemsbiology.apps.tramlparser.TraMLParser;
+import ExternalPackages.org.systemsbiology.apps.tramlparser.TraMLParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
@@ -96,7 +94,6 @@ public class FragmentLibManager implements Serializable {
 
 
     public void WriteFragmentLibSerialization(String path) {
-        //JavaSerializationFragmentLibWrite(path, LibID);
         FSFragmentLibWrite(path, LibID);
     }
 
@@ -116,7 +113,6 @@ public class FragmentLibManager implements Serializable {
     public static FragmentLibManager ReadFragmentLibSerialization(String path, String LibID) {
         FragmentLibManager lib = FSFragmentLibRead(path, LibID);
         if (lib == null) {
-            //lib = JavaSerializationFragmentLibRead(path, LibID);
             lib=FSFragmentLibRead_Old(path, LibID);
             if (lib != null) {
                 lib.WriteFragmentLibSerialization(path);

@@ -20,9 +20,9 @@
 package MSUmpire.DIA;
 
 import MSUmpire.MathPackage.KMeans;
-import ExtPackages.jMEF.ExpectationMaximization1D;
-import ExtPackages.jMEF.MixtureModel;
-import ExtPackages.jMEF.PVector;
+import ExternalPackages.jMEF.ExpectationMaximization1D;
+import ExternalPackages.jMEF.MixtureModel;
+import ExternalPackages.jMEF.PVector;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileWriter;
@@ -143,15 +143,7 @@ public class MixtureModelKDESemiParametric {
         chart.setBackgroundPaint(Color.white);
 
         XYLineAndShapeRenderer render = new XYLineAndShapeRenderer();
-//        render.setSeriesPaint(0, Color.DARK_GRAY);
-//        render.setSeriesPaint(1, Color.DARK_GRAY); 
-//        render.setSeriesPaint(2, Color.GREEN); 
-//        render.setSeriesShape(0, new Ellipse2D.Double(0, 0, 2, 2));
-//        render.setSeriesShape(1, new Ellipse2D.Double(0, 0, 2, 2));
-//        render.setSeriesShape(2, new Ellipse2D.Double(0, 0, 2.5f, 2.5f));
-//        render.setSeriesStroke(1, new BasicStroke(1.0f));
-//        render.setSeriesStroke(0, new BasicStroke(1.0f));
-//        render.setSeriesStroke(2, new BasicStroke(2.0f));
+
         plot.setDataset(1, dataset);
         plot.setRenderer(1, render);
         plot.setDatasetRenderingOrder(DatasetRenderingOrder.FORWARD);
@@ -177,11 +169,6 @@ public class MixtureModelKDESemiParametric {
         double decoylowidcdf=DecoyEmpiricalDist.cdf(miniIDscore);
         weight_incorrect = targetlowidcdf/ decoylowidcdf;
         weight_correct = 1-weight_incorrect;
-        
-//        weight_incorrect = mmc.weight[0];
-//        weight_correct = mmc.weight[1];
-//        weight_incorrect = 0.8f;
-//        weight_correct = 0.2f;
         
         //initialization
         GenerateIniCorrectDensity();
@@ -240,7 +227,6 @@ public class MixtureModelKDESemiParametric {
         for (int i = 0; i < TargetEmpiricalDist.getN(); i++) {
             f1[i] = CorrectKDELookUp(TargetEmpiricalDist.getObs(i));
             f0[i] = DecoyKDELookUp(TargetEmpiricalDist.getObs(i));
-            //p[i] = f1[i] / TargetKDELookUp(TargetEmpiricalDist.getObs(i));
             p[i] = f1[i] / (f1[i]+f0[i]);
             pisum += p[i];
         }
@@ -359,18 +345,6 @@ public class MixtureModelKDESemiParametric {
         return decoy_kde_y[NoBinPoints - 1];
     }
 
-    private double TargetKDELookUp(double x) {
-        if (x <= model_kde_x[0]) {
-            return model_kde_y[0];
-        }
-        for (int i = 0; i < NoBinPoints - 1; i++) {
-            if (x >= model_kde_x[i] && x < model_kde_x[i + 1]) {
-                return model_kde_y[i];
-            }
-        }
-        return model_kde_y[NoBinPoints - 1];
-    }
-
     private double ProbBasedKDE(EmpiricalDist dist, double x) {
         // Computes and returns the kernel density estimate at $y$, where the 
         // kernel is the density kern.density(x), and the bandwidth is $h$.
@@ -413,14 +387,5 @@ public class MixtureModelKDESemiParametric {
 
     private double DecoyKDE(double x) {
         return KDE(DecoyEmpiricalDist, x);
-    }
-
-    private double[] ArrayKDE(EmpiricalDist dist, double[] X) {
-        int m = X.length;
-        double[] u = new double[m];
-        for (int j = 0; j < m; j++) {
-            u[j] = KDE(dist, X[j]);
-        }
-        return u;
-    }
+    }    
 }

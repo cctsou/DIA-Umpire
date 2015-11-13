@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import net.sf.javaml.core.kdtree.KDTree;
 import net.sf.javaml.core.kdtree.KeyDuplicateException;
 import net.sf.javaml.core.kdtree.KeySizeException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -55,7 +56,6 @@ public class PDHandlerBase {
     public TreeMap<Float, XYData>[] IsotopePatternFragMap;
     protected LCMSPeakBase LCMSPeakBase;
     protected InstrumentParameter parameter;
-    //protected ConnectionManager connectionManager;
     protected boolean ReleaseScans = true;
     protected boolean TargetedOnly = false;
     protected float PPM;
@@ -89,10 +89,8 @@ public class PDHandlerBase {
         InclusionRT.AddPoint(rt,mz);        
         try {
             InclusionRange.insert(new double[]{rt,mz}, point);
-        } catch (KeySizeException ex) {
-            java.util.logging.Logger.getLogger(PDHandlerBase.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (KeyDuplicateException ex) {
-            java.util.logging.Logger.getLogger(PDHandlerBase.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
     }
           
@@ -105,7 +103,6 @@ public class PDHandlerBase {
             peakCurve.CalculateMzVar();
             peakCurve.StartRT();
             peakCurve.EndRT();
-            //peakCurve.StartInt();
             peakCurve.ReleaseRawPeak();
         }
     }
@@ -115,8 +112,6 @@ public class PDHandlerBase {
         IncludedHashMap = new HashSet<>();
         Logger.getRootLogger().info("Processing all scans to detect possible peak curves....");
 
-        //Get the ms1 scanNo array
-        //LCMSPeakBase.PeakCurveListMZ = new SortedCurveCollectionMZ();
         
         float preRT = 0f;
         for (int idx = 0; idx < scanCollection.GetScanNoArray(MSlevel).size(); idx++) {
@@ -125,9 +120,6 @@ public class PDHandlerBase {
             if(TargetedOnly && !FoundInInclusionRTList(scanData.RetentionTime)){
                 continue;
             }
-//            if(scanData.RetentionTime>27){
-//                System.out.println("");
-//            }
             if (idx == 0) {
                 preRT = scanData.RetentionTime - 0.01f;
             }
@@ -223,9 +215,6 @@ public class PDHandlerBase {
                     }
                     Peakcurve.AddPeak(new XYZData(endrt, Peakcurve.TargetMz, bk));
                     Peakcurve.EndScan=endScan;
-//                    if (Peakcurve.TargetMz > 1238.85 && Peakcurve.TargetMz < 1238.89 && Peakcurve.StartRT() < 25 && Peakcurve.EndRT() > 25) {
-//                        System.out.println("");
-//                    }
 
                     if (FoundInInclusionList(Peakcurve.TargetMz, Peakcurve.StartRT(), Peakcurve.EndRT())) {
                         LCMSPeakBase.UnSortedPeakCurves.add(Peakcurve);
@@ -273,7 +262,7 @@ public class PDHandlerBase {
         try {
             found = InclusionRange.range(new double[]{lowrt,lowmz}, new double[]{highrt,highmz});
         } catch (KeySizeException ex) {
-            java.util.logging.Logger.getLogger(PDHandlerBase.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
         if(found!=null && found.length>0){
             return true;
@@ -294,7 +283,7 @@ public class PDHandlerBase {
         try {
             found = InclusionRange.range(new double[]{lowrt,lowmz}, new double[]{highrt,highmz});
         } catch (KeySizeException ex) {
-            java.util.logging.Logger.getLogger(PDHandlerBase.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
         if(found!=null && found.length>0){
             for(Object point: found){
@@ -383,13 +372,12 @@ public class PDHandlerBase {
         reader.close();
     }
     
-    protected void PeakCurveCorrClustering_V2(XYData mzRange) throws IOException {
+    protected void PeakCurveCorrClustering(XYData mzRange) throws IOException {
         Logger.getRootLogger().info("Grouping isotopic peak curves........");
 
         LCMSPeakBase.PeakClusters = new ArrayList<>();
         ExecutorService executorPool = null;
-        executorPool = Executors.newFixedThreadPool(NoCPUs);
-        //executorPool = Executors.newFixedThreadPool(1);
+        executorPool = Executors.newFixedThreadPool(NoCPUs);        
         ArrayList<PeakCurveClusteringCorrKDtree> ResultList = new ArrayList<>();
 
         for (PeakCurve Peakcurve : LCMSPeakBase.UnSortedPeakCurves) {

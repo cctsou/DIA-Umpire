@@ -106,8 +106,6 @@ public class PearsonCorr {
             return 0f;
         }
 
-//        double[] arrayA = new double[num];
-//        double[] arrayB = new double[num];
         double[] arrayA = new double[num];
         double[] arrayB = new double[num];
 
@@ -185,8 +183,6 @@ public class PearsonCorr {
             return 0f;
         }
 
-//        double[] arrayA = new double[num];
-//        double[] arrayB = new double[num];
         float[] arrayA = new float[num];
         float[] arrayB = new float[num];
 
@@ -253,9 +249,6 @@ public class PearsonCorr {
                 R2 = regression.GetR2();
             }
         }
-        //PearsonsCorrelation correlation=new PearsonsCorrelation();
-        //double R2_2=correlation.correlation(arrayA, arrayB);
-
         pointset.dispose();
         regression.dispose();
         regression = null;

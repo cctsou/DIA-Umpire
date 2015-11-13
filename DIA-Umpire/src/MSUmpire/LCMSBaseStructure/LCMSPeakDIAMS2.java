@@ -130,7 +130,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
                 }
                 
                 ExportPeakCluster();
-                //GenerateRTSoretedClusterList(false);
                 if(parameter.MassDefectFilter){
                     RemoveFragmentPeakByMassDefect();
                 }
@@ -155,10 +154,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         return FilenameUtils.getBaseName(ParentmzXMLName) + "_Q3";
     }
 
-    public String GetQ4Name() {
-        return FilenameUtils.getBaseName(ParentmzXMLName) + "_Q3";
-    }
-
     private void PrepareMGF_MS1Cluster(LCMSPeakMS1 ms1lcms) throws IOException {
 
         ArrayList<PseudoMSMSProcessing> ScanList = new ArrayList<>();
@@ -180,8 +175,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
             executorPool.execute(proc);
         }
         executorPool.shutdown();
-//        while (!executorPool.isTerminated()) {
-//        }        
+
         try {
             executorPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
@@ -457,19 +451,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         FSCluster2CurveWrite();
     }
 
-    private void JavaSerializationCluster2CurveWrite() {
-        try {
-            Logger.getRootLogger().debug("Writing PrecursorFragmentCorr serialization to file:" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.ser...");
-            FileOutputStream fout = new FileOutputStream(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.ser", false);
-            ObjectOutputStream oos = new ObjectOutputStream(fout);
-            oos.writeObject(FragmentsClu2Cur);
-            oos.close();
-            fout.close();
-        } catch (Exception ex) {
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-        }
-    }
-
     private void FSCluster2CurveWrite() {
         try {
             Logger.getRootLogger().debug("Writing PrecursorFragmentCorr serialization to file:" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.serFS...");
@@ -483,8 +464,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         }
     }
 
-    private boolean ReadCluster2CurveCorrSerialization() {
-        //return JavaSerializationCluster2CurveRead();   
+    private boolean ReadCluster2CurveCorrSerialization() {        
         if (!FSCluster2CurveRead()) {
             if (JavaSerializationCluster2CurveRead()) {
                 FSCluster2CurveWrite();
@@ -557,8 +537,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         return true;
     }
 
-    private void WriteUnfragmentedCluster2CurveCorrSerialization() {
-        //JavaSerializationCluster2CurveUnfragWrite();
+    private void WriteUnfragmentedCluster2CurveCorrSerialization() {        
         FSCluster2CurveUnfragWrite();
     }
 
@@ -567,19 +546,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
             Logger.getRootLogger().debug("Writing UnfragPrecursorFragCorr serialization to file:" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.serFS...");
             FileOutputStream fout = new FileOutputStream(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.serFS", false);
             FSTObjectOutput oos = new FSTObjectOutput(fout);
-            oos.writeObject(UnFragIonClu2Cur);
-            oos.close();
-            fout.close();
-        } catch (Exception ex) {
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-        }
-    }
-
-    private void JavaSerializationCluster2CurveUnfragWrite() {
-        try {
-            Logger.getRootLogger().debug("Writing UnfragPrecursorFragCorr serialization to file:" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.ser...");
-            FileOutputStream fout = new FileOutputStream(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.ser", false);
-            ObjectOutputStream oos = new ObjectOutputStream(fout);
             oos.writeObject(UnFragIonClu2Cur);
             oos.close();
             fout.close();

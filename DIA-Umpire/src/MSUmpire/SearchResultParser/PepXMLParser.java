@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
@@ -68,6 +69,7 @@ public class PepXMLParser {
         try {
             ParseSAX();
         } catch (Exception e) {
+            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(e));
             Logger.getRootLogger().info("Parsing pepXML: " + FileName + " failed. Trying to fix the file...");
             insert_msms_run_summary(new File(FileName));
             ParseSAX();

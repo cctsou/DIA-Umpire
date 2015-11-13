@@ -293,8 +293,10 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
     private void GetModificationInfo(PSM psmid, Node node) throws XmlPullParserException, XmlPullParserException, XmlPullParserException, XmlPullParserException, XmlPullParserException, IOException {
         String PepSeq = psmid.Sequence;
         String modseq = psmid.Sequence;
-        String TPPmodseq = node.getAttributes().getNamedItem("modified_peptide").getNodeValue();
-
+        String TPPmodseq = modseq;
+        if (node.getAttributes().getNamedItem("modified_peptide") != null) {
+            TPPmodseq = node.getAttributes().getNamedItem("modified_peptide").getNodeValue();
+        }
         if (node.getAttributes().getNamedItem("mod_nterm_mass") != null) {
             float mass = Float.parseFloat(node.getAttributes().getNamedItem("mod_nterm_mass").getNodeValue());
             String site = "N-term";

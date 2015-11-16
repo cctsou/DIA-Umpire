@@ -329,19 +329,19 @@ public class UmpireSpecLibMatch implements Runnable, Serializable{
     public void AssignProbToPepIon() {
         pepIonID.MS1PeakClusters.clear();
         pepIonID.MS2UnfragPeakClusters.clear();
-        pepIonID.MS1AlignmentLocalProbability = 0f;
+        pepIonID.UScoreProbability_MS1 = 0f;
         pepIonID.MS1AlignmentProbability = 0f;
-        pepIonID.MS2AlignmentLocalProbability = 0f;
+        pepIonID.UScoreProbability_MS2 = 0f;
         pepIonID.MS2AlignmentProbability = 0f;
         if (BestMS1Hit != null) {
             pepIonID.MS1PeakClusters.add(BestMS1Hit.cluster);
             pepIonID.MS1AlignmentProbability = BestMS1Hit.MixtureModelProb;
-            pepIonID.MS1AlignmentLocalProbability = BestMS1Hit.MixtureModelLocalProb;
+            pepIonID.UScoreProbability_MS1 = BestMS1Hit.MixtureModelLocalProb;
         }
         if (BestMS2Hit != null) {
             pepIonID.MS2UnfragPeakClusters.add(BestMS2Hit.cluster);
             pepIonID.MS2AlignmentProbability = BestMS2Hit.MixtureModelProb;
-            pepIonID.MS2AlignmentLocalProbability = BestMS2Hit.MixtureModelLocalProb;
+            pepIonID.UScoreProbability_MS2 = BestMS2Hit.MixtureModelLocalProb;
         }                
     }
 

@@ -84,7 +84,7 @@ public class PDHandlerDIAMS2 extends PDHandlerBase {
     public void DetectPeakCurves(ScanCollection scanCollection) throws FileNotFoundException, IOException {        
         
         LCMSPeakBase.UnSortedPeakCurves = new ArrayList<>();
-        FindAllPeakCurve(scanCollection);
+        FindAllMzTracePeakCurves(scanCollection);
         PeakCurveSmoothing();
         ClearRawPeaks();
         ReadPepIsoMS1PatternMap();

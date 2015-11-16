@@ -36,7 +36,7 @@ import MSUmpire.PSMDataStructure.LCMSID;
 import MSUmpire.PSMDataStructure.PTMManager;
 import MSUmpire.PSMDataStructure.ProtID;
 import MSUmpire.PSMDataStructure.FragmentSelection;
-import MSUmpire.PostProcessing.ExportTable;
+import MSUmpire.Utility.ExportTable;
 import MSUmpire.SearchResultParser.ProtXMLParser;
 import MSUmpire.Utility.ConsoleLogger;
 import MSUmpire.Utility.DateTimeTag;

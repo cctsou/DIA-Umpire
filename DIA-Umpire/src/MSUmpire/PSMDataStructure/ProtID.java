@@ -177,17 +177,6 @@ public class ProtID implements Serializable {
         return totalabundance / num;
     }
 
-    public float GetAbundanceByTopAcrossSample(ArrayList<String> ProPep) {
-        float totalabundance = 0f;
-        if (ProPep != null) {
-            for (PepIonID pepIonID : PeptideID.values()) {
-                if (ProPep.contains(pepIonID.GetKey())) {
-                    totalabundance += pepIonID.PeakHeight[0];
-                }
-            }
-        }
-        return totalabundance;
-    }
 
     public float GetAbundanceByTopCorrFragAcrossSample(ArrayList<String> ProPep, HashMap<String, ArrayList<String>> PepFrag) {
         float totalabundance = 0f;

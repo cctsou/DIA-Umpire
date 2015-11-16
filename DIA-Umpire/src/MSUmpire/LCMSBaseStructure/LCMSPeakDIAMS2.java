@@ -40,7 +40,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -342,8 +341,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         UnFragIonClu2Cur=templist;
     }
         
-    public void FilterByCriteria() {
-        
+    public void FilterByCriteria() {        
         HashMap<Integer, ArrayList<PrecursorFragmentPairEdge>> templist=new HashMap<>();        
         for (int clusterindex : FragmentsClu2Cur.keySet()) {
             ArrayList<PrecursorFragmentPairEdge> newlist = new ArrayList<>();
@@ -487,37 +485,12 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
             in.close();
             fileIn.close();
 
-        } catch (Exception ex) {
-            if (FSCluster2CurveRead_Old()) {
-                WriteCluster2CurveCorrSerialization();
-                return true;
-            }
+        } catch (Exception ex) {            
             Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
             return false;
         }
         return true;
     }
-
-    private boolean FSCluster2CurveRead_Old() {
-        if (!new File(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.serFS").exists()) {
-            return false;
-        }
-        try {
-            Logger.getRootLogger().debug("Old PrecursorFragmentCorr serialization from file:" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.serFS...");
-            FileInputStream fileIn = new FileInputStream(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.serFS");
-            org.nustaq_old.serialization.FSTObjectInput in = new org.nustaq_old.serialization.FSTObjectInput(fileIn);
-            FragmentsClu2Cur = (HashMap<Integer, ArrayList<PrecursorFragmentPairEdge>>) in.readObject();
-            in.close();
-            fileIn.close();
-
-        } catch (Exception ex) {
-            Logger.getRootLogger().error("Old reader still failed.");
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-            return false;
-        }
-        return true;
-    }
-
     private boolean JavaSerializationCluster2CurveRead() {
         if (!new File(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_Clus2Cur.ser").exists()) {
             return false;
@@ -577,31 +550,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
             in.close();
             fileIn.close();
 
-        } catch (Exception ex) {
-            if (FSCluster2CurveUnfragRead_Old()) {
-                WriteUnfragmentedCluster2CurveCorrSerialization();
-                return true;
-            }
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-            return false;
-        }
-        return true;
-    }
-
-    private boolean FSCluster2CurveUnfragRead_Old() {
-        if (!new File(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.serFS").exists()) {
-            return false;
-        }
-        try {
-            Logger.getRootLogger().debug("Old UnfragPrecursorFragCorr serialization from file:" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.serFS...");
-            FileInputStream fileIn = new FileInputStream(FilenameUtils.getFullPath(ParentmzXMLName) + FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/" + FilenameUtils.getBaseName(ScanCollectionName) + "_UnfClus2Cur.serFS");
-            org.nustaq_old.serialization.FSTObjectInput in = new org.nustaq_old.serialization.FSTObjectInput(fileIn);
-            UnFragIonClu2Cur = (HashMap<Integer, ArrayList<PrecursorFragmentPairEdge>>) in.readObject();
-            in.close();
-            fileIn.close();
-
-        } catch (Exception ex) {
-            Logger.getRootLogger().error("Old reader still failed.");
+        } catch (Exception ex) {            
             Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
             return false;
         }

@@ -33,9 +33,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import net.sf.javaml.core.kdtree.KDTree;
-import net.sf.javaml.core.kdtree.KeyDuplicateException;
 import net.sf.javaml.core.kdtree.KeySizeException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -107,7 +105,18 @@ public class PDHandlerBase {
         }
     }
 
-    protected void FindAllPeakCurve(ScanCollection scanCollection) throws IOException {
+    public void FindAllMzTracePeakCurvesForScanCollections(ArrayList<ScanCollection> scanCollections) throws IOException {
+        ReadPepIsoMS1PatternMap();
+        LCMSPeakBase.UnSortedPeakCurves = new ArrayList<>();
+        for (ScanCollection scanCollection : scanCollections) {
+            FindAllMzTracePeakCurves(scanCollection);
+        }
+        Logger.getRootLogger().info("Inclusion mz values found: "+InclusionCheckInfo());        
+        PeakCurveSmoothing();      
+        ClearRawPeaks();
+    }
+    
+    protected void FindAllMzTracePeakCurves(ScanCollection scanCollection) throws IOException {
 
         IncludedHashMap = new HashSet<>();
         Logger.getRootLogger().info("Processing all scans to detect possible peak curves....");
@@ -326,28 +335,6 @@ public class PDHandlerBase {
         }        
     }
 
-    protected void ReadFragIsoPatternMap() throws FileNotFoundException, IOException {
-        InputStream is = this.getClass().getClassLoader().getResourceAsStream("resource/FragmentIsotopicPatternRange.csv");
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        IsotopePatternFragMap = new TreeMap[LCMSPeakBase.MaxNoPeakCluster];
-        IsotopePatternFragMap[0] = new TreeMap<>();
-        IsotopePatternFragMap[1] = new TreeMap<>();
-        String line = "";
-        while ((line = reader.readLine()) != null) {
-            float MW = Float.parseFloat(line.split(",")[0]);
-            float MeanSecond = Float.parseFloat(line.split(",")[1]);
-            float SDSecond = Float.parseFloat(line.split(",")[2]);
-            float MeanThird = Float.parseFloat(line.split(",")[3]);
-            float SDThird = Float.parseFloat(line.split(",")[4]);
-
-            if (!Float.isNaN(MeanSecond)) {
-                IsotopePatternFragMap[0].put(MW, new XYData(MeanSecond + 3.3f * SDSecond, MeanSecond - 3.3f * SDSecond));
-                IsotopePatternFragMap[1].put(MW, new XYData(MeanThird + 3.3f * SDThird, MeanThird - 3.3f * SDThird));
-            }
-        }
-        reader.close();
-    }
-    
     protected void ReadPepIsoMS1PatternMap() throws FileNotFoundException, IOException {
 
         InputStream is = this.getClass().getClassLoader().getResourceAsStream("resource/IsotopicPatternRange.csv");

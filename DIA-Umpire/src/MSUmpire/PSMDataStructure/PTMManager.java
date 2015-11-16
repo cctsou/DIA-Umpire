@@ -66,11 +66,6 @@ public class PTMManager {
         } else {
             Logger.getRootLogger().error("Modification map file is empty");
         }
-//        for (int i = 0; i < ptmFactory.getPTMs().size(); i++) {   
-//            String name=ptmFactory.getPTMs().get(i);
-//            PTM ptm = ptmFactory.getPTM(name);
-//            System.out.println(ptm.getName()+"_"+ptm.getMass());
-//        }             
     }
 
     private void SaveTempFile() throws IOException {

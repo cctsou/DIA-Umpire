@@ -84,8 +84,8 @@ public class PepIonID implements Serializable {
     public String TPPModSeq;
     public float MS1AlignmentProbability = -1f;
     public float MS2AlignmentProbability = -1f;
-    public float MS1AlignmentLocalProbability= -1f;
-    public float MS2AlignmentLocalProbability= -1f;
+    public float UScoreProbability_MS1= -1f;
+    public float UScoreProbability_MS2= -1f;
 
     public Peptide GetPepFactory() {
         if (peptide == null) {
@@ -93,9 +93,7 @@ public class PepIonID implements Serializable {
         }
         return peptide;
     }
-    
-    
-    
+       
     public HashSet<String> GetPSMSpecMap(){
         if(PSMSpecMap==null){
             PSMSpecMap=new HashSet<>();
@@ -181,7 +179,7 @@ public class PepIonID implements Serializable {
     }
  
     public float TargetedProbability(){
-        return Math.max(MS1AlignmentLocalProbability, MS2AlignmentLocalProbability);
+        return Math.max(UScoreProbability_MS1, UScoreProbability_MS2);
     }
 
     public void ReFreshPepFactory() {
@@ -262,29 +260,7 @@ public class PepIonID implements Serializable {
         }
         return totalabundance;
     }
-
-    public PSM GetBestExpectValuePSM() {
-        PSM top = GetPSMList().get(0);
-        for (int psmidx = 1; psmidx < GetPSMList().size(); psmidx++) {
-            if (GetPSMList().get(psmidx).expect < top.expect) {
-                top = GetPSMList().get(psmidx);
-            }
-        }
-        return top;
-    }
-
-    public PSM GetBestPSM() {
-        PSM bestpsm = null;
-        for (PSM psm : GetPSMList()) {
-            if (bestpsm == null || psm.Probability > bestpsm.Probability) {
-                bestpsm = psm;
-            } else if (psm.Probability == bestpsm.Probability && psm.expect < bestpsm.expect) {
-                bestpsm = psm;
-            }
-        }
-        return bestpsm;
-    }
-
+    
     public String GetKey() {
         return ModSequence + "_" + Charge;
     }

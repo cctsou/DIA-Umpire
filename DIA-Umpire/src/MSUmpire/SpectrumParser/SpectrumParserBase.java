@@ -49,18 +49,7 @@ public class SpectrumParserBase {
     public int NoCPUs = 4;
     public SpectralDataType.DataType datatype= SpectralDataType.DataType.DDA;
     public DIA_Setting dIA_Setting=null;
-//    public TreeMap<XYData, ScanCollection> DIAMS2Scans = new TreeMap<>(new Comparator<XYData>() {
-//        @Override
-//        public int compare(XYData o1, XYData o2) {
-//            return Float.compare(o1.getX(), o2.getX());
-//        }
-//    });
-//     public TreeMap<XYData, ScanCollection> MS1WindowScans = new TreeMap<>(new Comparator<XYData>() {
-//        @Override
-//        public int compare(XYData o1, XYData o2) {
-//            return Float.compare(o1.getX(), o2.getX());
-//        }
-//    });
+
     public TreeMap<Integer, Integer> MsLevelList=null;
     protected TreeMap<Float, Integer> ElutionTimeToScanNoMap=null;
     protected HashMap<Integer, Float> ScanToElutionTime=null;

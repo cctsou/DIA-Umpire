@@ -26,8 +26,7 @@ import ExternalPackages.JAligner.matrix.Matrix;
 import ExternalPackages.JAligner.matrix.MatrixLoaderException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  *
@@ -99,7 +98,7 @@ public class ShuffledSeqGen implements Runnable{
         try {
             Generate();
         } catch (MatrixLoaderException ex) {
-            Logger.getLogger(ShuffledSeqGen.class.getName()).log(Level.SEVERE, null, ex);
+            org.apache.log4j.Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
     }
 }

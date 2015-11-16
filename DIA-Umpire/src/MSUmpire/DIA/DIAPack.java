@@ -27,14 +27,12 @@ import MSUmpire.FragmentLib.FragmentLibManager;
 import MSUmpire.LCMSBaseStructure.LCMSPeakDIAMS2;
 import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
 import MSUmpire.MSMSDBSearch.DBSearchParam;
-import MSUmpire.PSMDataStructure.FragmentPeak;
 import MSUmpire.PSMDataStructure.LCMSID;
 import MSUmpire.PSMDataStructure.PSM;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PrecursorFragmentPairEdge;
 import MSUmpire.SearchResultParser.PepXMLParser;
-import MSUmpire.SearchResultWriter.PepXMLWriter;
 import MSUmpire.SpectrumParser.DIA_Setting;
 import MSUmpire.SpectrumParser.mzXMLParser;
 import MSUmpire.Utility.MSConvert;
@@ -46,7 +44,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.TreeMap;
@@ -498,12 +495,6 @@ public class DIAPack {
         }
     }
 
-    public void ExportMappedIonIprophPepXML(String Fasta) throws IOException, XmlPullParserException {
-        PepXMLWriter writer = new PepXMLWriter(GetiProphExtPepxml("ext"), Fasta);
-        writer.SetPepList(IDsummary.GetMappedPepIonList());
-        writer.Write();
-    }
-
     public void AssignMappedPepQuant(boolean export, FragmentLibManager libManager) throws IOException, SQLException, XmlPullParserException {
         AssignMappedPepQuant(export, libManager, 1.1f,-1f);
     }
@@ -530,9 +521,9 @@ public class DIAPack {
                 pepIonID.CreateQuantInstance(parameter.MaxNoPeakCluster);
                 pepIonID.MS1PeakClusters = new ArrayList<>();
                 pepIonID.MS2UnfragPeakClusters = new ArrayList<>();
-                pepIonID.MS1AlignmentLocalProbability = 0f;
+                pepIonID.UScoreProbability_MS1 = 0f;
                 pepIonID.MS1AlignmentProbability = 0f;
-                pepIonID.MS2AlignmentLocalProbability = 0f;
+                pepIonID.UScoreProbability_MS2 = 0f;
                 pepIonID.MS2AlignmentProbability = 0f;
                 pepIonID.TPPModSeq="Ext";
                 SearchList.add(pepIonID);
@@ -664,71 +655,6 @@ public class DIAPack {
         CheckPSMRT();        
         if (ms1lcms != null) {
             this.ms1lcms.IDsummary = IDsummary;
-        }
-    }
-
-    public void LableMatchedFragmentFromMS1Cluster(String mgfname, HashMap<Integer, Integer> ScanClusterMap) {
-        for (PepIonID peptide : IDsummary.GetPepIonList().values()) {
-            PSM psm = null;
-            for (PSM psm2 : peptide.GetPSMList()) {
-                if (psm == null || psm2.Probability > psm.Probability) {
-                    psm = psm2;
-                }
-            }
-            if (psm != null && psm.GetRawNameString().equals(mgfname)) {
-                int ClusterIndex = ScanClusterMap.get(psm.ScanNo);
-                for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {
-                    if (DIAWindow.DIA_MZ_Range.getX() <= psm.ObserPrecursorMz() && DIAWindow.DIA_MZ_Range.getY() >= psm.ObserPrecursorMz()) {
-                        if (DIAWindow.FragmentsClu2Cur.containsKey(ClusterIndex)) {
-                            ArrayList<PrecursorFragmentPairEdge> fragments = DIAWindow.FragmentsClu2Cur.get(ClusterIndex);
-                            ArrayList<PrecursorFragmentPairEdge> newlist = new ArrayList<>();
-                            ArrayList<Float> CorrArrayList = new ArrayList<>();
-                            for (PrecursorFragmentPairEdge fragmentClusterUnit : fragments) {
-                                CorrArrayList.add(fragmentClusterUnit.Correlation);
-                            }
-                            Collections.sort(CorrArrayList);
-                            Collections.reverse(CorrArrayList);
-
-                            for (PrecursorFragmentPairEdge fragmentClusterUnit : fragments) {
-                                int CorrRank = 0;
-                                for (int intidx = 0; intidx < CorrArrayList.size(); intidx++) {
-                                    if (CorrArrayList.get(intidx) <= fragmentClusterUnit.Correlation) {
-                                        CorrRank = intidx + 1;
-                                        break;
-                                    }
-                                }
-                                if (fragmentClusterUnit.ComplementaryFragment || (fragmentClusterUnit.Correlation >= parameter.CorrThreshold && CorrRank <= parameter.FragmentRank && fragmentClusterUnit.FragmentMS1Rank <= parameter.PrecursorRank && fragmentClusterUnit.ApexDelta <= parameter.ApexDelta)) {
-                                    newlist.add(fragmentClusterUnit);
-                                }
-                            }
-
-                            HashSet<Integer> InlcudeIndex = new HashSet<>();
-                            for (PrecursorFragmentPairEdge fragmentClusterUnit : newlist) {
-                                if (!InlcudeIndex.contains(fragmentClusterUnit.PeakCurveIndexB)) {
-                                    InlcudeIndex.add(fragmentClusterUnit.PeakCurveIndexB);
-                                    for (FragmentPeak frag : peptide.FragmentPeaks) {
-                                        if (InstrumentParameter.CalcPPM(fragmentClusterUnit.FragmentMz, frag.FragMZ) < parameter.MS2PPM) {
-                                            if (!DIAWindow.MatchedFragmentMap.containsKey(fragmentClusterUnit.PeakCurveIndexB)) {
-                                                ArrayList<PrecursorFragmentPairEdge> ClusterList = new ArrayList<>();
-                                                DIAWindow.MatchedFragmentMap.put(fragmentClusterUnit.PeakCurveIndexB, ClusterList);
-                                            }
-                                            DIAWindow.MatchedFragmentMap.get(fragmentClusterUnit.PeakCurveIndexB).add(fragmentClusterUnit);
-////                                        if (InstrumentParameter.CalcPPM(fragmentClusterUnit.FragmentMz, frag.FragMZ) < parameter.MS2PPM) {
-////                                            if (DIAWindow.WindowID.equals("1074_1100") && fragmentClusterUnit.PeakCurveIndexB == 45063) {
-////                                                System.out.println(frag.IonType);
-////                                                System.out.println(frag.FragMZ);
-////                                                System.out.println(frag.Charge);
-////                                            }
-////                                        }
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 

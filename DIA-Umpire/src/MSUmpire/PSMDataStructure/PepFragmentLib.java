@@ -66,8 +66,7 @@ public class PepFragmentLib implements Serializable{
             if (!FragmentGroups.containsKey(fragment.GetFragKey())) {
                 FragmentPeakGroup frag = new FragmentPeakGroup();
                 frag.IonType = fragment.IonType;
-                frag.FragMZ = fragment.FragMZ;                
-                //frag.Number=fragment.Number;
+                frag.FragMZ = fragment.FragMZ;  
                 frag.Charge = fragment.Charge;
                 FragmentGroups.put(fragment.GetFragKey(), frag);
             }

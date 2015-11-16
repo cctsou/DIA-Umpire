@@ -25,7 +25,6 @@ import MSUmpire.LCMSBaseStructure.LCMSPeakBase;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
-import org.apache.log4j.Logger;
 
 /**
  *
@@ -41,19 +40,7 @@ public class PDHandlerMS1 extends PDHandlerBase {
     }
 
     public void DetectPeakClusters(ArrayList<ScanCollection> scanCollections) throws InterruptedException, ExecutionException, IOException {        
-        DetectSingleMZTraces(scanCollections);
+        FindAllMzTracePeakCurvesForScanCollections(scanCollections);
         PeakCurveCorrClustering(new XYData(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY));
     }
-
-    public void DetectSingleMZTraces(ArrayList<ScanCollection> scanCollections) throws IOException {
-        ReadPepIsoMS1PatternMap();
-        LCMSPeakBase.UnSortedPeakCurves = new ArrayList<>();
-        for (ScanCollection scanCollection : scanCollections) {
-            FindAllPeakCurve(scanCollection);
-        }
-        Logger.getRootLogger().info("Inclusion mz values found: "+InclusionCheckInfo());        
-        PeakCurveSmoothing();      
-        ClearRawPeaks();
-    }
-    
 }

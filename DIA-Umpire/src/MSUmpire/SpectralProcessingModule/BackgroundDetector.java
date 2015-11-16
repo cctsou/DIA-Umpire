@@ -109,10 +109,6 @@ public class BackgroundDetector {
         float upper = IntList.get((int) (IntList.size() * 0.7f));
         float lower = IntList.get(0);
 
-        //FileWriter writer = new FileWriter("C:\\Umich\\Box Sync\\Default Sync Folder\\Background\\Test\\" + Scan.ScanNum + "_hist.xls");
-        //FileWriter writer2 = new FileWriter("C:\\Umich\\Box Sync\\Default Sync Folder\\Background\\Test\\" + Scan.ScanNum + "_count.xls");
-        //writer2.write(0+"\t"); 
-        //writer.write(0 + "\t");
         if(upper<=lower+0.001){
             return;
         }
@@ -131,8 +127,6 @@ public class BackgroundDetector {
             count3 = 0;
             count4 = 0;
             noise = 0;
-            //writer.write(bk + "\t");
-            //writer2.write(bk+"\t");
             int preidx = -1;
             for (int i = 1; i < Scan.Data.size(); i++) {
                 if (Scan.Data.get(i).getY() > bk) {
@@ -157,14 +151,10 @@ public class BackgroundDetector {
             if (noise < (count1 + count2 + count3 + count4) * Ratio) {
                 break;
             }
-            //writer2.write(count1+"\t"+count2+"\t"+count3+"\t"+noise+"\n");
-            //writer.write("\n");
         }
         if (bk > 0f) {
             Scan.background = bk;
             Scan.RemoveSignalBelowBG();
         }
-        //writer.close();
-        //writer2.close();
     }
 }

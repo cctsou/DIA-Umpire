@@ -269,7 +269,7 @@ public class PepIonID implements Serializable {
         if (IsDecoy == -1) {
             IsDecoy = 1;
             for (String pro : ParentProtID_PepXML) {
-                if (!pro.startsWith(decoytag)) {
+                if (!(pro.startsWith(decoytag) | pro.endsWith(decoytag))) {
                     IsDecoy = 0;
                     break;
                 }

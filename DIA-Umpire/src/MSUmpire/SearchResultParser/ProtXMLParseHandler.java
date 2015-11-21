@@ -57,7 +57,15 @@ public class ProtXMLParseHandler implements SolnaHandler<Element> {
     private void ParseProteinGroupNode(Element protgroupnode) throws XmlPullParserException, IOException, ClassNotFoundException, InterruptedException {
 
         int groupindex = Integer.parseInt(protgroupnode.getAttributes().getNamedItem("group_number").getNodeValue());
-        float groupprob = Float.parseFloat(protgroupnode.getAttributes().getNamedItem("probability").getNodeValue());
+        
+        float groupprob=0f;
+        if (protgroupnode.getAttributes().getNamedItem("probability") != null) {
+            groupprob = Float.parseFloat(protgroupnode.getAttributes().getNamedItem("probability").getNodeValue());
+        }
+        else if (protgroupnode.getAttributes().getNamedItem("probability") != null) {
+            groupprob = Float.parseFloat(protgroupnode.getAttributes().getNamedItem("group_probability").getNodeValue());
+        }
+        
         int alphabet = 1;
         
         for (int j = 0; j < protgroupnode.getChildNodes().getLength(); j++) {
@@ -154,9 +162,16 @@ public class ProtXMLParseHandler implements SolnaHandler<Element> {
                             } else {                               
                                 PepIonID pepIonID = new PepIonID();
                                 pepIonID.Sequence = child.getAttributes().getNamedItem("peptide_sequence").getNodeValue();
-                                pepIonID.MaxProbability = Float.parseFloat(child.getAttributes().getNamedItem("initial_probability").getNodeValue());
-                                pepIonID.Is_NonDegenerate = "Y".equals(child.getAttributes().getNamedItem("is_nondegenerate_evidence").getNodeValue());
-                                pepIonID.Weight = Float.parseFloat(child.getAttributes().getNamedItem("weight").getNodeValue());
+                                
+                                if (child.getAttributes().getNamedItem("initial_probability") != null) {
+                                    pepIonID.MaxProbability = Float.parseFloat(child.getAttributes().getNamedItem("initial_probability").getNodeValue());
+                                }
+                                if (child.getAttributes().getNamedItem("is_nondegenerate_evidence") != null) {
+                                    pepIonID.Is_NonDegenerate = "Y".equals(child.getAttributes().getNamedItem("is_nondegenerate_evidence").getNodeValue());
+                                }
+                                if (child.getAttributes().getNamedItem("weight") != null) {
+                                    pepIonID.Weight = Float.parseFloat(child.getAttributes().getNamedItem("weight").getNodeValue());
+                                }
                                 if (child.getAttributes().getNamedItem("group_weight") != null) {
                                     pepIonID.GroupWeight = Float.parseFloat(child.getAttributes().getNamedItem("group_weight").getNodeValue());
                                 }

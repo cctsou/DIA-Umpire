@@ -238,7 +238,7 @@ public class ProtID implements Serializable {
     }
 
     public boolean IsDecoy(String decoytag) {
-        if (getAccNo().startsWith(decoytag)) {
+        if (getAccNo().startsWith(decoytag) | getAccNo().endsWith(decoytag)) {
             return true;
         }
         return false;

@@ -123,7 +123,7 @@ public class PTMManager {
             }
             if (sitecorrect) {
                 double diff = Math.abs(ptm.getMass() - massdiff);
-                if (diff < 1f) {
+                if (diff < 0.5f) {
                     if (diff < smallmassdiff) {
                         smallmassdiff = diff;
                         smallestdiffptm = ptm;

@@ -110,7 +110,7 @@ public class FileThread implements Runnable{
                         writer.write(line.replaceAll(basename+"_Q",basename+".ForLibQ")+"\n");
                     }
                     writer.close();
-                }                
+                }
             }
         }
     }

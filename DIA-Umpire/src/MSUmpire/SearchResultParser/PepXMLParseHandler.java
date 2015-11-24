@@ -132,6 +132,7 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
         PTM ptm = PTMManager.GetInstance().GetPTM(site, massdiff);
         if (ptm == null) {
             Logger.getRootLogger().warn("Warning! modification in pepxml : amino acid " + site + "(mass diff:" + massdiff + ") cannot be found in the library.");
+            massdiff= (float) (Math.floor(massdiff*10)/10);
             Logger.getRootLogger().warn("Creating a custom modification type called \"" + massdiff + "@" + site + "\"");
             ptm = new PTM(PTM.MODAA, String.valueOf(massdiff + "@" + site), (double) massdiff, new AminoAcidPattern(site));
             

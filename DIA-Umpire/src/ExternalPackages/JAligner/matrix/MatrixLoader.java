@@ -52,7 +52,7 @@ public class MatrixLoader {
     /**
      * The path to the matrices within the package.
      */
-    private static final String MATRICES_HOME = "jaligner/matrix/matrices/";
+    private static final String MATRICES_HOME = "ExternalPackages/JAligner/matrix/matrices/";
 
     /**
      * Logger

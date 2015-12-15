@@ -139,7 +139,7 @@ public class FastaParser implements Serializable{
                     ProteinList.put(ACC, protein);
                     Seq = new StringBuilder();
                 }
-                ACC = line.trim().split(" ")[0].substring(1);
+                ACC = line.trim().split(" ")[0].substring(1).split("\t")[0];
                 des = line.replace(">" + ACC + " ", "");
             } else {
                 if (!"".equals(line.trim())) {

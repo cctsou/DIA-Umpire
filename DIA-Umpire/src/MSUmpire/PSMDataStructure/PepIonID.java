@@ -37,7 +37,7 @@ import java.util.HashSet;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Peptide ion ID data structure
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PepIonID implements Serializable {

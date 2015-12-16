@@ -24,7 +24,7 @@ import MSUmpire.PeakDataStructure.PeakCurve;
 import java.util.ArrayList;
 
 /**
- *
+ * Peak shape smoothing process
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakCurveSmoothingUnit implements Runnable {

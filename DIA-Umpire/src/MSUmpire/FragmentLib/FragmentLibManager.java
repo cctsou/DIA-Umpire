@@ -63,7 +63,7 @@ import ExternalPackages.org.systemsbiology.apps.tramlparser.TraMLParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * Spectral library data structure
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class FragmentLibManager implements Serializable {

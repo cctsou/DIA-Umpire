@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Peak detection processing class for DIA MS2 peak
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PDHandlerDIAMS2 extends PDHandlerBase {

@@ -23,6 +23,11 @@ import java.util.Random;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+
+/**
+ *
+ * @author Chih-Chiang Tsou
+ */
 public class RandomSequenceGeneratorWoKPR {
 
     private String RandomSeq;

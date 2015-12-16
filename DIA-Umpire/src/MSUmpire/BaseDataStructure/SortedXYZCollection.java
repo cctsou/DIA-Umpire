@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.Comparator;
 
 /**
- *
+ * Sorted collection of XYZData, sorted by x value
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class SortedXYZCollection extends SortedList<XYZData> implements Serializable {

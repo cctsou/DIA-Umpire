@@ -29,7 +29,11 @@ import java.util.Collections;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
- *
+ * Generate shuffled sequence as decoy spectra for spectral library
+ * Lam, H., Deutsch, E.W. & Aebersold, R. Artificial decoy spectral
+libraries for false discovery rate estimation in spectral library
+searching in proteomics. J. Proteome Res. 9, 605–610
+(2010).
  * @author Chih-Chiang Tsou
  */
 public class ShuffledSeqGen implements Runnable{

@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * For a given isolation window, extract grouped fragments for all peptide ions in the isolation window 
  * @author Chih-Chiang Tsou
  */
 public class DIA_window_Quant implements  Runnable{
@@ -69,6 +69,7 @@ public class DIA_window_Quant implements  Runnable{
         }
         ExecutorService executorPool;
         executorPool = Executors.newFixedThreadPool(NoThread);
+        
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
             if (DIAWindow.DIA_MZ_Range.getX() <= pepIonID.GetPeakMz(2)&& DIAWindow.DIA_MZ_Range.getY() >= pepIonID.ObservedMz) {
                 DIAMapClusterUnit mapunit = new DIAMapClusterUnit(pepIonID, Q1Name, Q2Name, Q3Name, ScanClusterMap_Q1, ScanClusterMap_Q2, ScanClusterMap_Q3, ms1lcms, DIAWindow);

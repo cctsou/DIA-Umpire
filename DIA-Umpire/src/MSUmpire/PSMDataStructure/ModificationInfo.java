@@ -28,7 +28,7 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 
 /**
- *
+ * PTM class
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class ModificationInfo implements Serializable{

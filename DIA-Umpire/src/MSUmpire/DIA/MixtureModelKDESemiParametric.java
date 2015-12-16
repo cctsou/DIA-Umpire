@@ -47,7 +47,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import umontreal.iro.lecuyer.probdist.*;
 
 /**
- * This class provides semiparameteric mixture modeling
+ * This class provides semi-parametric mixture modeling
  */
 public class MixtureModelKDESemiParametric {
 

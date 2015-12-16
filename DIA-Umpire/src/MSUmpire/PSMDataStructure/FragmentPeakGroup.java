@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- *
+ * Precursor-fragment group class
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class FragmentPeakGroup extends PeptideFragment implements Serializable{

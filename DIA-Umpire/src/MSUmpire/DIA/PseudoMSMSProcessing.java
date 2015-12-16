@@ -32,7 +32,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 /**
- *
+ * Preprocessing to generate pseudo MS/MS spectra
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PseudoMSMSProcessing implements Runnable {
@@ -46,44 +46,6 @@ public class PseudoMSMSProcessing implements Runnable {
         this.parameter = parameter;
         this.fragments = ms1cluster.GroupedFragmentPeaks;
         this.Precursorcluster = ms1cluster;
-    }
-
-    public void TopNPeakPerMZRangeSelection(int topN, float MassWindow) {
-        float startmz = 200f;
-        float endmz = startmz + MassWindow;
-        ArrayList<PrecursorFragmentPairEdge> newlist = new ArrayList<>();
-        int highCorrCnt = 0;
-        while (startmz < Precursorcluster.NeutralMass()) {
-            ArrayList<PrecursorFragmentPairEdge> fraglist = new ArrayList<>();
-            for (PrecursorFragmentPairEdge fragmentClusterUnit : fragments) {
-                if (fragmentClusterUnit.FragmentMz >= startmz && fragmentClusterUnit.FragmentMz < endmz) {
-                    if (fragmentClusterUnit.ComplementaryFragment) {
-                        newlist.add(fragmentClusterUnit);
-                    } else if (fragmentClusterUnit.Correlation >= parameter.CorrThreshold) {
-                        fraglist.add(fragmentClusterUnit);
-                    }
-                }
-            }
-
-            if (fraglist.size() > 0) {
-                SortedCorrFrag CorrArrayList = new SortedCorrFrag();
-                CorrArrayList.addAll(fraglist);
-
-                for (int i = 0; i < topN && i < fraglist.size(); i++) {
-                    PrecursorFragmentPairEdge fragmentClusterUnit = CorrArrayList.get(i);
-                    newlist.add(fragmentClusterUnit);
-                    if (fragmentClusterUnit.Correlation > parameter.HighCorrThreshold) {
-                        highCorrCnt++;
-                    }
-                }
-            }
-            startmz += MassWindow;
-            endmz += MassWindow;
-        }
-        if (highCorrCnt < parameter.MinHighCorrCnt) {
-            newlist.clear();
-        }
-        fragments = newlist;
     }
 
     public void DeisotopingForPeakClusterFragment() {
@@ -268,9 +230,6 @@ public class PseudoMSMSProcessing implements Runnable {
             if (parameter.BoostComplementaryIon) {
                 DeisotopingForPeakClusterFragment();
                 BoostComplementaryIon();
-            }
-            if (parameter.FilterLocalTopN) {
-                TopNPeakPerMZRangeSelection(parameter.TopNLocal, parameter.TopNLocalRange);
             }
         }
     }

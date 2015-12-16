@@ -31,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * Thread unit for calculating peak profile correlation between a PeakCluster and all coeluting peak curves 
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class CorrCalcCluster2CurveUnit implements Runnable {
@@ -51,19 +51,25 @@ public class CorrCalcCluster2CurveUnit implements Runnable {
     @Override
     public void run() {
 
+        //Get Start and End indices of peak curves which are in the RT range
         int startRTidx = PeakCurveSortedListApexRT.BinarySearchLower(MS1PeakCluster.PeakHeightRT[0] - parameter.ApexDelta);
         int endRTidx = PeakCurveSortedListApexRT.BinarySearchHigher(MS1PeakCluster.PeakHeightRT[0] + parameter.ApexDelta);
         PeakCurve targetMS1Curve = MS1PeakCluster.MonoIsotopePeak;
 
+        //Calculate RT range of the peak cluster
         float ms1rtrange = targetMS1Curve.EndRT() - targetMS1Curve.StartRT();
         int highCorrCnt = 0;
         
+        //For each peak curve
         for (int idx = startRTidx; idx <= endRTidx; idx++) {
             PeakCurve peakCurve = PeakCurveSortedListApexRT.get(idx);
             if(peakCurve.TargetMz>MS1PeakCluster.NeutralMass()){
                 continue;
             }
+            //RT range of the peak curve
             float peakcurvertrange = peakCurve.EndRT() - peakCurve.StartRT();
+            
+            //Overlap ratio
             float OverlapP = 0f;
             if (targetMS1Curve.StartRT() >= peakCurve.StartRT() && targetMS1Curve.StartRT() <= peakCurve.EndRT() && targetMS1Curve.EndRT() >= peakCurve.EndRT()) {
                 OverlapP = (peakCurve.EndRT() - targetMS1Curve.StartRT()) / ms1rtrange;
@@ -74,15 +80,21 @@ public class CorrCalcCluster2CurveUnit implements Runnable {
             } else if (targetMS1Curve.StartRT() >= peakCurve.StartRT() && targetMS1Curve.EndRT() <= peakCurve.EndRT()) {
                 OverlapP = 1;
             }
-            if (OverlapP > parameter.RTOverlapThreshold && targetMS1Curve.ApexRT >= peakCurve.StartRT() && targetMS1Curve.ApexRT <= peakCurve.EndRT() && peakCurve.ApexRT >= targetMS1Curve.StartRT() && peakCurve.ApexRT <= targetMS1Curve.EndRT()) {
+            
+            if (OverlapP > parameter.RTOverlapThreshold 
+                    && targetMS1Curve.ApexRT >= peakCurve.StartRT() 
+                    && targetMS1Curve.ApexRT <= peakCurve.EndRT() 
+                    && peakCurve.ApexRT >= targetMS1Curve.StartRT() 
+                    && peakCurve.ApexRT <= targetMS1Curve.EndRT()) {
                 float corr = 0f;
                 float ApexDiff = Math.abs(targetMS1Curve.ApexRT - peakCurve.ApexRT);
-
                 try {
+                    //Calculate pearson correlation
                     corr = PeakCurveCorrCalc.CalPeakCorr(targetMS1Curve, peakCurve, parameter.NoPeakPerMin);
                 } catch (IOException ex) {
                     Logger.getLogger(CorrCalcCluster2CurveUnit.class.getName()).log(Level.SEVERE, null, ex);                    
                 }
+                //If the pearson correlation larger than the defined threshold 
                 if (!Float.isNaN(corr) && corr > parameter.CorrThreshold) {
                     PrecursorFragmentPairEdge PrecursorFragmentPair = new PrecursorFragmentPairEdge();
                     PrecursorFragmentPair.Correlation = corr;

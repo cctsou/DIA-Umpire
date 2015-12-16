@@ -23,7 +23,7 @@ import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.BaseDataStructure.XYPointCollection;
 
 /**
- *
+ * B-spline smoothing
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class Bspline {

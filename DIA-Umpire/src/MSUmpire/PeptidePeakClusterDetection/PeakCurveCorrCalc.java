@@ -26,7 +26,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- *
+ * Calculate peak profile peak correlation given two peak curves
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakCurveCorrCalc {

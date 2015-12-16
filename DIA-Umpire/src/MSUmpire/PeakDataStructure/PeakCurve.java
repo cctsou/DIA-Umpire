@@ -27,10 +27,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.PriorityQueue;
-import org.jfree.data.xy.XYSeries;
 
 /**
- *
+ * Single m/z trace peak curve
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakCurve implements Serializable  {

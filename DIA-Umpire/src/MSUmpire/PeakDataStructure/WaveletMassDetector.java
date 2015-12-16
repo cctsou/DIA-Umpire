@@ -29,6 +29,9 @@ import java.util.ArrayList;
  * over raw datapoints of a certain spectrum. After get the spectrum in the
  * wavelet's time domain, we use the local maxima to detect possible peaks in
  * the original raw datapoints.
+ * Described in Tautenhahn, R., Bottcher, C. & Neumann, S. 
+ * Highly sensitive feature detection for high resolution LC/MS. 
+ * BMC Bioinformatics 9, 504 (2008).
  */
 public class WaveletMassDetector implements Serializable{
 

@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * MS1 peak data related to a LCMS map
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSPeakMS1 extends LCMSPeakBase {
@@ -170,6 +170,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         return mzxml;
     }
 
+    //MS1 feature detection
     public void PeakClusterDetection() throws FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException, XmlPullParserException {
 
         if (Resume && ReadIfProcessed()) {
@@ -275,6 +276,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         }
     }
 
+    //Perform MS1 quant for mapped peptides
     public void AssignMappedPepQuant() throws SQLException, IOException {
         if (IDsummary == null || IDsummary.GetMappedPepIonList().isEmpty()) {
             return;

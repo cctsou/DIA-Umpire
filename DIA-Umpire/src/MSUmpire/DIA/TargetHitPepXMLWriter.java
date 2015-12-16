@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * pepXML writer for targeted re-extraction
  * @author Chih-Chiang Tsou
  */
 public class TargetHitPepXMLWriter {

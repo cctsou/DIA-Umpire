@@ -60,7 +60,7 @@ import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * Main data structure which represents a DIA file
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class DIAPack {
@@ -82,22 +82,7 @@ public class DIAPack {
     public boolean ExportFragmentPeak = false;
     public HashMap<Integer, Double> FactorialTable;
     TargetMatchScoring TScoring;
-    public DIAStatus status = new DIAStatus();
 
-    public void CheckDuplicatePSM() {
-        int count = 0;
-        for (PepIonID pep : IDsummary.GetPepIonList().values()) {
-            HashSet<String> PSMspec = new HashSet<>();
-            for (PSM psm : pep.GetPSMList()) {
-                if (PSMspec.contains(psm.SpecNumber)) {
-                    count++;
-                    break;
-                }
-                PSMspec.add(psm.SpecNumber);
-            }
-        }
-        System.out.println(count);
-    }
     
     private void RemoveIndexFile() {
         new File(FilenameUtils.removeExtension(Filename) + ".ScanPosFS").delete();
@@ -112,21 +97,15 @@ public class DIAPack {
         GetMzXML();
     }
 
-    public class DIAStatus {
-
-        public boolean SignalExtraction = false;
-        public boolean UntargetedQuant = false;
-        public boolean BuildMappedPep = false;
-        public boolean TargetedQuant = false;
-    }
-
     public int Q1Scan = 0;
     public int Q2Scan = 0;
     public int Q3Scan = 0;
-    public int Q4Scan = 0;
-
+  
+    //Whether to use IDs from targeted re-extraction for quantification analysis
     public boolean UseMappedIon = false;
+    //Whether to use probability threshold for targeted re-extraction to filter IDs
     public boolean FilterMappedIonByProb = true;
+    //Probability threshold for targeted re-extraction
     public float MappedIonProbThreshold = 0.95f;
 
     public DIAPack(String Filename, int NoCPUs) throws FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException {
@@ -158,6 +137,7 @@ public class DIAPack {
         dIA_Setting.DIAWindows.put(window, new ArrayList<Integer>());
     }
 
+    //Primarily for WiSIM
     public void AddMS1Window(XYData window) {
         if (dIA_Setting.MS1Windows == null) {
             dIA_Setting.MS1Windows = new TreeMap<>();
@@ -185,13 +165,15 @@ public class DIAPack {
         }
         return mzXML;
     }
-
+ 
+    //Entry of processing of signal extraction and generating pseudo MS/MS spectra
     public void process() throws SQLException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, FileNotFoundException, DataFormatException, Exception {
         BuildDIAWindows();
         MS1PeakDetection();
         DIAMS2PeakDetection();
     }
 
+    //Building empty data structure
     public void BuildDIAWindows() throws IOException, DataFormatException, IOException, IOException, IOException, InterruptedException {
         DIAWindows = new ArrayList<>();
         Object[] WindowRange = GetMzXML().dIA_Setting.DIAWindows.keySet().toArray();
@@ -210,6 +192,7 @@ public class DIAPack {
         }
     }
 
+    //Read scan number mapping
     public void ReadScanNoMapping() throws FileNotFoundException, IOException {
         ScanClusterMap_Q1 = new HashMap<>();
         ScanClusterMap_Q2 = new HashMap<>();
@@ -374,8 +357,8 @@ public class DIAPack {
         return FilenameUtils.getFullPath(Filename) + "interact-" + FilenameUtils.getBaseName(Filename) + "_Combine.iproph.prot.xml";
     }
 
+    //Building scan number mapping from MGF files
     public void GenerateClusterScanNomapping() throws IOException {
-
         if (!new File(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + ".ScanClusterMapping_Q1").exists()) {
             String mgfname1 = FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".mgf";
             String mgfname2 = FilenameUtils.getFullPath(Filename) + GetQ2Name() + ".mgf";
@@ -452,12 +435,12 @@ public class DIAPack {
         }
         ReadScanNoMapping();
     }
-    
 
     public void AssignQuant() throws IOException, SQLException {
         AssignQuant(true);
     }
 
+    //Entry of quantification process
     public void AssignQuant(boolean export) throws IOException, SQLException {
         Logger.getRootLogger().info("Assign peak cluster to identified peptides");
         GenerateClusterScanNomapping();
@@ -499,6 +482,7 @@ public class DIAPack {
         AssignMappedPepQuant(export, libManager, 1.1f,-1f);
     }
 
+    //Quantification process for peptide ions from targeted re-extraction
     public void AssignMappedPepQuant(boolean export, FragmentLibManager libManager, float ReSearchProb, float RTWindow) throws IOException, SQLException, XmlPullParserException {
         if (IDsummary.GetMappedPepIonList().isEmpty()) {
             Logger.getRootLogger().error("There is no peptide ion for targeted re-extraction.");
@@ -508,6 +492,7 @@ public class DIAPack {
         GenerateClusterScanNomapping();
         ExecutorService executorPool = null;
         
+        //Targeted re-extraction scoring
         TScoring = new TargetMatchScoring(Filename, libManager.LibID);
 
         if (parameter.UseOldVersion) {
@@ -516,6 +501,7 @@ public class DIAPack {
         Logger.getRootLogger().info("No. of identified peptide ions: " + IDsummary.GetPepIonList().size());
         Logger.getRootLogger().info("No. of mapped peptide ions: " + IDsummary.GetMappedPepIonList().size());
         ArrayList<PepIonID> SearchList = new ArrayList<>();
+        //For each peptide ions in targeted re-extraction, determine whether to research the peptide ion given a re-search probability threshold
         for (PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()) {
             if (libManager.PeptideFragmentLib.containsKey(pepIonID.GetKey()) && libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() >= 3 && pepIonID.TargetedProbability() < ReSearchProb) {
                 pepIonID.CreateQuantInstance(parameter.MaxNoPeakCluster);
@@ -540,9 +526,12 @@ public class DIAPack {
             }
 
             executorPool = Executors.newFixedThreadPool(NoCPUs);
+            //For each target peptide  ion
             for (PepIonID pepIonID : SearchList) {
                 if (DIAWindow.DIA_MZ_Range.getX() <= pepIonID.NeutralPrecursorMz() && DIAWindow.DIA_MZ_Range.getY() >= pepIonID.NeutralPrecursorMz()) {
+                    //If the spectrum of peptide ion in the spectral library has more than three fragment peaks
                     if (libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() >= 3) {
+                        //U-score spectral matching
                         UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(ms1lcms, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
                         executorPool.execute(matchunit);                        
                         TScoring.libTargetMatches.add(matchunit);
@@ -552,9 +541,12 @@ public class DIAPack {
                 }
             }
 
+            //For each identified peptide ion, calculate their U-score for LDA training
             for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
                 if (libManager.PeptideFragmentLib.containsKey(pepIonID.GetKey()) && DIAWindow.DIA_MZ_Range.getX() <= pepIonID.NeutralPrecursorMz() && DIAWindow.DIA_MZ_Range.getY() >= pepIonID.NeutralPrecursorMz()) {
+                   //If the spectrum of peptide ion in the spectral library has more than three fragment peaks
                     if (libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() >= 3) {
+                        //U-score spectral matching
                         UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(ms1lcms, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
                         matchunit.IdentifiedPeptideIon = true;
                         executorPool.execute(matchunit);
@@ -583,7 +575,8 @@ public class DIAPack {
         }
         TScoring.libTargetMatches=newlist;
         Logger.getRootLogger().info("Remaining entries: "+TScoring.libTargetMatches.size());
-                
+        
+        //U-score and probablilty calculatation  
         TScoring.Process();    
         TargetHitPepXMLWriter pepxml=new TargetHitPepXMLWriter(GetiProphExtPepxml(libManager.LibID), IDsummary.FastaPath, IDsummary.DecoyTag, TScoring);
         TScoring = null;
@@ -650,7 +643,6 @@ public class DIAPack {
             }
         }
         IDsummary.ReMapProPep();
-
         Logger.getRootLogger().info("Total number of peptide ions:" + IDsummary.GetPepIonList().size());
         CheckPSMRT();        
         if (ms1lcms != null) {
@@ -680,6 +672,7 @@ public class DIAPack {
         mSConvert.Convert();        
     }
     
+    //Generate pseudo MS/MS spectra with raw fragment intensities
     public void GenerateRawMGF() throws IOException, Exception {
         
         if(RawMGFExist()){
@@ -816,6 +809,7 @@ public class DIAPack {
         mgfWriter3.close();
     }
 
+    //Check each PSM, if they don't have retention time from pepXML, fill the RT from mzXML file.
     private void FindPSMRT(){        
         try {
             if(!new File(FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".mzXML").exists()){
@@ -861,8 +855,7 @@ public class DIAPack {
             FindPSMRT();
         }
     }
-    
-    
+        
     public void ClearStructure() {
         ms1lcms = null;
         DIAWindows = null;
@@ -894,6 +887,7 @@ public class DIAPack {
         return false;
     }
 
+    //Perform MS1 feature detection
     private void MS1PeakDetection() throws SQLException, InterruptedException, ExecutionException, IOException, ParserConfigurationException, SAXException, FileNotFoundException, Exception {
         RemoveMGF();
         ms1lcms = new LCMSPeakMS1(Filename, NoCPUs);
@@ -956,17 +950,7 @@ public class DIAPack {
         IDsummary.WriteLCMSIDSerialization(Filename, tag);
     }
 
-    public void ExportMappedIDQuant() throws SQLException, IOException {
-        if (IDsummary == null) {
-            return;
-        }
-        if (!FilenameUtils.getBaseName(IDsummary.mzXMLFileName).equals(FilenameUtils.getBaseName(Filename))) {
-            return;
-        }
-        IDsummary.ExportMappedPepID();
-        IDsummary.ExportMappedPepFragmentPeak();
-    }
-
+    //Perform MS2 fragment feature detection
     public void DIAMS2PeakDetection() throws SQLException, IOException, InterruptedException, ExecutionException, FileNotFoundException, Exception {
         int count = 1;
         //CreateSWATHTables();
@@ -1000,6 +984,7 @@ public class DIAPack {
         }
     }
 
+    //Generate mass calibration model
     public void GenerateMassCalibrationRTMap() {
         try {
             ms1lcms.GenerateMassCalibrationRTMap();
@@ -1010,10 +995,6 @@ public class DIAPack {
         for (LCMSPeakDIAMS2 DIAwindow : DIAWindows) {
             DIAwindow.Masscalibrationfunction = ms1lcms.Masscalibrationfunction;
         }
-    }
-
-    public void ReplaceProtByRefIDByTheoPep(LCMSID protID) {
-        IDsummary.GenerateProteinByRefIDByPepSeq(protID, UseMappedIon);         
     }
 
     public void SaveParams() {

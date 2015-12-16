@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * Identification data structure for a LC-MS run
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSID implements Serializable {

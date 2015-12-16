@@ -22,7 +22,10 @@ package MSUmpire.PeakDataStructure;
 import java.io.Serializable;
 
 /**
- *
+ * Peak ridge class (described in 
+ * Tautenhahn, R., Bottcher, C. & Neumann, S. 
+ * Highly sensitive feature detection for high resolution LC/MS. 
+ * BMC Bioinformatics 9, 504 (2008).
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakRidge implements Comparable<PeakRidge>, Serializable {

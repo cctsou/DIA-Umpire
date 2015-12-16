@@ -29,8 +29,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 
-/**
- *
+/** 
+ * Sorted collection of XYData, sorted by x value
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class SortedXYCollectionClass extends SortedList<XYData> implements Serializable{

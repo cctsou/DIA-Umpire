@@ -37,7 +37,7 @@ import java.util.Comparator;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Spectral matching to calculate subscores given a peptide ion from spectral library and a precursor-fragment group
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class UmpireSpecLibMatch implements Runnable, Serializable{

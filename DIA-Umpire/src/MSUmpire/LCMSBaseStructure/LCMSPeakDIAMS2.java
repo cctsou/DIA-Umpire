@@ -55,7 +55,7 @@ import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
 
 /**
- *
+ * MS2 peak data structure related to a LCMS map
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSPeakDIAMS2 extends LCMSPeakBase {
@@ -372,6 +372,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         FragmentsClu2Cur=templist;
     }
     
+    //Calculate precursor-fragment MS1 ranking (described in DIA-Umpire paper)
     public void BuildFragmentMS1ranking() {
         FragmentMS1Ranking = new HashMap<>();
         for (int clusterindex : FragmentsClu2Cur.keySet()) {
@@ -401,6 +402,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         }
     }
     
+    //Calculate precursor-fragment MS2 unfragmented ion ranking (described in DIA-Umpire paper)
     public void BuildFragmentUnfragranking() {
         FragmentUnfragRanking = new HashMap<>();
         for (int clusterindex : UnFragIonClu2Cur.keySet()) {
@@ -436,7 +438,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
   
     public void ExportUnfragmentedClusterCurve() throws IOException, SQLException {
         WriteUnfragmentedCluster2CurveCorrSerialization();
-
     }
     
     public void WritePrecursorFragmentGrouping() {
@@ -445,7 +446,6 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
     }
 
     private void WriteCluster2CurveCorrSerialization() {
-        //JavaSerializationCluster2CurveWrite();
         FSCluster2CurveWrite();
     }
 

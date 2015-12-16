@@ -22,7 +22,7 @@ package MSUmpire.PSMDataStructure;
 import java.io.Serializable;
 
 /**
- *
+ * Fragment peak data structure
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class FragmentPeak extends PeptideFragment implements Serializable{

@@ -24,9 +24,6 @@ import umontreal.iro.lecuyer.gof.KernelDensity;
 import umontreal.iro.lecuyer.probdist.EmpiricalDist;
 import umontreal.iro.lecuyer.probdist.NormalDist;
 import umontreal.iro.lecuyer.randvar.KernelDensityGen;
-import umontreal.iro.lecuyer.randvar.NormalGen;
-import umontreal.iro.lecuyer.rng.MRG31k3p;
-import umontreal.iro.lecuyer.rng.RandomStream;
 
 /**
  *

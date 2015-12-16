@@ -20,12 +20,9 @@
 package MSUmpire.DIA;
 
 import java.io.Serializable;
-import weka.core.Attribute;
-import weka.core.FastVector;
-import weka.core.Instance;
 
 /**
- *
+ * Data structure to define which match subscores to use
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class MatchSubscore implements Serializable{
@@ -35,54 +32,6 @@ public class MatchSubscore implements Serializable{
     public double[] SubSCoeff;
     public String[] SubSName;
     int Version=2;
-    FastVector Features=null;
-    
-    public FastVector GetFeatureFastVectorSVR(){
-        if (Features == null) {
-            NoEnableSubscores = 0;
-            for (int i = 0; i < Subscores.length; i++) {
-                if (Subscores[i].enable) {
-                    NoEnableSubscores++;
-                }
-            }
-            Features = new FastVector(NoEnableSubscores);
-
-            for (int i = 0; i < Subscores.length; i++) {
-                if (Subscores[i].enable) {
-                    Attribute attributeF = new Attribute(Subscores[i].name);
-                    Features.addElement(attributeF);
-                }
-            }
-            Attribute attributeF = new Attribute("Type");
-            Features.addElement(attributeF);
-        }
-        return Features;
-    }
-    
-    public FastVector GetFeatureFastVectorSVM(){
-        if (Features == null) {
-            NoEnableSubscores = 0;
-            for (int i = 0; i < Subscores.length; i++) {
-                if (Subscores[i].enable) {
-                    NoEnableSubscores++;
-                }
-            }
-            Features = new FastVector(NoEnableSubscores);
-
-            for (int i = 0; i < Subscores.length; i++) {
-                if (Subscores[i].enable) {
-                    Attribute attributeF = new Attribute(Subscores[i].name);
-                    Features.addElement(attributeF);
-                }
-            }
-            FastVector fvClassVal = new FastVector(2);
-            fvClassVal.addElement("ID");
-            fvClassVal.addElement("Decoy");
-            Attribute attributeF = new Attribute("Type", fvClassVal);
-            Features.addElement(attributeF);
-        }
-        return Features;
-    }
     
     public class subscore implements Serializable{
         private static final long serialVersionUID = 2801998695766081693L;
@@ -207,19 +156,6 @@ public class MatchSubscore implements Serializable{
                 return GetScoreArray_V2(peakgroup);
             }
         }
-    }
-    
-    public Instance GetFeatureInstance(PeakGroupScore peakgroup){
-        Instance feature=new Instance(NoEnableSubscores+1);
-        float[] Subs=GetSubScoreArray(peakgroup);
-        int idx=0;
-        for (int i = 0; i < Subscores.length; i++) {
-            if (Subscores[i].enable) {
-                feature.setValue((Attribute)GetFeatureFastVectorSVR().elementAt(idx), Subs[i]);
-                idx++;
-            }
-        }
-        return feature;
     }
     
     public double[] GetEnableSubScoreArray(PeakGroupScore peakgroup){

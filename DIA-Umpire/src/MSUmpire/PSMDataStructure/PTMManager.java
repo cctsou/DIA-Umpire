@@ -31,7 +31,7 @@ import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * PTM library manager from compomics
  * @author Chih-Chiang Tsou
  */
 public class PTMManager {

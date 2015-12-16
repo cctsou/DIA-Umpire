@@ -21,13 +21,10 @@ package MSUmpire.PSMDataStructure;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import jsc.datastructures.PairedData;
-import jsc.regression.PearsonCorrelation;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
- *
+ * Fragment and peptide selection algorithms (as described in DIA-Umpire paper) 
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class FragmentSelection {

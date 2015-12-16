@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.apache.avalon.framework.activity.Disposable;
 
 /*
- * Collection of two dimensional points
+ * Collection of two dimensional
  */
 /**
  *

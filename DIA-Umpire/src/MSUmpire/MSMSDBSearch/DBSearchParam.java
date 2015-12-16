@@ -56,14 +56,8 @@ public abstract class DBSearchParam implements Cloneable{
     public enum SearchInstrumentType {
         Orbitrap,
         TOF5600,
-        YJ_TOF5600,
         QExactive,
-        dfermin_phospho,
-        Orbit_Velos,
-        Orbit_elite,
-        Orbit_Velos_High_Field,
-        MSe,
-    };
+        };
 
     @Override
     public Object clone() throws CloneNotSupportedException {
@@ -75,22 +69,6 @@ public abstract class DBSearchParam implements Cloneable{
             
     protected void SetParameter(SearchInstrumentType type) {
         switch (type) {
-            case Orbit_Velos: {
-                PrecursorPPM = 20;
-                FragPPM = 100;
-                MinNoPeaksScoring = 3;
-                MinNoPeaks = 15;
-                TotalPeaks = 100;
-                break;
-            }
-            case Orbit_elite: {
-                PrecursorPPM = 20;
-                FragPPM = 50;
-                MinNoPeaksScoring = 3;
-                MinNoPeaks = 15;
-                TotalPeaks = 100;
-                break;
-            }
             case QExactive: {
                 PrecursorPPM = 10;
                 FragPPM = 20;
@@ -98,32 +76,6 @@ public abstract class DBSearchParam implements Cloneable{
                 MinNoPeaks = 15;
                 TotalPeaks = 140;
                 MissCleavage = 1;
-                break;
-            }
-            case MSe: {
-                PrecursorPPM = 25;
-                FragPPM = 50;
-                MinNoPeaksScoring = 3;
-                MinNoPeaks = 15;
-                TotalPeaks = 140;
-                MissCleavage = 1;
-                break;
-            }
-
-            case dfermin_phospho: {
-                PrecursorPPM = 200;
-                FragPPM = 200;
-                MinNoPeaksScoring = 3;
-                MinNoPeaks = 15;
-                TotalPeaks = 100;
-                break;
-            }
-            case Orbit_Velos_High_Field: {
-                PrecursorPPM = 20;
-                FragPPM = 200;
-                MinNoPeaksScoring = 3;
-                MinNoPeaks = 15;
-                TotalPeaks = 100;
                 break;
             }
             case Orbitrap: {
@@ -144,17 +96,6 @@ public abstract class DBSearchParam implements Cloneable{
                 MissCleavage = 1;
                 SemiCleavage = false;
                 break;
-            }
-            case YJ_TOF5600: {
-                PrecursorPPM = 30;
-                FragPPM = 70;
-                MinNoPeaksScoring = 3;
-                MinNoPeaks = 15;
-                TotalPeaks = 140;
-                MissCleavage = 1;
-                SemiCleavage = false;
-                break;
-
             }
         }
     }

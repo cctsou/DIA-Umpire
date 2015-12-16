@@ -23,7 +23,7 @@ import MSUmpire.PeakDataStructure.PeakCluster;
 import java.io.Serializable;
 
 /**
- *
+ * Class to calculate U-score
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakGroupScore implements Serializable{

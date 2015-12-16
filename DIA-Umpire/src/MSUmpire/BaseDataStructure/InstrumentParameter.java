@@ -62,7 +62,6 @@ public class InstrumentParameter implements Serializable{
     public boolean RemoveGroupedPeaks = true;
     public boolean Deisotoping = false;
     public transient boolean BoostComplementaryIon=true; 
-    public transient boolean FilterLocalTopN=false; 
     public transient boolean AdjustFragIntensity=true;
     public int PrecursorRank = 25;
     public int FragmentRank = 300;
@@ -159,43 +158,15 @@ public class InstrumentParameter implements Serializable{
      *
      */
     public enum InstrumentType {
-
-        FT_Orbit,
         Fusion,
         Q_TOF,
-        TOF5600_msconvert,
-        TOF5600_ABcentroid,
         TOF5600,
-        TOF5600_ABConverted_ET_tissue,
         Orbitrap,
-        dfermin_phospho,
-        Orbit_MGF,
-        Orbit_Velos_High_Field,
-        Orbit_elite,
         QExactive,
-        MSe,
-        MALDI,
-        Meta_Agilent6550, BrukerFT,
     };
 
     private void SetParameter(InstrumentType type) {
         switch (type) {
-            case BrukerFT: {
-                MS1PPM = 10;
-                MS2PPM = 10;
-                SNThreshold = 3f;
-                MinMSIntensity = 200000f;
-                MinMSMSIntensity = 200000f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 2;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 2;
-                RTtol = 0.1f;
-                Resolution = 50000;
-                break;
-            }
             case Orbitrap: {
                 MS1PPM = 10;
                 MS2PPM = 20;
@@ -256,107 +227,6 @@ public class InstrumentParameter implements Serializable{
                 RemoveGroupedPeaks = true;
                 break;
             }
-            case MSe: {
-                MS1PPM = 70;
-                MS2PPM = 100;
-                SNThreshold = 2f;
-                MS2SNThreshold = 2f;
-                MinMSIntensity = 70f;
-                MinMSMSIntensity = 20f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 2;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 2;
-                RTtol = 0.1f;
-                NoPeakPerMin = 150;
-                Resolution = 15000;
-                Denoise = true;
-                EstimateBG = false;
-                RemoveGroupedPeaks = true;
-                break;
-            }
-            case Orbit_elite: {
-                MS1PPM = 20;
-                MS2PPM = 50;
-                SNThreshold = 3f;
-                MinMSIntensity = 100f;
-                MinMSMSIntensity = 100f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 3;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 2;
-                RTtol = 0.1f;
-                Resolution = 30000;
-                break;
-            }
-            case dfermin_phospho: {
-                MS1PPM = 200;
-                MS2PPM = 200;
-                SNThreshold = 3f;
-                MinMSIntensity = 1500f;
-                MinMSMSIntensity = 2000f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 3;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 2;
-                RTtol = 0.2f;
-                Resolution = 30000;
-                break;
-            }
-            case Orbit_MGF: {
-                MS1PPM = 50;
-                MS2PPM = 200;
-                SNThreshold = 3f;
-                MinMSIntensity = 1500f;
-                MinMSMSIntensity = 2000f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 3;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 1;
-                RTtol = 0.1f;
-                Resolution = 30000;
-                break;
-            }
-            case Orbit_Velos_High_Field: {
-                MS1PPM = 20;
-                MS2PPM = 200;
-                SNThreshold = 3f;
-                MinMSIntensity = 50000f;
-                MinMSMSIntensity = 50000f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 3;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 2;
-                RTtol = 0.1f;
-                Resolution = 60000;
-                break;
-            }
-            case FT_Orbit: {
-                MS1PPM = 10;
-                MS2PPM = 200;
-                SNThreshold = 3f;
-                MinMSIntensity = 500f;
-                MinMSMSIntensity = 100f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 3;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 2;
-                RTtol = 0.1f;
-                Resolution = 150000;
-                break;
-            }
             case Q_TOF: {
                 MS1PPM = 40;
                 MS2PPM = 100;
@@ -371,46 +241,6 @@ public class InstrumentParameter implements Serializable{
                 MaxCurveRTRange = 2;
                 Resolution = 17000;
                 RTtol = 0.1f;
-                break;
-            }
-            case TOF5600_msconvert: {
-                MS1PPM = 30;
-                MS2PPM = 40;
-                SNThreshold = 3f;
-                MS2SNThreshold = 3f;
-                MinMSIntensity = 20f;
-                MinMSMSIntensity = 10f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 2;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 1f;
-                Resolution = 17000;
-                RTtol = 0.1f;
-                Denoise = true;
-                EstimateBG = false;
-                RemoveGroupedPeaks = true;
-                break;
-            }
-            case TOF5600_ABcentroid: {
-                MS1PPM = 30;
-                MS2PPM = 40;
-                SNThreshold = 2f;
-                MS2SNThreshold = 2f;
-                MinMSIntensity = 0.2f;
-                MinMSMSIntensity = 0.05f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 2;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 1f;
-                Resolution = 17000;
-                RTtol = 0.1f;
-                Denoise = true;
-                EstimateBG = false;
-                RemoveGroupedPeaks = true;
                 break;
             }
             case TOF5600: {
@@ -431,65 +261,6 @@ public class InstrumentParameter implements Serializable{
                 Denoise = true;
                 EstimateBG = true;
                 RemoveGroupedPeaks = true;
-                break;
-            }
-            case TOF5600_ABConverted_ET_tissue: {
-                MS1PPM = 30;
-                MS2PPM = 40;
-                SNThreshold = 2f;
-                MS2SNThreshold = 2f;
-                MinMSIntensity = 0.2f;
-                MinMSMSIntensity = 0.05f;
-                MinRTRange = 0.1f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 2;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 1f;
-                Resolution = 17000;
-                RTtol = 0.1f;
-                break;
-            }
-            case Meta_Agilent6550: {
-                MS1PPM = 40;
-                MS2PPM = 50;
-                SNThreshold = 5f;
-                MS2SNThreshold = 3f;
-                MinMSIntensity = 1000f;
-                MinMSMSIntensity = 10f;
-                MinRTRange = 0.01f;
-                MaxNoPeakCluster = 3;
-                MinNoPeakCluster = 2;
-                StartCharge = 1;
-                EndCharge = 2;
-                MaxMS2NoPeakCluster = 3;
-                MinMS2NoPeakCluster = 2;
-                MaxCurveRTRange = 0.3f;
-                Resolution = 20000;
-                RTtol = 0.1f;
-                Denoise = true;
-                RemoveGroupedPeaks = true;
-                break;
-            }
-             case MALDI: {
-                MS1PPM = 400;
-                MS2PPM = 400;
-                SNThreshold = 3f;
-                MinMSIntensity = 10f;
-                MinMSMSIntensity = 10f;
-                MinRTRange = 0.2f;
-                MaxNoPeakCluster = 4;
-                MinNoPeakCluster = 2;
-                MaxMS2NoPeakCluster = 3;                
-                MinMS2NoPeakCluster = 2;
-                StartCharge=1;
-                EndCharge=2;
-                MS2StartCharge=1;
-                MS2EndCharge=2;
-                MaxCurveRTRange = 20f;
-                RTtol = 2f;
-                Resolution = 50000;
-                DetectByCWT=false;
                 break;
             }
         }

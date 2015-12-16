@@ -27,7 +27,7 @@ import java.io.InputStream;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * Enzyme manager from compomics library
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class EnzymeManager {

@@ -23,7 +23,6 @@ import MSUmpire.BaseDataStructure.XYPointCollection;
 import MSUmpire.MathPackage.KMeans;
 import MSUmpire.MathPackage.KernelDensityEstimator;
 import MSUmpire.MathPackage.Regression;
-import MSUmpire.PSMDataStructure.PepIonID;
 import ExternalPackages.jMEF.ExpectationMaximization1D;
 import ExternalPackages.jMEF.MixtureModel;
 import ExternalPackages.jMEF.PVector;
@@ -40,12 +39,10 @@ import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Vector;
 import javastat.multivariate.DiscriminantAnalysis;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
@@ -61,20 +58,9 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
-import umontreal.iro.lecuyer.probdist.WeibullDist;
-import weka.classifiers.Classifier;
-import weka.classifiers.Evaluation;
-import weka.classifiers.functions.LibSVM;
-import weka.core.Attribute;
-import weka.core.Debug.Random;
-import weka.core.FastVector;
-import weka.core.Instance;
-import weka.core.Instances;
-import weka.core.SelectedTag;
-import weka.core.Utils;
 
 /**
- *
+ * Targeted re-extraction scoring
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class TargetMatchScoring implements Serializable {

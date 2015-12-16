@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 /**
- *
+ * Peak detection processing class for MS1 peak
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PDHandlerMS1 extends PDHandlerBase {

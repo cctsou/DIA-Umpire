@@ -33,7 +33,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Thread unit for determining  peak cluster matched fragments for identified peptide ion for quantification
+ * 
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class DIAAssignQuantUnit implements Runnable {
@@ -52,11 +53,13 @@ public class DIAAssignQuantUnit implements Runnable {
     @Override
     public void run() {        
         PeakCluster targetCluster = null;
+        
+        //Get highest intensity peak cluster
         for (PeakCluster peakCluster : pepIonID.MS1PeakClusters) {
             if (targetCluster == null || targetCluster.PeakHeight[0] < peakCluster.PeakHeight[0]) {
                 targetCluster = peakCluster;
             }
-        }
+        }        
         pepIonID.CreateQuantInstance(ms1lcms.MaxNoPeakCluster);
 
         if (targetCluster != null) {
@@ -66,6 +69,7 @@ public class DIAAssignQuantUnit implements Runnable {
             pepIonID.PeakRT = targetCluster.PeakHeightRT[0];
             pepIonID.ObservedMz = targetCluster.mz[0];
         } else {
+            //if no MS1 peak cluster found, use MS2 unfragmented peak cluster instead
             for (PeakCluster peakCluster : pepIonID.MS2UnfragPeakClusters) {
                 if (targetCluster == null || targetCluster.PeakHeight[0] < peakCluster.PeakHeight[0]) {
                     targetCluster = peakCluster;
@@ -89,9 +93,11 @@ public class DIAAssignQuantUnit implements Runnable {
         }
     }
 
+    //Determine matched fragments
     private void MatchFragmentByTargetCluster(PeakCluster peakCluster) {
         for (Ion frag : pepIonID.GetFragments()) {
             PrecursorFragmentPairEdge bestfragment = null;
+            //Singly charged framgnet ion
             float targetmz = (float) frag.getTheoreticMz(1);
             for (PrecursorFragmentPairEdge fragmentClusterUnit : peakCluster.GroupedFragmentPeaks) {
                 if (InstrumentParameter.CalcPPM(targetmz, fragmentClusterUnit.FragmentMz) <= parameter.MS2PPM) {
@@ -115,6 +121,7 @@ public class DIAAssignQuantUnit implements Runnable {
                 pepIonID.FragmentPeaks.add(fragmentpeak);
             }
 
+            //doubly charged fragment ion
             targetmz = (float) frag.getTheoreticMz(2);
             bestfragment = null;
             for (PrecursorFragmentPairEdge fragmentClusterUnit : peakCluster.GroupedFragmentPeaks) {

@@ -48,7 +48,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 /**
- *
+ * Generate peptide ions from external library
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class RTMappingExtLib implements Runnable{

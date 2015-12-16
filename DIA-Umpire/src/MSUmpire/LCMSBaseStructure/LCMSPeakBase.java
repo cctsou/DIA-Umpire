@@ -48,7 +48,7 @@ import org.nustaq.serialization.FSTObjectOutput;
 
 
 /**
- *
+ * Parent peak data structure related to a LCMS map
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSPeakBase {
@@ -94,6 +94,7 @@ public class LCMSPeakBase {
         }
     }
      
+    //Get all peak clusters given PSMs related to a peptide ion
     public ArrayList<PeakCluster> FindAllPeakClustersForPepByPSM(PepIonID pep) {
         ArrayList<PeakCluster> allclusterList = new ArrayList<>();
         for (PSM psm : pep.GetPSMList()) {
@@ -107,8 +108,8 @@ public class LCMSPeakBase {
         return allclusterList;
     }
 
+    //Get mass error given a RT according to mass calibration model
     private float GetMassError(float RT) {
-
         if (RT > Masscalibrationfunction.getKnots()[Masscalibrationfunction.getN()]) {
             RT = (float) Masscalibrationfunction.getKnots()[Masscalibrationfunction.getN()];
         }

@@ -28,7 +28,7 @@ import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * Modification tag conversion class
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class ModStringConvert {

@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- *
+ * Protein ID data structure
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class ProtID implements Serializable {

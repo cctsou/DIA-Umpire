@@ -45,7 +45,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 /**
- *
+ * Cross assign peptide ions from two LCMS runs
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class RTAlignedPepIonMapping implements Runnable{

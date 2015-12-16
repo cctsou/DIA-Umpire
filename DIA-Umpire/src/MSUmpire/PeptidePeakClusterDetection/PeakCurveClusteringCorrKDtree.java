@@ -36,7 +36,7 @@ import org.apache.avalon.framework.ExceptionUtil;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Isotope peak curve clustering based on peak profile correlation. The searching is using KD tree
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakCurveClusteringCorrKDtree implements Runnable {

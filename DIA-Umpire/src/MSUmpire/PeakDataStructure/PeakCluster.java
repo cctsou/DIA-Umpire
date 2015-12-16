@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- *
+ * Peak isotope cluster data structure 
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakCluster implements Serializable {
@@ -43,7 +43,6 @@ public class PeakCluster implements Serializable {
 
     public int Index;
     private transient SortedListFloat MatchScores;
-    //public transient float BestSumCorrPPMScore=0f;
     public transient PeakCurve[] IsoPeaksCurves;
     public PeakCurve MonoIsotopePeak;
     public int[] IsoPeakIndex;
@@ -63,8 +62,7 @@ public class PeakCluster implements Serializable {
     private float conflictCorr = -1f;
     public float[] IsoPatternErrorMap;
     public float[] IsoPatternErrorID;
-    public float[] PeakDis;
-    //public XYPoint IsoMapProb;    
+    public float[] PeakDis;    
     public int NoRidges;
     public float OverlapP;
     public transient float[] OverlapRT;

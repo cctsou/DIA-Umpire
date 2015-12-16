@@ -22,7 +22,7 @@ package MSUmpire.PeakDataStructure;
 import java.io.Serializable;
 
 /**
- *
+ * Coeluting peak pair
  * @author Chih-Chiang Tsou
  */
 public class PeakOverlapRegion implements Serializable{

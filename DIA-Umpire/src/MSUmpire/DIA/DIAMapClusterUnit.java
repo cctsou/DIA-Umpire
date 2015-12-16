@@ -30,7 +30,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Thread unit for assigning MS1 and MS2 peak cluster for identified peptide ion
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class DIAMapClusterUnit implements Runnable{
@@ -58,6 +58,7 @@ public class DIAMapClusterUnit implements Runnable{
     }
     @Override
     public void run() {
+        //For each identified PSM
          for (PSM psm : pepIonID.GetPSMList()) {
             int ClusterIndex = -1;
             if (psm.GetRawNameString() == null ? Q1Name == null : psm.GetRawNameString().equals(FilenameUtils.getBaseName(Q1Name))) {
@@ -66,6 +67,7 @@ public class DIAMapClusterUnit implements Runnable{
                    Logger.getRootLogger().error("ScanClusterMapping "+Q1Name+" doesn't have "+ psm.SpecNumber);
                     System.exit(3);
                 }
+                //Get cluster index fro Q1
                 ClusterIndex = ScanClusterMap_Q1.get(psm.ScanNo);
                 PeakCluster Cluster = ms1lcms.PeakClusters.get(ClusterIndex - 1);
                 Cluster.Identified=true;
@@ -78,6 +80,8 @@ public class DIAMapClusterUnit implements Runnable{
                     Logger.getRootLogger().error("ScanClusterMapping "+Q2Name+" doesn't have "+ psm.SpecNumber);
                     System.exit(3);
                 }
+                
+                //Get cluster index fro Q2
                 ClusterIndex = ScanClusterMap_Q2.get(psm.ScanNo);
                 PeakCluster Cluster = ms1lcms.PeakClusters.get(ClusterIndex - 1);
                 Cluster.Identified=true;
@@ -94,6 +98,7 @@ public class DIAMapClusterUnit implements Runnable{
                  if (WindowClusterIndex.split(";").length == 2) {
                      String windowname = WindowClusterIndex.split(";")[0];
                      if (windowname.equals(DIAWindow.WindowID)) {
+                         //Get cluster index fro Q3
                          ClusterIndex = Integer.parseInt(WindowClusterIndex.split(";")[1]);
                          PeakCluster Cluster = DIAWindow.PeakClusters.get(ClusterIndex - 1);
                          Cluster.Identified = true;
@@ -107,6 +112,7 @@ public class DIAMapClusterUnit implements Runnable{
                          }
                      }
                  } else {
+                     //Get cluster index fro Q3
                      ClusterIndex = Integer.parseInt(WindowClusterIndex);
                      if (DIAWindow.UnFragIonClu2Cur.containsKey(ClusterIndex)) {
                          PeakCluster Cluster = DIAWindow.PeakClusters.get(ClusterIndex - 1);

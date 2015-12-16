@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- *
+ * Fragments from spectral library for a peptide ion
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PepFragmentLib implements Serializable{

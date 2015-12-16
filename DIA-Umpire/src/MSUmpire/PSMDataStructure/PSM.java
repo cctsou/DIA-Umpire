@@ -27,7 +27,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- *
+ * PSM data structure 
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PSM implements Serializable{

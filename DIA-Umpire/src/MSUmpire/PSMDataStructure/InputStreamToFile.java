@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- *
+ * Create a InputStream class from a text file
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class InputStreamToFile {

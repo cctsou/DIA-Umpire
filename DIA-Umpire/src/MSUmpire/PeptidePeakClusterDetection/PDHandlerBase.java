@@ -39,7 +39,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Peak detection processing parent class
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PDHandlerBase {
@@ -81,6 +81,7 @@ public class PDHandlerBase {
         return count+"/"+InclusionFound.size();                
     }
     
+    //Add mz and RT coordinate to inclusion list
      public void AddToInclusionList(float mz, float rt){
          XYData point=new XYData(mz, rt);
         InclusionFound.put(point, false);
@@ -359,6 +360,7 @@ public class PDHandlerBase {
         reader.close();
     }
     
+    //Group peak curves based on peak profile correlation of isotope peaks
     protected void PeakCurveCorrClustering(XYData mzRange) throws IOException {
         Logger.getRootLogger().info("Grouping isotopic peak curves........");
 

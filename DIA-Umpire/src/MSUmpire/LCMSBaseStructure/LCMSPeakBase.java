@@ -26,6 +26,7 @@ import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PeakCurve;
 import MSUmpire.PeakDataStructure.SortedCurveCollectionApexRT;
+import MSUmpire.SpectrumParser.SpectrumParserBase;
 import MSUmpire.SpectrumParser.mzXMLParser;
 import java.io.File;
 import java.io.FileInputStream;
@@ -58,7 +59,7 @@ public class LCMSPeakBase {
     private KDTree PeakCurveSearchTree=null;
     public String ScanCollectionName;
     public String ParentmzXMLName;
-    protected mzXMLParser mzxml;
+    protected mzXMLParser SpectrmParser;
     public int MaxNoPeakCluster;
     public int MinNoPeakCluster;
     public int StartCharge;

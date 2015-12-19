@@ -31,7 +31,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- *
+ * MGF file parser
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class MGFParser {

@@ -38,7 +38,7 @@ import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
 
 /**
- *
+ * Parent class of spectrum parser
  * @author Chih-Chiang Tsou
  */
 public class SpectrumParserBase {
@@ -81,7 +81,6 @@ public class SpectrumParserBase {
     }
     
     protected void FSElutionIndexWrite() throws IOException {
-
         try {
             Logger.getRootLogger().debug("Writing RTidx to file:" + FilenameUtils.removeExtension(filename) + ".RTidxFS..");
             FileOutputStream fout = new FileOutputStream(FilenameUtils.removeExtension(filename) + ".RTidxFS", false);
@@ -151,8 +150,6 @@ public class SpectrumParserBase {
         if (!new File(FilenameUtils.removeExtension(filename) + ".ScanidxFS").exists()) {
             return false;
         }
-        
-                
         try {
             Logger.getRootLogger().debug("Reading RTidx:" + FilenameUtils.removeExtension(filename) + ".RTidxFS...");
             FileInputStream fileIn = new FileInputStream(FilenameUtils.removeExtension(filename) + ".RTidxFS");
@@ -168,7 +165,6 @@ public class SpectrumParserBase {
             return false;
         }
 
-        //////////
         try {
             Logger.getRootLogger().debug("Reading ScanRT:" + FilenameUtils.removeExtension(filename) + ".ScanRTFS...");
             FileInputStream fileIn = new FileInputStream(FilenameUtils.removeExtension(filename) + ".ScanRTFS");
@@ -182,7 +178,6 @@ public class SpectrumParserBase {
             //Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
             return false;
         }
-        ///////////
 
         try {
             Logger.getRootLogger().debug("Reading Scanidx:" + FilenameUtils.removeExtension(filename) + ".ScanidxFS...");
@@ -256,14 +251,11 @@ public class SpectrumParserBase {
     }
 
     protected ScanCollection InitializeScanCollection() {
-        //System.out.print("Multithreading: "+NoCPUs +" processors (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
-        //System.out.print("...Reading all scans....");
         ScanCollection scanCollection = new ScanCollection(parameter.Resolution);
         scanCollection.Filename = filename;
         scanCollection.ElutionTimeToScanNoMap = ElutionTimeToScanNoMap;
         return scanCollection;
     }
-
     
     protected int GetEndScan(float endTime) {
         int EndScanNo;

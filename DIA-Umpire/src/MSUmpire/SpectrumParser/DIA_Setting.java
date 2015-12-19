@@ -34,7 +34,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 
 /**
- *
+ * Definitions of DIA type and isolation window settings
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class DIA_Setting implements Serializable{

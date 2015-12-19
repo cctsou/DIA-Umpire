@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * Thread unit for parsing one scan in mzXML file
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class MzXMLthreadUnit implements Runnable {

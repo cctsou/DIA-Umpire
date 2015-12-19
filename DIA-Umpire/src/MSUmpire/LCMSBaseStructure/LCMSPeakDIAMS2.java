@@ -74,7 +74,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
         this.DIA_MZ_Range = WindowMZ;
         this.Last_MZ_Range = LastWindowMZ;
         this.WindowID = (int) Math.floor(WindowMZ.getX()) + "_" + (int) Math.floor(WindowMZ.getY());
-        this.mzxml = mzxml;
+        this.SpectrmParser = mzxml;
         this.ScanCollectionName = FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename) + "_" + (int) Math.floor(WindowMZ.getX()) + "_" + (int) Math.floor(WindowMZ.getY());
         this.ParentmzXMLName = FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename);
         this.parentDIA = parentDIA;
@@ -296,7 +296,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
     }
 
     public ScanCollection GetScanCollection() throws InterruptedException, ExecutionException, IOException {
-        return mzxml.GetScanCollectionDIAMS2(DIA_MZ_Range, true,parameter.startRT, parameter.endRT);
+        return SpectrmParser.GetScanCollectionDIAMS2(DIA_MZ_Range, true,parameter.startRT, parameter.endRT);
     }
 
     public boolean ReadIfProcessed() {

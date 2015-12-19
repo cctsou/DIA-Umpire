@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.TreeMap;
 
 /**
- *
+ * MALDI parser, parse a collection of pkl files (Data from Phil Andrews's lab)
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class MALDIDataParser {

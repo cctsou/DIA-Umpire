@@ -156,18 +156,18 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
     }
   
     public void SetmzXML(mzXMLParser mzxml) {
-        this.mzxml = mzxml;
+        this.SpectrmParser = mzxml;
     }
 
     public mzXMLParser GetmzXML() {
-        if (mzxml == null) {
+        if (SpectrmParser == null) {
             try {
-                mzxml = new mzXMLParser(ScanCollectionName, parameter, datattype, null, NoCPUs);
+                SpectrmParser = new mzXMLParser(ScanCollectionName, parameter, datattype, null, NoCPUs);
             } catch (Exception ex) {
                 Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
             }
         }
-        return mzxml;
+        return SpectrmParser;
     }
 
     //MS1 feature detection

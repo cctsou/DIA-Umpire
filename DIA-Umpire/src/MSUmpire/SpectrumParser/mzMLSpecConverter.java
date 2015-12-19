@@ -31,7 +31,7 @@ import uk.ac.ebi.jmzml.model.mzml.ScanList;
 import uk.ac.ebi.jmzml.model.mzml.Spectrum;
 
 /**
- *
+ * Thread unit to covert mzML spectrum to ScanData class
  * @author Chih-Chiang Tsou
  */
 public class mzMLSpecConverter implements Runnable{

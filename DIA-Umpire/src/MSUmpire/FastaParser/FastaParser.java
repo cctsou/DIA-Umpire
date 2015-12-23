@@ -50,14 +50,24 @@ public class FastaParser implements Serializable{
     public void RemoveDecoy(String DecoyTag) {
         HashMap<String, ProteinEntry> newlist=new HashMap<>();
         for(ProteinEntry protein : ProteinList.values()){
-            if(!protein.ACC.startsWith(DecoyTag)){
+            if(!(protein.ACC.startsWith(DecoyTag)|protein.ACC.endsWith(DecoyTag))){
                 newlist.put(protein.ACC, protein);
             }
         }
         ProteinList=newlist;
     }
         
-    
+    public String GetProtSeq(String ProtID){        
+        if(ProteinList.containsKey(ProtID)){
+            return ProteinList.get(ProtID).Seq;
+        }        
+        for(String ID : ProteinList.keySet()){
+            if(ID.contains(ProtID)){
+                return ProteinList.get(ID).Seq;
+            }
+        }
+        return null;
+    }
     public class ProteinEntry implements Serializable{
         private static final long serialVersionUID = -2002064228475586294L;
         public String ACC;
@@ -160,7 +170,7 @@ public class FastaParser implements Serializable{
     public void digestion(int missedcleave, int minlength, int maxlength, String Decoytag) throws XmlPullParserException, IOException {
         PeptideList=new HashMap<>();
         for (ProteinEntry protein : ProteinList.values()) {
-            if(protein.ACC.startsWith(Decoytag)){
+            if(protein.ACC.startsWith(Decoytag)|protein.ACC.endsWith(Decoytag)){
                 continue;
             }
             String Sequence = protein.Seq;            

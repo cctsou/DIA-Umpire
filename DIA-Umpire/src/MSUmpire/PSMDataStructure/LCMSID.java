@@ -101,6 +101,7 @@ public class LCMSID implements Serializable {
     private FastaParser GetFastaParser() {
         if (fastaParser == null) {
             fastaParser = new FastaParser(FastaPath);
+            fastaParser.RemoveDecoy(DecoyTag);
         }
         return fastaParser;
     }
@@ -461,7 +462,7 @@ public class LCMSID implements Serializable {
                         //String Sequence = GetSequenceFactory().getProtein(protID.UniProtID).getSequence();                    
                         //String Sequence = GetFastaParser().ProteinList.get(protID.getAccNo()).Seq;
                         try {
-                            String Sequence = GetFastaParser().ProteinList.get(protID.getAccNo()).Seq;
+                            String Sequence = GetFastaParser().GetProtSeq(protID.getAccNo());
                             if (Sequence != null) {
                                 protID.SetSequence(Sequence);
                             } else {
@@ -661,6 +662,62 @@ public class LCMSID implements Serializable {
         }
     }
 
+    public void FilterByProteinDecoyFDRUsingLocalPW(String DecoyTag, float fdr) {
+        this.DecoyTag = DecoyTag;
+        this.ProteinFDR = fdr;
+        FindLocalPWThresholdByFDR();
+        RemoveLowProbProteinDecoy();
+    }
+    
+    private void RemoveLowProbProteinDecoy() {
+
+        ArrayList<ProtID> removelist = new ArrayList<>();
+        for (ProtID protein : ProteinList.values()) {
+            if (protein.Probability < ProteinProbThreshold || protein.IsDecoy(DecoyTag)) {
+                removelist.add(protein);
+            }
+        }
+        for (ProtID protein : removelist) {
+            ProteinList.remove(protein.getAccNo());
+        }
+        GenearteAssignIonList();
+    }
+    
+    private void FindLocalPWThresholdByFDR() {
+        //FileWriter writer = null;
+        //try {
+        if (ProteinList.isEmpty()) {
+            return;
+        }
+        SortedProteinListProb sortedlist = new SortedProteinListProb();
+        sortedlist.addAll(ProteinList.values());
+
+        //writer = new FileWriter(FilenameUtils.getFullPath(mzXMLFileName)+"/" + FilenameUtils.getBaseName(mzXMLFileName)+"_Pro.txt");
+        int positive = 0;
+        int negative = 0;
+        ProtID protein = sortedlist.get(0);
+        if (protein.IsDecoy(DecoyTag)) {
+            negative++;
+        } else {
+            positive++;
+        }
+        for (int i = 1; i < sortedlist.size(); i++) {
+            protein = sortedlist.get(i);
+            if (protein.IsDecoy(DecoyTag)) {
+                negative++;
+                //System.out.println(protein.getAccNo()+"-"+protein.ProteinGroup+"-Decoy");
+            } else {
+                positive++;
+                //System.out.println(protein.getAccNo()+"-"+ protein.ProteinGroup);
+            }
+            if (protein.Probability < sortedlist.get(i - 1).Probability && (float) negative / (float) (positive) >= ProteinFDR) {
+                ProteinProbThreshold = protein.Probability;
+                Logger.getRootLogger().info("Protein probability threshold=" + ProteinProbThreshold + " Estimated raw protein FDR:" + (float) negative / (float) (positive) + "(Target/Decoy)=(" + positive + "/" + negative + ")");
+                return;
+            }
+        }
+    }
+    
     public void RemoveLowLocalPWProtein(float LocalPW) {
         ArrayList<ProtID> removelist = new ArrayList<>();
         for (ProtID protein : ProteinList.values()) {
@@ -851,7 +908,7 @@ public class LCMSID implements Serializable {
         for (ProtID protein : ProteinList.values()) {
             if (protein.IsDecoy(DecoyTag)) {
                 for (int i = 0; i < protein.IndisProteins.size(); i++) {
-                    if (!protein.IndisProteins.get(i).startsWith(DecoyTag)) {
+                    if (!(protein.IndisProteins.get(i).startsWith(DecoyTag)|protein.IndisProteins.get(i).endsWith(DecoyTag))) {
                         protein.setAccNo(protein.IndisProteins.get(i));
                         protein.SetDescription(protein.IndisProtDes.get(i));
                         break;
@@ -869,7 +926,7 @@ public class LCMSID implements Serializable {
                 for (PepIonID pep : protein.ProtPeptideID.values()) {
                     boolean include = true;
                     for (String prot : pep.ParentProtString_ProtXML) {
-                        if (!prot.startsWith(DecoyTag)) {
+                        if (!(prot.startsWith(DecoyTag)|prot.endsWith(DecoyTag))) {
                             include = false;
                         }
                     }

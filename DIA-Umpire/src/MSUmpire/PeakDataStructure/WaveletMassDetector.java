@@ -24,8 +24,8 @@ import MSUmpire.BaseDataStructure.XYData;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-/**
- * This class implements the Continuous Wavelet Transform (CWT), Mexican Hat,
+/*
+ *This class implements the Continuous Wavelet Transform (CWT), Mexican Hat,
  * over raw datapoints of a certain spectrum. After get the spectrum in the
  * wavelet's time domain, we use the local maxima to detect possible peaks in
  * the original raw datapoints.

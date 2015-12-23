@@ -73,6 +73,34 @@ public class PiecewiseRegression extends Regression {
         return PredictXList.GetCloset(yvalue);
     }
 
+    private float PredictXByLocalRegion(float Yvalue) {
+        float error = 0;
+        int count = 0;
+        
+        for (int i = 0; i < pointset.PointCount(); i++) {            
+            if (pointset.Data.get(i).getY() > Yvalue - ErrorEstimateRange && pointset.Data.get(i).getY() < Yvalue + ErrorEstimateRange) {
+                error += pointset.Data.get(i).getX() - (float) (GetX(pointset.Data.get(i).getY()));                
+                count++;
+            }
+        }
+        if (count < 10) {
+            error = 0;
+            count = 0;
+            for (int i = 0; i < pointset.PointCount(); i++) {
+                if (pointset.Data.get(i).getY() > Yvalue - 2 * ErrorEstimateRange && pointset.Data.get(i).getY() < Yvalue + 2 * ErrorEstimateRange) {
+                    error += pointset.Data.get(i).getX() - GetX(pointset.Data.get(i).getY());                    
+                    count++;
+                }
+            }
+        }
+        if (count > 10) {
+            error /= count;
+        }
+        float predictvalue=GetX(Yvalue) + error;
+        
+        return predictvalue;
+    }
+    
     private float PredictYByLocalRegion(float Xvalue) {
         float error = 0f;        
         int count = 0;
@@ -83,7 +111,9 @@ public class PiecewiseRegression extends Regression {
                 count++;
             }
         }
-        if (count == 0) {
+        if (count < 10) {
+             error = 0f;        
+             count = 0;
             for (int i = 0; i < pointset.PointCount(); i++) {
                 if (pointset.Data.get(i).getX() > Xvalue - 2 * ErrorEstimateRange && pointset.Data.get(i).getX() < Xvalue + 2 * ErrorEstimateRange) {
                     error += pointset.Data.get(i).getY() - GetY(pointset.Data.get(i).getX());
@@ -91,7 +121,7 @@ public class PiecewiseRegression extends Regression {
                 }
             }
         }
-        if (count > 0) {
+        if (count > 10) {
             error /= count;
         }
 
@@ -139,32 +169,6 @@ public class PiecewiseRegression extends Regression {
             SDY[j] = (float) Math.sqrt(SDY[j]);            
             PredictYList.get(j).setZ(SDY[j]);
         }
-    }
-
-    private float PredictXByLocalRegion(float Yvalue) {
-        float error = 0;
-        int count = 0;
-        
-        for (int i = 0; i < pointset.PointCount(); i++) {
-            if (pointset.Data.get(i).getY() > Yvalue - ErrorEstimateRange && pointset.Data.get(i).getY() < Yvalue + ErrorEstimateRange) {
-                error += pointset.Data.get(i).getX() - (float) (GetX(pointset.Data.get(i).getY()));                
-                count++;
-            }
-        }
-        if (count == 0) {
-            for (int i = 0; i < pointset.PointCount(); i++) {
-                if (pointset.Data.get(i).getY() > Yvalue - 2 * ErrorEstimateRange && pointset.Data.get(i).getY() < Yvalue + 2 * ErrorEstimateRange) {
-                    error += pointset.Data.get(i).getX() - GetX(pointset.Data.get(i).getY());                    
-                    count++;
-                }
-            }
-        }
-        if (count > 0) {
-            error /= count;
-        }
-        float predictvalue=GetX(Yvalue) + error;
-        
-        return predictvalue;
     }
 
     public void GeneratePredictYList() {

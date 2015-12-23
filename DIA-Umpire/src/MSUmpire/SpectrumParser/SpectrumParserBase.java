@@ -77,7 +77,7 @@ public abstract class SpectrumParserBase {
         if(filename.toLowerCase().endsWith("mzxml")){
             return new mzXMLParser(filename, parameter, datatype, dIA_Setting, NoCPUs);
         }
-        else if(filename.toLowerCase().endsWith("mzxml")){
+        else if(filename.toLowerCase().endsWith("mzml")){
             return new mzMLParser(filename, parameter, datatype, dIA_Setting, NoCPUs);
         }
         Logger.getRootLogger().error("The spectral lfile: "+filename +" is not supported.");
@@ -297,7 +297,7 @@ public abstract class SpectrumParserBase {
         return StartScanNo;
     }
     //Get all the DIA MS2 scans according to a isolation window range
-     public ScanCollection GetScanCollectionDIAMS2(XYData DIAWindow, boolean IncludePeak,float startRT, float endRT) throws InterruptedException, ExecutionException, IOException {
+     public ScanCollection GetScanCollectionDIAMS2(XYData DIAWindow, boolean IncludePeak,float startRT, float endRT){
         if (dIA_Setting == null) {
             Logger.getRootLogger().error("This is not DIA data" + filename);
             return null;
@@ -306,7 +306,7 @@ public abstract class SpectrumParserBase {
     }
     public abstract ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startRT, float endRT);
     
-    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak) throws InterruptedException, ExecutionException, IOException {
+    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak){
         return GetAllScanCollectionByMSLabel(MS1Included, MS2Included, MS1Peak, MS2Peak, 0f, 999999f);
     }
 
@@ -314,7 +314,7 @@ public abstract class SpectrumParserBase {
         
     
     //Get all the DIA MS1 scans according to MS1 m/z range, this was only for WiSIM data
-    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak) throws InterruptedException, ExecutionException, IOException {
+    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak) {
         if (dIA_Setting == null) {
             Logger.getRootLogger().error("This is not DIA data" + filename);
             return null;

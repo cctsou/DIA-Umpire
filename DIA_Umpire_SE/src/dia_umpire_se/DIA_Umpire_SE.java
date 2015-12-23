@@ -72,7 +72,7 @@ public class DIA_Umpire_SE {
         String mzXMLPath = args[0];
         Logger.getRootLogger().info("Version: " + UmpireInfo.GetInstance().Version);
         Logger.getRootLogger().info("Parameter file:" + parameterfile);
-        Logger.getRootLogger().info("mzXML file:" + mzXMLPath);
+        Logger.getRootLogger().info("Spectra file:" + mzXMLPath);
         BufferedReader reader = new BufferedReader(new FileReader(parameterfile));
 
         String line = "";

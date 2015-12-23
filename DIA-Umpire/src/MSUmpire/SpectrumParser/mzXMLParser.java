@@ -21,7 +21,6 @@ package MSUmpire.SpectrumParser;
 
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.ScanCollection;
-import MSUmpire.BaseDataStructure.ScanData;
 import MSUmpire.BaseDataStructure.SpectralDataType;
 import MSUmpire.BaseDataStructure.XYData;
 import java.io.*;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.*;
-import java.util.logging.Level;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;

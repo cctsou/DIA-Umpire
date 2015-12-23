@@ -91,7 +91,7 @@ public class PSM implements Serializable{
     public boolean IsDecoy(String decoytag) {
         boolean decoy = true;
         for (String pro : ParentProtIDs) {
-            if (!pro.startsWith(decoytag)) {
+            if (!(pro.startsWith(decoytag)|pro.endsWith(decoytag))) {
                 decoy = false;
             }
         }

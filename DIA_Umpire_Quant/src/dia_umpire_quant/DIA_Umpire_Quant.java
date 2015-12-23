@@ -93,6 +93,7 @@ public class DIA_Umpire_Quant {
         String InternalLibID = "";
         String ExternalLibPath = "";
         String ExternalLibDecoyTag = "DECOY";
+        boolean DefaultProtFiltering=true;
         
         float ProbThreshold = 0.9f;
         float ReSearchProb =0.8f;
@@ -181,6 +182,10 @@ public class DIA_Umpire_Quant {
                         Combined_Prot = value;
                         break;
                     }
+                    case "DefaultProtFiltering": {
+                        DefaultProtFiltering = Boolean.parseBoolean(value);
+                        break;
+                    }     
                     case "DecoyPrefix": {
                         if (!"".equals(value)) {
                             tandemPara.DecoyPrefix = value;
@@ -329,9 +334,14 @@ public class DIA_Umpire_Quant {
             if (!"".equals(Combined_Prot) && protID == null) {
                 protID = new LCMSID(Combined_Prot, tandemPara.DecoyPrefix, tandemPara.FastaPath);
                 ProtXMLParser protxmlparser = new ProtXMLParser(protID, Combined_Prot, 0f);
-                protID.RemoveLowLocalPWProtein(0.8f);
-                protID.RemoveLowMaxIniProbProtein(0.9f);
-                protID.FilterByProteinDecoyFDRUsingMaxIniProb(tandemPara.DecoyPrefix, tandemPara.ProtFDR);
+                if (DefaultProtFiltering) {
+                    protID.RemoveLowLocalPWProtein(0.8f);
+                    protID.RemoveLowMaxIniProbProtein(0.9f);
+                    protID.FilterByProteinDecoyFDRUsingMaxIniProb(tandemPara.DecoyPrefix, tandemPara.ProtFDR);
+                }
+                else{
+                    protID.FilterByProteinDecoyFDRUsingLocalPW(tandemPara.DecoyPrefix, tandemPara.ProtFDR);
+                }
                 protID.LoadSequence();
                 protID.WriteLCMSIDSerialization(Combined_Prot);
             }
@@ -343,7 +353,7 @@ public class DIA_Umpire_Quant {
         try {
             File folder = new File(WorkFolder);
             for (final File fileEntry : folder.listFiles()) {
-                if (fileEntry.isFile() && fileEntry.getAbsolutePath().toLowerCase().endsWith(".mzxml")
+                if (fileEntry.isFile() && (fileEntry.getAbsolutePath().toLowerCase().endsWith(".mzxml") | fileEntry.getAbsolutePath().toLowerCase().endsWith(".mzml"))
                         && !fileEntry.getAbsolutePath().toLowerCase().endsWith("q1.mzxml")
                         && !fileEntry.getAbsolutePath().toLowerCase().endsWith("q2.mzxml")
                         && !fileEntry.getAbsolutePath().toLowerCase().endsWith("q3.mzxml")) {
@@ -351,7 +361,7 @@ public class DIA_Umpire_Quant {
                 }
                 if (fileEntry.isDirectory()) {
                     for (final File fileEntry2 : fileEntry.listFiles()) {
-                        if (fileEntry2.isFile() && fileEntry2.getAbsolutePath().toLowerCase().endsWith(".mzxml")
+                        if (fileEntry2.isFile() && (fileEntry2.getAbsolutePath().toLowerCase().endsWith(".mzxml") | fileEntry2.getAbsolutePath().toLowerCase().endsWith(".mzml"))
                                 && !fileEntry2.getAbsolutePath().toLowerCase().endsWith("q1.mzxml")
                                 && !fileEntry2.getAbsolutePath().toLowerCase().endsWith("q2.mzxml")
                                 && !fileEntry2.getAbsolutePath().toLowerCase().endsWith("q3.mzxml")) {

@@ -1,4 +1,4 @@
-#DIA-Umpire (version v1.4)
+#DIA-Umpire (version v2.0)
 #Data Independent Acquisition data processing and analysis package (Quantitation and targeted re-extraction module)
 
 #Working folder path: the program will process all mzXML files in the working folder (please make sure the corresponding pepXML files are in the same folder with mzXML file)
@@ -28,6 +28,11 @@ DecoyPrefix=
 #FDR threshold
 PeptideFDR = 0.01
 ProteinFDR = 0.01
+
+#Use default protein FDR filtering.
+# Set to true if you wish to filter protein using DIA-Umpire's filtering method based on maximum peptide ion probability values.
+# Set to false if you wish to filter protein using target-decoy method based on protein probability values.
+DefaultProtFiltering = true
 
 #UserMod path
 UserMod=

@@ -492,7 +492,7 @@ public class FragmentLibManager implements Serializable {
                         fraglib.ModSequence = ModStringConvert.AddModIntoSeqBeforeSite(fraglib.ModSequence, modinfo.GetKey(), idx - 1);
                     }
                 }
-                if (peptide.getId().startsWith(DecoyPrefix)) {
+                if (peptide.getId().startsWith(DecoyPrefix) | peptide.getId().endsWith(DecoyPrefix)) {
                     //PeptideDecoyFragmentLib.put("decoy_" +fraglib.GetKey(), fraglib);
                     fraglib.ModSequence ="decoy_" + fraglib.ModSequence;
                     Decoys.put(peptide.getId(), fraglib);

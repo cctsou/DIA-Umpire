@@ -31,6 +31,7 @@ import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PeakCurve;
 import MSUmpire.PeakDataStructure.PrecursorFragmentPairEdge;
 import MSUmpire.PeptidePeakClusterDetection.PDHandlerDIAMS2;
+import MSUmpire.SpectrumParser.SpectrumParserBase;
 import MSUmpire.SpectrumParser.mzXMLParser;
 import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import java.io.File;
@@ -70,11 +71,11 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
 
     public boolean FragmentGroupByCluster = false;
 
-    public LCMSPeakDIAMS2(String Filename, DIAPack parentDIA, InstrumentParameter parameter, XYData WindowMZ, XYData LastWindowMZ, mzXMLParser mzxml, int NoCPUs) {
+    public LCMSPeakDIAMS2(String Filename, DIAPack parentDIA, InstrumentParameter parameter, XYData WindowMZ, XYData LastWindowMZ, SpectrumParserBase mzxml, int NoCPUs) {
         this.DIA_MZ_Range = WindowMZ;
         this.Last_MZ_Range = LastWindowMZ;
         this.WindowID = (int) Math.floor(WindowMZ.getX()) + "_" + (int) Math.floor(WindowMZ.getY());
-        this.SpectrmParser = mzxml;
+        this.SpectrumParser = mzxml;
         this.ScanCollectionName = FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename) + "_" + (int) Math.floor(WindowMZ.getX()) + "_" + (int) Math.floor(WindowMZ.getY());
         this.ParentmzXMLName = FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename);
         this.parentDIA = parentDIA;
@@ -296,7 +297,7 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
     }
 
     public ScanCollection GetScanCollection() throws InterruptedException, ExecutionException, IOException {
-        return SpectrmParser.GetScanCollectionDIAMS2(DIA_MZ_Range, true,parameter.startRT, parameter.endRT);
+        return SpectrumParser.GetScanCollectionDIAMS2(DIA_MZ_Range, true,parameter.startRT, parameter.endRT);
     }
 
     public boolean ReadIfProcessed() {

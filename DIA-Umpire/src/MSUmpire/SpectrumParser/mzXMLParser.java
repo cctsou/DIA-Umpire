@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.*;
+import java.util.logging.Level;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -370,18 +371,10 @@ public final class mzXMLParser  extends SpectrumParserBase{
             fileHandler.close();
         }
     }
-    
-    //Get all the DIA MS2 scans according to a isolation window range
-     public ScanCollection GetScanCollectionDIAMS2(XYData DIAWindow, boolean IncludePeak,float startRT, float endRT) throws InterruptedException, ExecutionException, IOException {
-        if (dIA_Setting == null) {
-            Logger.getRootLogger().error("This is not DIA data" + filename);
-            return null;
-        }
-        return GetScanDIAMS2(DIAWindow, IncludePeak, startRT, endRT);
-    }
      
      //Get all the DIA MS2 scans according to a isolation window range
-    public ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+    @Override
+    public ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startTime, float endTime) {
         if (dIA_Setting == null) {
             Logger.getRootLogger().error(filename + " is not DIA data");
             return null;
@@ -400,7 +393,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
                 IncludedScans.add(scannum);
             }
         }
-        ParseScans(IncludedScans, ScanList);        
+        ScanList=ParseScans(IncludedScans);        
         for (MzXMLthreadUnit result : ScanList) {
             swathScanCollection.AddScan(result.scan);
             swathScanCollection.ElutionTimeToScanNoMap.put(result.scan.RetentionTime, result.scan.ScanNum);
@@ -409,27 +402,17 @@ public final class mzXMLParser  extends SpectrumParserBase{
         ScanList = null;
         return swathScanCollection;
     }
-    
-    //Get all the DIA MS1 scans according to MS1 m/z range, this was only for WiSIM data
-    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak) throws InterruptedException, ExecutionException, IOException {
-        if (dIA_Setting == null) {
-            Logger.getRootLogger().error("This is not DIA data" + filename);
-            return null;
-        }
-        return GetScanCollectionMS1Window(MS1Window, IncludePeak, 0f, 999999f);
-    }
-    
+        
      //Get all the DIA MS1 scans according to MS1 m/z range, this was only for WiSIM data
-    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+    @Override
+    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak, float startTime, float endTime)  {
         if (dIA_Setting == null) {
             Logger.getRootLogger().error(filename + " is not DIA data");
             return null;
         }
         ScanCollection MS1WindowScanCollection = new ScanCollection(parameter.Resolution);
-        //System.out.print("Multithreading: "+NoCPUs +" processors (Memory usage:"+ Math.round((Runtime.getRuntime().totalMemory() -Runtime.getRuntime().freeMemory())/1048576)+"MB)\n");
-        //System.out.print("...Reading all scans of SWATH window:" + swathwin.X + " - " + swathwin.Y + "....");        
-        
-        List<MzXMLthreadUnit> ScanList = new ArrayList<>();
+       
+        List<MzXMLthreadUnit> ScanList = null;
 
         int StartScanNo = 0;
         int EndScanNo = 0;
@@ -443,7 +426,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
             }
         }
         
-        ParseScans(IncludedScans, ScanList);
+        ScanList=ParseScans(IncludedScans);
         
         for (MzXMLthreadUnit result : ScanList) {
             MS1WindowScanCollection.AddScan(result.scan);
@@ -455,8 +438,9 @@ public final class mzXMLParser  extends SpectrumParserBase{
         return MS1WindowScanCollection;
     }
        
-    //Parse a list of scans
-    private void ParseScans(ArrayList<Integer> IncludedScans, List<MzXMLthreadUnit> ScanList) throws IOException {
+    //Parse scans given a list of scan numbers
+    private List<MzXMLthreadUnit>  ParseScans(ArrayList<Integer> IncludedScans){
+         List<MzXMLthreadUnit> ScanList=new ArrayList<>();
         ExecutorService executorPool = null;
         executorPool = Executors.newFixedThreadPool(NoCPUs);
         Iterator<Entry<Integer, Long>> iter = ScanIndex.entrySet().iterator();        
@@ -473,22 +457,26 @@ public final class mzXMLParser  extends SpectrumParserBase{
             currentIdx = nexposition;
 
             if (IncludedScans.contains(currentScanNo)) {
-                byte[] buffer = new byte[(int) (nexposition - startposition)];
-                RandomAccessFile fileHandler = new RandomAccessFile(filename, "r");
-                fileHandler.seek(startposition);
-                fileHandler.read(buffer, 0, (int) (nexposition - startposition));
-                fileHandler.close();
-                String xmltext = new String(buffer);
-                if (ent.getKey() == Integer.MAX_VALUE) {
-                    xmltext = xmltext.replaceAll("</msRun>", "");
+                try {
+                    byte[] buffer = new byte[(int) (nexposition - startposition)];
+                    RandomAccessFile fileHandler = new RandomAccessFile(filename, "r");
+                    fileHandler.seek(startposition);
+                    fileHandler.read(buffer, 0, (int) (nexposition - startposition));
+                    fileHandler.close();
+                    String xmltext = new String(buffer);
+                    if (ent.getKey() == Integer.MAX_VALUE) {
+                        xmltext = xmltext.replaceAll("</msRun>", "");
+                        buffer = null;
+                    }
+                    boolean ReadPeak = true;
+                    MzXMLthreadUnit unit = new MzXMLthreadUnit(xmltext, parameter, datatype, ReadPeak);
+                    ScanList.add(unit);
                     buffer = null;
+                    xmltext = null;
+                    fileHandler = null;
+                } catch (Exception ex) {
+                    Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
                 }
-                boolean ReadPeak = true;
-                MzXMLthreadUnit unit = new MzXMLthreadUnit(xmltext, parameter, datatype, ReadPeak);
-                ScanList.add(unit);
-                buffer = null;
-                xmltext = null;
-                fileHandler = null;
             }
         }
 
@@ -505,13 +493,11 @@ public final class mzXMLParser  extends SpectrumParserBase{
         executorPool = null;
         ent = null;
         iter = null;
+        return ScanList;
     }
     
-    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak) throws InterruptedException, ExecutionException, IOException {
-        return GetAllScanCollectionByMSLabel(MS1Included, MS2Included, MS1Peak, MS2Peak, 0f, 999999f);
-    }
-
-    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+    @Override
+    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime) {
         ScanCollection scanCollection = InitializeScanCollection();
         Logger.getRootLogger().debug("Memory usage before loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB (" + NoCPUs + " threads)");
 
@@ -526,7 +512,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
             }
         }
          
-        List<MzXMLthreadUnit> ScanList = new ArrayList<>();
+        List<MzXMLthreadUnit> ScanList = null;
 
         int StartScanNo = 0;
         int EndScanNo = 0;
@@ -541,7 +527,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
             }
         }
         
-        ParseScans(temp, ScanList);
+        ScanList=ParseScans(temp);
         
         for (MzXMLthreadUnit result : ScanList) {
             scanCollection.AddScan(result.scan);

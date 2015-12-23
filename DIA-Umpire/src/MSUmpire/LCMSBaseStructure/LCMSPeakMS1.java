@@ -31,6 +31,7 @@ import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeptidePeakClusterDetection.PDHandlerMS1;
 import MSUmpire.SearchResultParser.PepXMLParser;
+import MSUmpire.SpectrumParser.SpectrumParserBase;
 import MSUmpire.SpectrumParser.mzXMLParser;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -101,7 +102,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
     }
 
     public void GeneratePeptideFragmentByMSMS(DBSearchParam para) throws InterruptedException, ExecutionException, IOException, SQLException {
-        IDsummary.GenerateFragmentPeakForPepIonByMSMS(GetmzXML().GetAllScanCollectionByMSLabel(false, true, false, true), para.FragPPM);
+        IDsummary.GenerateFragmentPeakForPepIonByMSMS(GetSpectrumParser().GetAllScanCollectionByMSLabel(false, true, false, true), para.FragPPM);
 }
 
     public void WriteLCMSIDSerialization(){
@@ -155,19 +156,20 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         }
     }
   
-    public void SetmzXML(mzXMLParser mzxml) {
-        this.SpectrmParser = mzxml;
+    public void SetSpectrumParser(SpectrumParserBase mzxml) {
+        this.SpectrumParser = mzxml;
     }
 
-    public mzXMLParser GetmzXML() {
-        if (SpectrmParser == null) {
+    public SpectrumParserBase GetSpectrumParser() {
+        if (SpectrumParser == null) {
             try {
-                SpectrmParser = new mzXMLParser(ScanCollectionName, parameter, datattype, null, NoCPUs);
+                //SpectrmParser = new mzXMLParser(ScanCollectionName, parameter, datattype, null, NoCPUs);
+                SpectrumParser = SpectrumParserBase.GetInstance(ScanCollectionName, parameter, datattype, null, NoCPUs);
             } catch (Exception ex) {
                 Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
             }
         }
-        return SpectrmParser;
+        return SpectrumParser;
     }
 
     //MS1 feature detection
@@ -178,15 +180,15 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         }
         CreatePeakFolder();
         ArrayList<ScanCollection> scanCollections = new ArrayList<>();
-        parameter.NoPeakPerMin = (int) (parameter.SmoothFactor / GetmzXML().GetMS1CycleTime());
-        Logger.getRootLogger().info("MS1 average cycle time : "+GetmzXML().GetMS1CycleTime()*60+ " seconds");
+        parameter.NoPeakPerMin = (int) (parameter.SmoothFactor / GetSpectrumParser().GetMS1CycleTime());
+        Logger.getRootLogger().info("MS1 average cycle time : "+GetSpectrumParser().GetMS1CycleTime()*60+ " seconds");
         if (MS1Windows == null || MS1Windows.isEmpty()) {            
-            ScanCollection scanCollection=GetmzXML().GetAllScanCollectionByMSLabel(true, true, true, false,parameter.startRT, parameter.endRT);
+            ScanCollection scanCollection=GetSpectrumParser().GetAllScanCollectionByMSLabel(true, true, true, false,parameter.startRT, parameter.endRT);
             scanCollections.add(scanCollection);            
         }
         else{
             for( XYData window : MS1Windows.keySet()){
-                scanCollections.add(GetmzXML().GetScanCollectionMS1Window(window, true));
+                scanCollections.add(GetSpectrumParser().GetScanCollectionMS1Window(window, true));
             }
         }
         
@@ -218,8 +220,8 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
 
     public void MapScanNoForPeakClusters() {
         for (PeakCluster peakCluster : PeakClusters) {
-            peakCluster.StartScan = GetmzXML().GetScanNoByRT(peakCluster.startRT);
-            peakCluster.EndScan = GetmzXML().GetScanNoByRT(peakCluster.endRT);
+            peakCluster.StartScan = GetSpectrumParser().GetScanNoByRT(peakCluster.startRT);
+            peakCluster.EndScan = GetSpectrumParser().GetScanNoByRT(peakCluster.endRT);
         }
     }
   
@@ -414,7 +416,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
     private void CheckPSMRT() {
         for(PSM psm : IDsummary.PSMList.values()){
             if(psm.RetentionTime==-1f){
-                psm.RetentionTime=GetmzXML().GetScanElutionTimeMap().get(psm.ScanNo);
+                psm.RetentionTime=GetSpectrumParser().GetScanElutionTimeMap().get(psm.ScanNo);
                 psm.NeighborMaxRetentionTime=psm.RetentionTime;
             }
         }

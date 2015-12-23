@@ -24,7 +24,7 @@ import com.compomics.util.experiment.biology.ions.ElementaryIon;
 import java.util.ArrayList;
 
 /**
- *
+ * Isotope peak group class
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class IsotopePeakGroup {

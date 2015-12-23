@@ -352,7 +352,7 @@ public class MS1Quant {
                 time = System.currentTimeMillis() - time;
                 logger.info(LCMS1.ParentmzXMLName + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
                 LCMS1.BaseClearAllPeaks();
-                LCMS1.SetmzXML(null);
+                LCMS1.SetSpectrumParser(null);
                 LCMS1.IDsummary = null;
                 LCMS1 = null;
                 System.gc();

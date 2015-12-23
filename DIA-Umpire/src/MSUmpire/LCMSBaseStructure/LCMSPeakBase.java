@@ -59,7 +59,7 @@ public class LCMSPeakBase {
     private KDTree PeakCurveSearchTree=null;
     public String ScanCollectionName;
     public String ParentmzXMLName;
-    protected mzXMLParser SpectrmParser;
+    protected SpectrumParserBase SpectrumParser;
     public int MaxNoPeakCluster;
     public int MinNoPeakCluster;
     public int StartCharge;

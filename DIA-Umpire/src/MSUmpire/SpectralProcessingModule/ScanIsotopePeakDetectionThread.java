@@ -22,8 +22,8 @@ package MSUmpire.SpectralProcessingModule;
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.ScanData;
 
-/**
- *
+/** 
+ * Isotope peak grouping for a single MS or MS/MS spectrum
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 

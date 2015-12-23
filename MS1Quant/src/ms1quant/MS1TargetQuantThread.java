@@ -10,23 +10,9 @@ import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
 import MSUmpire.PSMDataStructure.LCMSID;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.DataFormatException;
-import javax.xml.parsers.ParserConfigurationException;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.Priority;
-import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlPullParserException;
 
 /**
  *
@@ -50,17 +36,7 @@ public class MS1TargetQuantThread implements Runnable{
     @Override
     public void run() {
         try {
-//            Logger logger=Logger.getLogger(mzxmlfile.getAbsolutePath());
-//            FileAppender fa = new FileAppender();
-//            fa.setName("FileLogger_Debug");
-//            fa.setFile(mzxmlfile.getAbsolutePath()+"_quant.log");
-//            fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
-//            fa.setThreshold(Level.DEBUG);
-//            fa.setAppend(false);
-//            fa.activateOptions();
-//            logger.addAppender(fa);
-//            
-//            logger.info("Processing file " + mzxmlfile.getAbsolutePath() + "....");
+
             Logger.getRootLogger().info("Processing file " + mzxmlfile.getAbsolutePath() + "....");
             
             long time = System.currentTimeMillis();
@@ -96,7 +72,7 @@ public class MS1TargetQuantThread implements Runnable{
             //logger.info(LCMS1.ParentmzXMLName + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
             Logger.getRootLogger().info(LCMS1.ParentmzXMLName + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
             LCMS1.BaseClearAllPeaks();
-            LCMS1.SetmzXML(null);
+            LCMS1.SetSpectrumParser(null);
             LCMS1.IDsummary = null;
             LCMS1 = null;
             id.ReleaseIDs();

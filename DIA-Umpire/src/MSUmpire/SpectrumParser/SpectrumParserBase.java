@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
@@ -41,7 +42,7 @@ import org.nustaq.serialization.FSTObjectOutput;
  * Parent class of spectrum parser
  * @author Chih-Chiang Tsou
  */
-public class SpectrumParserBase {
+public abstract class SpectrumParserBase {
     //public ScanCollection scanCollection = null;
     public String filename=null;
     public InstrumentParameter parameter=null;
@@ -69,7 +70,18 @@ public class SpectrumParserBase {
             if (datatype != SpectralDataType.DataType.DIA_V_Window) {
                 dIA_Setting.DIAWindows = new TreeMap<>();
             }
+        }        
+    }
+    
+    public static SpectrumParserBase GetInstance(String filename, InstrumentParameter parameter, SpectralDataType.DataType datatype, DIA_Setting dIA_Setting, int NoCPUs) throws Exception{
+        if(filename.toLowerCase().endsWith("mzxml")){
+            return new mzXMLParser(filename, parameter, datatype, dIA_Setting, NoCPUs);
         }
+        else if(filename.toLowerCase().endsWith("mzxml")){
+            return new mzMLParser(filename, parameter, datatype, dIA_Setting, NoCPUs);
+        }
+        Logger.getRootLogger().error("The spectral lfile: "+filename +" is not supported.");
+        return null;
     }
     
     public float GetMS1CycleTime() {
@@ -284,4 +296,31 @@ public class SpectrumParserBase {
         }
         return StartScanNo;
     }
+    //Get all the DIA MS2 scans according to a isolation window range
+     public ScanCollection GetScanCollectionDIAMS2(XYData DIAWindow, boolean IncludePeak,float startRT, float endRT) throws InterruptedException, ExecutionException, IOException {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error("This is not DIA data" + filename);
+            return null;
+        }
+        return GetScanDIAMS2(DIAWindow, IncludePeak, startRT, endRT);
+    }
+    public abstract ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startRT, float endRT);
+    
+    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak) throws InterruptedException, ExecutionException, IOException {
+        return GetAllScanCollectionByMSLabel(MS1Included, MS2Included, MS1Peak, MS2Peak, 0f, 999999f);
+    }
+
+    public abstract ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime);
+        
+    
+    //Get all the DIA MS1 scans according to MS1 m/z range, this was only for WiSIM data
+    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak) throws InterruptedException, ExecutionException, IOException {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error("This is not DIA data" + filename);
+            return null;
+        }
+        return GetScanCollectionMS1Window(MS1Window, IncludePeak, 0f, 999999f);
+    }
+    public abstract ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak, float startTime, float endTime) ;
+    
 }

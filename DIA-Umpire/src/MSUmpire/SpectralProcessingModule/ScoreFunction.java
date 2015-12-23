@@ -23,7 +23,7 @@ import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.BaseDataStructure.XYPointCollection;
 
 /**
- *
+ * Score function for comparing two spectra
  * @author Chih-Chiang Tsou
  */
 public class ScoreFunction {

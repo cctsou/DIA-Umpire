@@ -609,7 +609,7 @@ public class DIA_Umpire_Quant {
 //                DiaFile.LoadParams();
 //                DiaFile.SetDataType(SpectralDataType.DataType.DIA_F_Window);
 //                DiaFile.SetWindowSize(25);
-//                DiaFile.GetMzXML();
+//                DiaFile.GetSpectrumParser();
                 Logger.getRootLogger().info("Loading DIA setting failed, job is incomplete");
                 System.exit(1);
             }

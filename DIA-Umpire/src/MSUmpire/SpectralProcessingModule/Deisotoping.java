@@ -30,7 +30,7 @@ import MSUmpire.BaseDataStructure.XYData;
 import java.util.ArrayList;
 
 /**
- *
+ * Deisotoping algorithm
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class Deisotoping {

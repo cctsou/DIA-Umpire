@@ -35,7 +35,6 @@ import uk.ac.ebi.jmzml.model.mzml.Spectrum;
 import uk.ac.ebi.jmzml.xml.io.MzMLObjectIterator;
 import uk.ac.ebi.jmzml.xml.io.MzMLUnmarshaller;
 
-
 /*
  * Using multi-threading to parse mzXML files Load all scans at once in the
  * constructor To change this template, choose Tools | Templates and open the
@@ -106,17 +105,9 @@ public final class mzMLParser extends SpectrumParserBase{
             }
         }        
     }
-    
-    
-    public ScanCollection GetScanCollectionDIAMS2(XYData DIAWindow, boolean IncludePeak,float startRT, float endRT) throws InterruptedException, ExecutionException, IOException {
-        if (dIA_Setting == null) {
-            Logger.getRootLogger().error("This is not DIA data" + filename);
-            return null;
-        }
-        return GetScanDIAMS2(DIAWindow, IncludePeak, startRT, endRT);
-    }
-
-    public ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+        
+    @Override
+    public ScanCollection GetScanDIAMS2(XYData DIAWindow, boolean IncludePeak, float startTime, float endTime) {
         if (dIA_Setting == null) {
             Logger.getRootLogger().error(filename + " is not DIA data");
             return null;
@@ -138,11 +129,8 @@ public final class mzMLParser extends SpectrumParserBase{
         return swathScanCollection;
     }
 
-    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak) throws InterruptedException, ExecutionException, IOException {
-        return GetAllScanCollectionByMSLabel(MS1Included, MS2Included, MS1Peak, MS2Peak, 0f, 999999f);
-    }
-
-    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime) throws InterruptedException, ExecutionException, IOException {
+    @Override
+    public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime) {
         ScanCollection newscanCollection = InitializeScanCollection();
         Logger.getRootLogger().debug("Memory usage before loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB (" + NoCPUs + " threads)");
 
@@ -171,9 +159,40 @@ public final class mzMLParser extends SpectrumParserBase{
             }
         }        
         System.gc();
-        //System.out.print(".....done\n");
         Logger.getRootLogger().debug("Memory usage after loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB");
         return newscanCollection;
+    }
+    
+    @Override
+    public ScanCollection GetScanCollectionMS1Window(XYData MS1Window, boolean IncludePeak, float startTime, float endTime)  {
+        if (dIA_Setting == null) {
+            Logger.getRootLogger().error(filename + " is not DIA data");
+            return null;
+        }
+        ScanCollection MS1WindowScanCollection = new ScanCollection(parameter.Resolution);
+       
+        int StartScanNo = 0;
+        int EndScanNo = 0;
+
+        StartScanNo = GetStartScan(startTime);        
+        EndScanNo = GetEndScan(endTime);
+        ArrayList<Integer> IncludedScans=new ArrayList<>();
+        for(Integer scannum : dIA_Setting.MS1Windows.get(MS1Window)){
+            if(scannum >= StartScanNo && scannum <= EndScanNo){
+                IncludedScans.add(scannum);
+            }
+        }
+                
+        for(Integer scannum : IncludedScans){
+            if(scannum >= StartScanNo && scannum <= EndScanNo){
+                ScanData scan=scanCollection.ScanHashMap.get(scannum);                
+                MS1WindowScanCollection.AddScan(scan);
+                MS1WindowScanCollection.ElutionTimeToScanNoMap.put(scan.RetentionTime, scan.ScanNum);
+            }
+        }        
+        System.gc();
+        Logger.getRootLogger().debug("Memory usage after loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB");
+        return MS1WindowScanCollection;
     }
     
 }

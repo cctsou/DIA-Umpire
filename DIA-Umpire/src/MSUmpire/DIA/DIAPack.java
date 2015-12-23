@@ -34,6 +34,7 @@ import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PrecursorFragmentPairEdge;
 import MSUmpire.SearchResultParser.PepXMLParser;
 import MSUmpire.SpectrumParser.DIA_Setting;
+import MSUmpire.SpectrumParser.SpectrumParserBase;
 import MSUmpire.SpectrumParser.mzXMLParser;
 import MSUmpire.Utility.MSConvert;
 import java.io.BufferedReader;
@@ -45,7 +46,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -72,7 +72,7 @@ public class DIAPack {
     public LCMSPeakMS1 ms1lcms;
     public ArrayList<LCMSPeakDIAMS2> DIAWindows;
     public DIA_Setting dIA_Setting = new DIA_Setting();
-    private mzXMLParser mzXML;
+    private SpectrumParserBase SpectrumParser;
     public LCMSID IDsummary;
     public HashMap<Integer, Integer> ScanClusterMap_Q1;
     public HashMap<Integer, Integer> ScanClusterMap_Q2;
@@ -94,7 +94,7 @@ public class DIAPack {
     
     public void FixScanidx() {
         RemoveIndexFile();
-        GetMzXML();
+        GetSpectrumParser();
     }
 
     public int Q1Scan = 0;
@@ -149,21 +149,21 @@ public class DIAPack {
         dIA_Setting.F_DIA_WindowSize = size;
     }
 
-    public mzXMLParser GetMzXML() {
-        if (mzXML == null) {
+    public SpectrumParserBase GetSpectrumParser() {
+        if (SpectrumParser == null) {
             try {
-                mzXML = new mzXMLParser(Filename, parameter, dIA_Setting.dataType, dIA_Setting, NoCPUs);
+                SpectrumParser = SpectrumParserBase.GetInstance(Filename, parameter, dIA_Setting.dataType, dIA_Setting, NoCPUs);
             } catch (Exception ex) {
                 Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-                Logger.getRootLogger().error("Read mzXML file:" + Filename + " failed.");
+                Logger.getRootLogger().error("Read spectral file:" + Filename + " failed.");
                 System.exit(2);
             }
-            dIA_Setting = mzXML.dIA_Setting;
+            dIA_Setting = SpectrumParser.dIA_Setting;
             if (!new File(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_diasetting.ser").exists()) {
                 SaveDIASetting();
             }
         }
-        return mzXML;
+        return SpectrumParser;
     }
  
     //Entry of processing of signal extraction and generating pseudo MS/MS spectra
@@ -176,14 +176,14 @@ public class DIAPack {
     //Building empty data structure
     public void BuildDIAWindows() throws IOException, DataFormatException, IOException, IOException, IOException, InterruptedException {
         DIAWindows = new ArrayList<>();
-        Object[] WindowRange = GetMzXML().dIA_Setting.DIAWindows.keySet().toArray();
+        Object[] WindowRange = GetSpectrumParser().dIA_Setting.DIAWindows.keySet().toArray();
         for (int i = 0; i < WindowRange.length; i++) {
             XYData DiaWinMz = (XYData) WindowRange[i];
             XYData LastWinMz = null;
             if (i < WindowRange.length - 1) {
                 LastWinMz = (XYData) WindowRange[i + 1];
             }
-            LCMSPeakDIAMS2 diawindow = new LCMSPeakDIAMS2(Filename, this, parameter, DiaWinMz, LastWinMz, GetMzXML(), NoCPUs);
+            LCMSPeakDIAMS2 diawindow = new LCMSPeakDIAMS2(Filename, this, parameter, DiaWinMz, LastWinMz, GetSpectrumParser(), NoCPUs);
             
             diawindow.datattype = dIA_Setting.dataType;
             diawindow.ExportPeakCurveTable = ExportFragmentPeak;
@@ -809,7 +809,7 @@ public class DIAPack {
         mgfWriter3.close();
     }
 
-    //Check each PSM, if they don't have retention time from pepXML, fill the RT from mzXML file.
+    //Check each PSM, if they don't have retention time from pepXML, fill the RT from SpectrumParser file.
     private void FindPSMRT(){        
         try {
             if(!new File(FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".mzXML").exists()){
@@ -860,7 +860,7 @@ public class DIAPack {
         ms1lcms = null;
         DIAWindows = null;
         dIA_Setting = null;
-        mzXML = null;
+        SpectrumParser = null;
     }
 
     public void BuildStructure() throws SQLException, FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException {
@@ -875,7 +875,7 @@ public class DIAPack {
         }
 
         if (dIA_Setting.DIAWindows == null || dIA_Setting.DIAWindows.isEmpty()) {
-            GetMzXML();
+            GetSpectrumParser();
         }
         BuildDIAWindows();
     }
@@ -898,7 +898,7 @@ public class DIAPack {
         ms1lcms.CreatePeakFolder();
         ms1lcms.ExportPeakCurveTable = false;
         
-        ms1lcms.SetmzXML(GetMzXML());
+        ms1lcms.SetSpectrumParser(GetSpectrumParser());
         Logger.getRootLogger().info("Processing MS1 peak detection");        
         ms1lcms.ExportPeakClusterTable = ExportPrecursorPeak;
         ms1lcms.PeakClusterDetection();
@@ -955,7 +955,7 @@ public class DIAPack {
         int count = 1;
         //CreateSWATHTables();
         for (LCMSPeakDIAMS2 DIAwindow : DIAWindows) {
-            Logger.getRootLogger().info("Processing DIA MS2 (mz range):" + DIAwindow.DIA_MZ_Range.getX() + "_" + DIAwindow.DIA_MZ_Range.getY() + "( " + (count++) + "/" + GetMzXML().dIA_Setting.DIAWindows.size() + " )");
+            Logger.getRootLogger().info("Processing DIA MS2 (mz range):" + DIAwindow.DIA_MZ_Range.getX() + "_" + DIAwindow.DIA_MZ_Range.getY() + "( " + (count++) + "/" + GetSpectrumParser().dIA_Setting.DIAWindows.size() + " )");
             DIAwindow.ExportPeakCurveTable = ExportFragmentPeak;
             DIAwindow.ExportPeakClusterTable = ExportPrecursorPeak;
             DIAwindow.PeakDetectionPFGrouping(ms1lcms);

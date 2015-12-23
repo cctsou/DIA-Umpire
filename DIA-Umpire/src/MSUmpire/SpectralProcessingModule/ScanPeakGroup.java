@@ -30,7 +30,7 @@ import MSUmpire.BaseDataStructure.XYData;
 import java.util.ArrayList;
 
 /**
- *
+ * Isotope peak groups for a single scan
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class ScanPeakGroup {

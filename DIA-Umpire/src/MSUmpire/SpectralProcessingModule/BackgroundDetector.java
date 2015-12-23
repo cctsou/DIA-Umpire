@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- *
+ * Background detection algorithm
  * @author Chih-Chiang Tsou
  */
 public class BackgroundDetector {
@@ -34,44 +34,6 @@ public class BackgroundDetector {
 
     public BackgroundDetector(ScanData Scan) {
         this.Scan = Scan;
-    }
-
-    public void DetermineBackgroundDynamic(float boundary) {
-        if (Scan.Data.isEmpty()) {
-            return;
-        }
-        ArrayList<Float> IntList = new ArrayList<>();
-        for (int i = 0; i < Scan.Data.size(); i++) {
-            IntList.add(Scan.Data.get(i).getY());
-        }
-        Collections.sort(IntList);
-        float lower = IntList.get((int) (IntList.size() * 0.6f));
-        int idx = 1;
-        int count = 1;
-        int remainingNo = IntList.size();
-        while (idx < IntList.size()) {
-            if (IntList.get(idx).equals(IntList.get(idx - 1))) {
-                count++;
-            } else {
-                if (count > remainingNo / 5) {
-                    Scan.background = IntList.get(idx - 1);
-                    remainingNo = Math.max(200, IntList.size() - idx);
-                    if (IntList.get(idx) > boundary) {
-                        break;
-                    }
-                } else {
-                    if (IntList.get(idx - 1) <= lower) {
-                        Scan.background = IntList.get(idx - 1);
-                    } else {
-                        break;
-                    }
-                }
-                count = 1;
-            }
-            idx++;
-        }
-        IntList.clear();
-        IntList = null;
     }
 
     public void DetermineConstantBackground() {

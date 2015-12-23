@@ -23,7 +23,7 @@ import MSUmpire.BaseDataStructure.XYPointCollection;
 import java.util.ArrayList;
 
 /**
- *
+ * Bin peaks in a spectrum for the purpose of calculating spectral similarity 
  * @author Chih-Chiang Tsou
  */
 public class Binning {

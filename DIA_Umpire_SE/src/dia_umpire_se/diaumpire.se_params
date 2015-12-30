@@ -13,12 +13,6 @@ RTOverlap=0.3
 AdjustFragIntensity =true
 BoostComplementaryIon=true
 
-#Pseudo MS/MS spectra file structure
-#Separated: Separate Q1, Q2, Q3 as different MGF files, as described in the DIA-Umpire manuscript
-#Combined: Combine Q1, Q2, Q3 as a single MGF file, and use ".Umpire.mgf" as the naming scheme which is compatible with Skyline library import
-PseudoMSMS =  Separated
-
-
 #Report peak
 ExportPrecursorPeak = false
 ExportFragmentPeak = false

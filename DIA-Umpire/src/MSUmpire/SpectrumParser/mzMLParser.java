@@ -26,6 +26,7 @@ import MSUmpire.BaseDataStructure.SpectralDataType;
 import MSUmpire.BaseDataStructure.XYData;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.TreeMap;
 import java.util.concurrent.*;
 import java.util.zip.DataFormatException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -83,8 +84,12 @@ public final class mzMLParser extends SpectrumParserBase{
             ElutionTimeToScanNoMap.put(spec.RetentionTime, spec.ScanNum);
             ScanToElutionTime.put(spec.ScanNum, spec.RetentionTime);
             MsLevelList.put(spec.ScanNum, spec.MsLevel);
-                        
-            if (datatype != SpectralDataType.DataType.DDA) {
+
+            if(spec.MsLevel==1){
+                 NoMS1Scans++;     
+            }
+            
+            if (datatype != SpectralDataType.DataType.DDA && spec.MsLevel == 2){
                 if (datatype == SpectralDataType.DataType.DIA_V_Window) {
                     for (XYData window : dIA_Setting.DIAWindows.keySet()) {
                         if (window.getX() <= spec.isolationWindowTargetMz && window.getY() >= spec.isolationWindowTargetMz) {

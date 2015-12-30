@@ -90,7 +90,7 @@ public class mzMLSpecConverter implements Runnable{
                 if (param.getAccession().equals("MS:1000016")) // retention time
                 {
                     RT = Float.parseFloat(param.getValue());
-                    if (param.getUnitName().equals("seconds")) {
+                    if (param.getUnitName().equals("second")) {
                         RT = RT / 60f;
                     }
                 }
@@ -151,6 +151,9 @@ public class mzMLSpecConverter implements Runnable{
             spec.PrecursorMz = precursorMz;
             spec.PrecursorIntensity = precursorIntensity;
             spec.PrecursorCharge = precursorCharge;
+            if (spec.isolationWindowTargetMz == 0f) {
+                spec.isolationWindowTargetMz = precursorMz;
+            }
 
             // activation method
             ParamGroup actMethodParams = precursor.getActivation();

@@ -55,22 +55,22 @@ public class ScanCollection implements Disposable{
         ElutionTimeToScanNoMap = new TreeMap<>();
     }
 
-    private ArrayList<Integer> ms1descening = new ArrayList<>();    
-    private ArrayList<Integer> ms2descening = new ArrayList<>();
+    private ArrayList<Integer> ms1ScanIndex = new ArrayList<>();    
+    private ArrayList<Integer> ms2ScanIndex = new ArrayList<>();
     
     
     public ArrayList<Integer> GetScanNoArray(int mslevel) {
         if (mslevel == 1) {
-            return ms1descening;
+            return ms1ScanIndex;
         }
         if (mslevel == 2) {
-            return ms2descening;
+            return ms2ScanIndex;
         }
         return null;
     }
 
     public ArrayList<Integer> GetMS2DescendingArray() {
-        return ms2descening;
+        return ms2ScanIndex;
     }
 
     public void AddScan(ScanData scan) {
@@ -79,11 +79,11 @@ public class ScanCollection implements Disposable{
 
             if (scan.MsLevel == 1) {
                 NumScanLevel1++;
-                ms1descening.add(scan.ScanNum);
+                ms1ScanIndex.add(scan.ScanNum);
             }
             if (scan.MsLevel == 2) {
                 NumScanLevel2++;
-                ms2descening.add((scan.ScanNum));
+                ms2ScanIndex.add((scan.ScanNum));
             }
             NumScan++;
             if (scan.ScanNum >= EndScan) {
@@ -217,8 +217,8 @@ public class ScanCollection implements Disposable{
 
     @Override
     public void dispose() {
-        this.ms1descening = null;
-        this.ms2descening = null;
+        this.ms1ScanIndex = null;
+        this.ms2ScanIndex = null;
         if (ScanHashMap != null) {
             for (ScanData scan : ScanHashMap.values()) {
                 scan.dispose();

@@ -186,13 +186,6 @@ public final class mzXMLParser  extends SpectrumParserBase{
             return;
         }
 
-        boolean ReadDIAWindow = false;
-        if (datatype != SpectralDataType.DataType.DDA) {
-            if (datatype != SpectralDataType.DataType.DIA_V_Window) {
-                dIA_Setting.DIAWindows = new TreeMap<>();
-            }
-            ReadDIAWindow = true;
-        }
         try (RandomAccessFile fileHandler = new RandomAccessFile(filename, "r")) {
             Iterator<Entry<Integer, Long>> iter = ScanIndex.entrySet().iterator();
             Long currentIdx = iter.next().getValue();
@@ -256,7 +249,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
                     }
                     //If it is DIA data, parse isolation window ranges 
                     if (datatype != SpectralDataType.DataType.DDA) {
-                        if (ReadDIAWindow && mslevel == 2) {
+                        if (mslevel == 2) {
                             if (datatype == SpectralDataType.DataType.MSX) {
                                 substr = temp;
                                 while (substr.contains("</precursorMz>")) {

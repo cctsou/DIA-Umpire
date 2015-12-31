@@ -75,7 +75,7 @@ public class DIA_Umpire_Quant {
             return;
         }
         try {
-            ConsoleLogger.SetConsoleLogger(Level.DEBUG);
+            ConsoleLogger.SetConsoleLogger(Level.INFO);
             ConsoleLogger.SetFileLogger(Level.DEBUG, FilenameUtils.getFullPath(args[0]) + "diaumpire_quant.log");
         } catch (Exception e) {
         }
@@ -95,7 +95,8 @@ public class DIA_Umpire_Quant {
         String ExternalLibDecoyTag = "DECOY";
         boolean DefaultProtFiltering=true;
         
-        float ProbThreshold = 0.9f;
+        float ProbThreshold = 0.99f;
+        float ExtProbThreshold =0.99f;
         float ReSearchProb =0.8f;
         float Freq = 0f;
         int TopNPep = 6;
@@ -113,9 +114,7 @@ public class DIA_Umpire_Quant {
         boolean ExportSaint = false;
         boolean SAINT_MS1 = false;
         boolean SAINT_MS2 = true;
-//        String SaintBaitFile="";
-//        String SaintPreyFile="";
-//        String SaintInteractionFile="";
+
         HashMap<String, String[]> BaitList = new HashMap<>();
         HashMap<String, String> BaitName = new HashMap<>();
         HashMap<String, String[]> ControlList = new HashMap<>();
@@ -334,11 +333,13 @@ public class DIA_Umpire_Quant {
             if (!"".equals(Combined_Prot) && protID == null) {
                 protID = new LCMSID(Combined_Prot, tandemPara.DecoyPrefix, tandemPara.FastaPath);
                 ProtXMLParser protxmlparser = new ProtXMLParser(protID, Combined_Prot, 0f);
+                //Use DIA-Umpire default protein FDR calculation
                 if (DefaultProtFiltering) {
                     protID.RemoveLowLocalPWProtein(0.8f);
                     protID.RemoveLowMaxIniProbProtein(0.9f);
                     protID.FilterByProteinDecoyFDRUsingMaxIniProb(tandemPara.DecoyPrefix, tandemPara.ProtFDR);
                 }
+                //Get protein FDR calculation without other filtering
                 else{
                     protID.FilterByProteinDecoyFDRUsingLocalPW(tandemPara.DecoyPrefix, tandemPara.ProtFDR);
                 }
@@ -600,7 +601,7 @@ public class DIA_Umpire_Quant {
 
     private static void ProcessDIA(final File fileEntry, int NoCPUs, TandemParam tandemPara, ArrayList<DIAPack> FileList, HashMap<String, HashMap<String, FragmentPeak>> IDSummaryFragments, LCMSID protID) throws IOException, FileNotFoundException, DataFormatException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, Exception {
         String mzXMLFile = fileEntry.getAbsolutePath();
-        if (mzXMLFile.toLowerCase().endsWith(".mzxml")) {
+        if (mzXMLFile.toLowerCase().endsWith(".mzxml") | mzXMLFile.toLowerCase().endsWith(".mzml")) {
             long time = System.currentTimeMillis();
 
             DIAPack DiaFile = new DIAPack(mzXMLFile, NoCPUs);
@@ -615,11 +616,6 @@ public class DIA_Umpire_Quant {
             Logger.getRootLogger().info("=================================================================================================");
             Logger.getRootLogger().info("Processing " + mzXMLFile);
             if (!DiaFile.LoadDIASetting()) {
-//                DiaFile.dIA_Setting=new DIA_Setting();
-//                DiaFile.LoadParams();
-//                DiaFile.SetDataType(SpectralDataType.DataType.DIA_F_Window);
-//                DiaFile.SetWindowSize(25);
-//                DiaFile.GetSpectrumParser();
                 Logger.getRootLogger().info("Loading DIA setting failed, job is incomplete");
                 System.exit(1);
             }

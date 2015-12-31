@@ -159,9 +159,7 @@ public class DIAPack {
                 System.exit(2);
             }
             dIA_Setting = SpectrumParser.dIA_Setting;
-            if (!new File(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename) + "_diasetting.ser").exists()) {
-                SaveDIASetting();
-            }
+            SaveDIASetting();            
         }
         return SpectrumParser;
     }

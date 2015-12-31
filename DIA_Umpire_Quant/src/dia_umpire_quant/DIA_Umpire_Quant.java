@@ -387,7 +387,7 @@ public class DIA_Umpire_Quant {
             
             //process each DIA file for quantification based on untargeted identifications
             for (File fileEntry : AssignFiles.values()) {
-                ProcessDIA(fileEntry, NoCPUs, tandemPara, FileList, IDSummaryFragments, protID);
+                ProcessDIA(fileEntry, NoCPUs, tandemPara, FileList, IDSummaryFragments);
             }
             
             //<editor-fold defaultstate="collapsed" desc="Targete re-extraction using internal library">            
@@ -437,11 +437,7 @@ public class DIA_Umpire_Quant {
                         diafile.TargetedExtractionQuant(false, libManager,1.1f,RTWindow_Int);
                         diafile.MS1FeatureMap.ClearAllPeaks();
                         diafile.IDsummary.ReduceMemoryUsage();
-                        diafile.IDsummary.RemoveLowProbMappedIon(ProbThreshold);
-                        if (protID != null) {
-                            diafile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
-                            diafile.IDsummary.ReMapProPep();
-                        }
+                        diafile.IDsummary.RemoveLowProbMappedIon(ProbThreshold);                        
                         diafile.ExportID();
                         Logger.getRootLogger().info("Peptide ions: " + diafile.IDsummary.GetPepIonList().size() + " Mapped ions: " + diafile.IDsummary.GetMappedPepIonList().size());
                         diafile.ClearStructure();
@@ -489,11 +485,7 @@ public class DIA_Umpire_Quant {
                     diafile.MS1FeatureMap.ClearAllPeaks();
                     diafile.IDsummary.ReduceMemoryUsage();
                     //Remove target IDs below the defined probability threshold
-                    diafile.IDsummary.RemoveLowProbMappedIon(ExtProbThreshold);
-                    if (protID != null) {
-                        diafile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
-                        diafile.IDsummary.ReMapProPep();
-                    }
+                    diafile.IDsummary.RemoveLowProbMappedIon(ExtProbThreshold);                    
                     diafile.ExportID();
                     diafile.ClearStructure();
                     Logger.getRootLogger().info("Peptide ions: " + diafile.IDsummary.GetPepIonList().size() + " Mapped ions: " + diafile.IDsummary.GetMappedPepIonList().size());
@@ -507,9 +499,14 @@ public class DIA_Umpire_Quant {
             ArrayList<LCMSID> SummaryList = new ArrayList<>();
             for (DIAPack diafile : FileList) {
                 if (diafile.IDsummary == null) {
-                    diafile.ReadSerializedLCMSID();
+                    diafile.ReadSerializedLCMSID();                    
                     diafile.IDsummary.ClearAssignPeakCluster();
-                    //diafile.IDsummary.ClearPSMs();
+                    //diafile.IDsummary.ClearPSMs();                    
+                }                
+                if (protID != null) {
+                    //Generate protein list according to mapping of peptide ions for each DIA file to the master protein list
+                    diafile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
+                    diafile.IDsummary.ReMapProPep();
                 }
                 if ("GW".equals(FilterWeight)) {
                     diafile.IDsummary.SetFilterByGroupWeight();
@@ -621,7 +618,7 @@ public class DIA_Umpire_Quant {
         }
     }
 
-    private static void ProcessDIA(final File fileEntry, int NoCPUs, TandemParam tandemPara, ArrayList<DIAPack> FileList, HashMap<String, HashMap<String, FragmentPeak>> IDSummaryFragments, LCMSID protID) throws IOException, FileNotFoundException, DataFormatException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, Exception {
+    private static void ProcessDIA(final File fileEntry, int NoCPUs, TandemParam tandemPara, ArrayList<DIAPack> FileList, HashMap<String, HashMap<String, FragmentPeak>> IDSummaryFragments) throws IOException, FileNotFoundException, DataFormatException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, Exception {
         String mzXMLFile = fileEntry.getAbsolutePath();
         if (mzXMLFile.toLowerCase().endsWith(".mzxml") | mzXMLFile.toLowerCase().endsWith(".mzml")) {
             long time = System.currentTimeMillis();
@@ -654,10 +651,7 @@ public class DIA_Umpire_Quant {
                 if (!DiaFile.MS1FeatureMap.ReadPeakCluster()) {
                     Logger.getRootLogger().info("Loading peak and structure failed, job is incomplete");
                     System.exit(1);
-                }
-                //Generate protein list according to mapping of peptide ions for each DIA file to the master protein list
-                DiaFile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
-                DiaFile.IDsummary.ReMapProPep();
+                }                
                 DiaFile.MS1FeatureMap.ClearMonoisotopicPeakOfCluster();
                 //Generate mapping between index of precursor feature and pseudo MS/MS scan index 
                 DiaFile.GenerateClusterScanNomapping();

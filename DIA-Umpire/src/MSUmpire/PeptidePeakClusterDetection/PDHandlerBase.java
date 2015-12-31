@@ -25,7 +25,7 @@ import MSUmpire.BaseDataStructure.ScanData;
 import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.BaseDataStructure.XYPointCollection;
 import MSUmpire.BaseDataStructure.XYZData;
-import MSUmpire.LCMSBaseStructure.LCMSPeakBase;
+import MSUmpire.LCMSPeakStructure.LCMSPeakBase;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PeakCurve;
 import java.io.*;

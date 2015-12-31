@@ -23,7 +23,7 @@ import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.ScanCollection;
 import MSUmpire.BaseDataStructure.ScanData;
 import MSUmpire.BaseDataStructure.XYData;
-import MSUmpire.FastaParser.FastaParser;
+import MSUmpire.SeqUtility.FastaParser;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import com.compomics.util.experiment.biology.AminoAcid;
 import com.compomics.util.experiment.biology.Ion;

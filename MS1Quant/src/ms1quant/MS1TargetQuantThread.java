@@ -7,7 +7,7 @@
 package ms1quant;
 
 import MSUmpire.BaseDataStructure.InstrumentParameter;
-import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
+import MSUmpire.LCMSPeakStructure.LCMSPeakMS1;
 import MSUmpire.PSMDataStructure.LCMSID;
 import java.io.File;
 import java.util.concurrent.TimeUnit;

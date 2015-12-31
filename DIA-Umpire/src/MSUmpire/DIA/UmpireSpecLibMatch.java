@@ -21,8 +21,8 @@ package MSUmpire.DIA;
 
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.XYPointCollection;
-import MSUmpire.LCMSBaseStructure.LCMSPeakDIAMS2;
-import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
+import MSUmpire.LCMSPeakStructure.LCMSPeakDIAMS2;
+import MSUmpire.LCMSPeakStructure.LCMSPeakMS1;
 import MSUmpire.MathPackage.Regression;
 import MSUmpire.PSMDataStructure.FragmentPeakGroup;
 import MSUmpire.PSMDataStructure.PepFragmentLib;

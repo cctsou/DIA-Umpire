@@ -20,7 +20,7 @@
 package MSUmpire.DIA;
 
 import MSUmpire.BaseDataStructure.UmpireInfo;
-import MSUmpire.FastaParser.FastaParser;
+import MSUmpire.SeqUtility.FastaParser;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.Utility.DateTimeTag;
 import java.io.FileWriter;

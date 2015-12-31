@@ -21,7 +21,7 @@ package MSUmpire.DIA;
 
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.SpectralDataType;
-import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
+import MSUmpire.LCMSPeakStructure.LCMSPeakMS1;
 import MSUmpire.PSMDataStructure.FragmentPeak;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PeakDataStructure.PeakCluster;

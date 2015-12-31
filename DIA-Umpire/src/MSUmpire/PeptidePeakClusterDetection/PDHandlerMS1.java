@@ -21,7 +21,7 @@ package MSUmpire.PeptidePeakClusterDetection;
 
 import MSUmpire.BaseDataStructure.ScanCollection;
 import MSUmpire.BaseDataStructure.XYData;
-import MSUmpire.LCMSBaseStructure.LCMSPeakBase;
+import MSUmpire.LCMSPeakStructure.LCMSPeakBase;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;

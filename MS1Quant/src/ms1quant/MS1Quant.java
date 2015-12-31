@@ -7,9 +7,9 @@ package ms1quant;
 
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.UmpireInfo;
-import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
-import MSUmpire.MSMSDBSearch.DBSearchParam;
-import MSUmpire.MSMSDBSearch.TandemParam;
+import MSUmpire.LCMSPeakStructure.LCMSPeakMS1;
+import MSUmpire.BaseDataStructure.DBSearchParam;
+import MSUmpire.BaseDataStructure.TandemParam;
 import MSUmpire.PSMDataStructure.LCMSID;
 import MSUmpire.PSMDataStructure.PTMManager;
 import MSUmpire.SearchResultParser.PepXMLParser;

@@ -17,7 +17,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package MSUmpire.LCMSBaseStructure;
+package MSUmpire.LCMSPeakStructure;
 
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.SpectralDataType;

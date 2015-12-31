@@ -19,8 +19,8 @@
  */
 package MSUmpire.DIA;
 
-import MSUmpire.LCMSBaseStructure.LCMSPeakDIAMS2;
-import MSUmpire.LCMSBaseStructure.LCMSPeakMS1;
+import MSUmpire.LCMSPeakStructure.LCMSPeakDIAMS2;
+import MSUmpire.LCMSPeakStructure.LCMSPeakMS1;
 import MSUmpire.PSMDataStructure.PSM;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PeakDataStructure.PeakCluster;

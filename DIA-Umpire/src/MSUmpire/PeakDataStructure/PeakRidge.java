@@ -32,7 +32,7 @@ public class PeakRidge implements Comparable<PeakRidge>, Serializable {
 
     public float RT;
     public int lowScale;
-    public int ContinueousLevel = 0;
+    public int ContinuousLevel = 0;
     public float intensity;
 
     @Override

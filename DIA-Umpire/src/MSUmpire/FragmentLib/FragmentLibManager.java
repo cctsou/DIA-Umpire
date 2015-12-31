@@ -627,6 +627,7 @@ public class FragmentLibManager implements Serializable {
         }
     }
 
+    //Select topN high quality fragments
     public void FragmentSelection(ArrayList<LCMSID> LCMSIDList, float Freq, int TopNFrag) {
         fragselection = new FragmentSelection(LCMSIDList);
         fragselection.freqPercent = Freq;
@@ -635,6 +636,7 @@ public class FragmentLibManager implements Serializable {
         fragselection.GenerateTopFragMap(TopNFrag);
     }
     
+    //Build internal spectral library
     public void ImportFragLibTopFrag(ArrayList<LCMSID> LCMSIDList, float Freq, int topNFrag) {
         FragmentSelection(LCMSIDList, Freq, topNFrag);
         for (LCMSID lcmsid : LCMSIDList) {
@@ -682,39 +684,5 @@ public class FragmentLibManager implements Serializable {
             Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
     }
-    
-    public void ImportFragLib(ArrayList<LCMSID> LCMSIDList) {
-        for (LCMSID lcmsid : LCMSIDList) {
-            for (PepIonID pepIonID : lcmsid.GetPepIonList().values()) {
-                if (!PeptideFragmentLib.containsKey(pepIonID.GetKey())) {
-                    PepFragmentLib fraglib = new PepFragmentLib();
-                    fraglib.Sequence = pepIonID.Sequence;
-                    fraglib.ModificationString = pepIonID.GetModificationString();
-                    fraglib.Charge = pepIonID.Charge;
-                    fraglib.ModSequence = pepIonID.ModSequence;
-                    fraglib.PrecursorMz = pepIonID.NeutralPrecursorMz();
-                    fraglib.MS1Score = pepIonID.PeakClusterScore;
-                    fraglib.RetentionTime.add(pepIonID.PeakRT);
-                    if (pepIonID.MaxProbability > fraglib.MaxProbability) {
-                        fraglib.MaxProbability = pepIonID.MaxProbability;
-                    }
-                    if (pepIonID.PeakClusterScore > fraglib.MS1Score) {
-                        fraglib.MS1Score = pepIonID.PeakClusterScore;
-                    }
-                    PeptideFragmentLib.put(pepIonID.GetKey(), fraglib);
-                }
-                                
-                if (pepIonID.FragmentPeaks != null && !pepIonID.FragmentPeaks.isEmpty()) {                                        
-                    PeptideFragmentLib.get(pepIonID.GetKey()).AddFragments(pepIonID.FragmentPeaks);                    
-                } else {
-                    Logger.getRootLogger().warn("Skipped peptide ion: " + pepIonID.GetKey() + " because it does not have any matched fragment from file: " + lcmsid.mzXMLFileName);
-                }
-            }
-        }
-        try {
-            GenerateDecoyLib();
-        } catch (MatrixLoaderException ex) {
-            Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
-        }
-    }
+ 
 }

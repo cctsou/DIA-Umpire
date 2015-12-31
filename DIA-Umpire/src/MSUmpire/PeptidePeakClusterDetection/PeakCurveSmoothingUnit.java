@@ -24,7 +24,7 @@ import MSUmpire.PeakDataStructure.PeakCurve;
 import java.util.ArrayList;
 
 /**
- * Peak shape smoothing process
+ * Peak shape smoothing process thread unit
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class PeakCurveSmoothingUnit implements Runnable {
@@ -41,13 +41,14 @@ public class PeakCurveSmoothingUnit implements Runnable {
 
     @Override
     public void run() {
+        //If we want to split multimodal peak curve by CWT
         if (parameter.DetectByCWT) {
             curve.DoBspline();
             curve.DetectPeakRegion();
             ResultCurves = curve.SeparatePeakByRegion(parameter.SNThreshold);
         }
         else{
-            curve.DoInterpolation();
+            curve.DoBspline();
             ResultCurves=new ArrayList<>();
             ResultCurves.add(curve);
         }

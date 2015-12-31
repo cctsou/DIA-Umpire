@@ -30,7 +30,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 /**
- * Thread unit for assigning MS1 and MS2 peak cluster for identified peptide ion
+ * Thread unit for assigning MS1 peak cluster and matched MS2 fragment peak for identified peptide ion
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class DIAMapClusterUnit implements Runnable{

@@ -39,6 +39,7 @@ public class PDHandlerMS1 extends PDHandlerBase {
         this.parameter = lcmspeak.parameter;
     }
 
+    //Detect peak curve and isotope peak cluster given a list of ScanCollection
     public void DetectPeakClusters(ArrayList<ScanCollection> scanCollections) throws InterruptedException, ExecutionException, IOException {        
         FindAllMzTracePeakCurvesForScanCollections(scanCollections);
         PeakCurveCorrClustering(new XYData(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY));

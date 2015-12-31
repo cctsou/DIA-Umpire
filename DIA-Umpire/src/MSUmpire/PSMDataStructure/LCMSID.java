@@ -848,6 +848,7 @@ public class LCMSID implements Serializable {
         }
     }
 
+    //Generate protein list according to mapping of peptide ions to a master protein list
     public void GenerateProteinByRefIDByPepSeq(LCMSID RefID, boolean UseMappedIon) {
         ProteinList.clear();
         AssignedPepIonList.clear();

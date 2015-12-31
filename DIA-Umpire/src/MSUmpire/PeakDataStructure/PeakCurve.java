@@ -55,11 +55,11 @@ public class PeakCurve implements Serializable  {
     public boolean Grouped = false;
     public transient HashSet<Integer> ChargeGrouped=new HashSet<>();
     public float MzVar = -1f;
-    public SortedRidgeCollectionClass PeakRidgeList;
+    public transient SortedRidgeCollectionClass PeakRidgeList;
     public transient WaveletMassDetector waveletMassDetector;
-    private ArrayList<XYZData> PeakRegionList;
-    public ArrayList<Float> RegionRidge;
-    private ArrayList<ArrayList<Float>> NoRidgeRegion;
+    private transient ArrayList<XYZData> PeakRegionList;
+    public transient ArrayList<Float> RegionRidge;
+    private transient ArrayList<ArrayList<Float>> NoRidgeRegion;
     public InstrumentParameter parameter;
 
     //using B-spline to generate smoothed peak signals
@@ -98,6 +98,7 @@ public class PeakCurve implements Serializable  {
         endrt = EndRT;
     }
 
+    //Detect peak region using CWT based on smoothed peak signals
     public void DetectPeakRegion() {
         ArrayList<XYData> PeakArrayList = new ArrayList<>();
         PeakRidgeList = new SortedRidgeCollectionClass();
@@ -109,6 +110,7 @@ public class PeakCurve implements Serializable  {
         for (int i = 0; i < SmoothData.PointCount(); i++) {
             PeakArrayList.add(new XYData(SmoothData.Data.get(i).getX(), SmoothData.Data.get(i).getY()));
         }
+        //Start CWT process
         waveletMassDetector = new WaveletMassDetector(parameter, PeakArrayList, (int) (RTWidth() * parameter.NoPeakPerMin));
         waveletMassDetector.Run();
 
@@ -116,6 +118,7 @@ public class PeakCurve implements Serializable  {
 
         //trace peak ridge from maximum wavelet scale to minimum scale
         for (int i = maxScale; i >= 0; i--) {
+            //Get peak ridge list (maximum RT points given a CWT scale
             ArrayList<XYData> PeakRidgeArray = waveletMassDetector.PeakRidge[i];
 
             if (PeakRidgeArray == null) {
@@ -126,6 +129,7 @@ public class PeakCurve implements Serializable  {
                 continue;
             }
 
+            //RT distance matrix between the groupped peak riges and peak ridges extracted from current CWT scale
             float[][] DisMatrixF = new float[PeakRidgeList.size()][PeakRidgeArray.size()];
 
             for (int k = 0; k < PeakRidgeList.size(); k++) {///For each existing peak ridge line
@@ -155,7 +159,7 @@ public class PeakCurve implements Serializable  {
                 if (closest < Float.MAX_VALUE && closest <= parameter.MinRTRange) {
                     PeakRidge ridge = PeakRidgeList.remove(ExistingRideIdx);
                     ridge.lowScale = i;
-                    ridge.ContinueousLevel++;
+                    ridge.ContinuousLevel++;
                     XYData nearestRidge = PeakRidgeArray.get(PeakRidgeInx);
                     ridge.RT = nearestRidge.getX();
                     PeakRidgeList.add(ridge);
@@ -179,7 +183,7 @@ public class PeakCurve implements Serializable  {
             ArrayList<PeakRidge> removelist = new ArrayList<>();
             for (int k = 0; k < PeakRidgeList.size(); k++) {
                 PeakRidge existridge = PeakRidgeList.get(k);
-                if (existridge.lowScale - i > 2 && existridge.ContinueousLevel < maxScale / 2) {
+                if (existridge.lowScale - i > 2 && existridge.ContinuousLevel < maxScale / 2) {
                     removelist.add(existridge);
                 }
             }
@@ -193,7 +197,7 @@ public class PeakCurve implements Serializable  {
                     PeakRidge newRidge = new PeakRidge();
                     newRidge.RT = ridge.getX();
                     newRidge.lowScale = i;
-                    newRidge.ContinueousLevel++;
+                    newRidge.ContinuousLevel++;
                     newRidge.intensity = SmoothData.GetPoinByXCloset(newRidge.RT).getY();
                     PeakRidgeList.add(newRidge);
                 }
@@ -321,11 +325,13 @@ public class PeakCurve implements Serializable  {
         return (Math.abs(ValleyPoints[left].getY() - ValleyPoints[cut + 1].getY()) / leftridge.intensity < parameter.SymThreshold && Math.abs(ValleyPoints[cut + 1].getY() - ValleyPoints[right + 1].getY()) / rightridge.intensity < parameter.SymThreshold);
     }
 
+    //Split if multiple peak curves are detected
     public ArrayList<PeakCurve> SeparatePeakByRegion(float SN) {
 
         ArrayList<PeakCurve> tempArrayList = new ArrayList<>();
         ArrayList<PeakCurve> returnArrayList = new ArrayList<>();
 
+        //Generate a peak curve for each detected region
         for (int i = 0; i < GetPeakRegionList().size(); i++) {
             PeakCurve peakCurve = new PeakCurve(parameter);
             peakCurve.RegionRidge = NoRidgeRegion.get(i);
@@ -354,6 +360,7 @@ public class PeakCurve implements Serializable  {
             }
         }
 
+        //Add corresponding raw peaks
         for (int i = 0; i < GetPeakList().size(); i++) {
             XYZData peak = GetPeakList().get(i);
             for (int j = 0; j < GetPeakRegionList().size(); j++) {
@@ -365,6 +372,7 @@ public class PeakCurve implements Serializable  {
             }
         }
 
+        //Add corresponding smoothed peaks
         for (int i = 0; i < GetSmoothedList().Data.size(); i++) {
             XYData peak = GetSmoothedList().Data.get(i);
             for (int j = 0; j < GetPeakRegionList().size(); j++) {

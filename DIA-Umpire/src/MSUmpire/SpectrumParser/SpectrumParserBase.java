@@ -196,7 +196,7 @@ public abstract class SpectrumParserBase {
             FileInputStream fileIn = new FileInputStream(FilenameUtils.removeExtension(filename) + ".ScanidxFS");
             FSTObjectInput in = new FSTObjectInput(fileIn);
             MsLevelList = (TreeMap<Integer, Integer>) in.readObject();
-            for (Integer value : MsLevelList.values()) {
+            for (int value : MsLevelList.values()) {
                 if (value == 1) {
                     NoMS1Scans++;
                 }

@@ -69,7 +69,7 @@ public class DIAPack {
     //private ConnectionManager connectionManager;
     public String Filename;
     private int NoCPUs = 4;
-    public LCMSPeakMS1 ms1lcms;
+    public LCMSPeakMS1 MS1FeatureMap;
     public ArrayList<LCMSPeakDIAMS2> DIAWindows;
     public DIA_Setting dIA_Setting = new DIA_Setting();
     private SpectrumParserBase SpectrumParser;
@@ -171,7 +171,7 @@ public class DIAPack {
         DIAMS2PeakDetection();
     }
 
-    //Building empty data structure
+    //Building empty data structure for MS2 feature maps 
     public void BuildDIAWindows() throws IOException, DataFormatException, IOException, IOException, IOException, InterruptedException {
         DIAWindows = new ArrayList<>();
         Object[] WindowRange = GetSpectrumParser().dIA_Setting.DIAWindows.keySet().toArray();
@@ -181,8 +181,10 @@ public class DIAPack {
             if (i < WindowRange.length - 1) {
                 LastWinMz = (XYData) WindowRange[i + 1];
             }
+            
             LCMSPeakDIAMS2 diawindow = new LCMSPeakDIAMS2(Filename, this, parameter, DiaWinMz, LastWinMz, GetSpectrumParser(), NoCPUs);
             
+            //pass the settings through to MS2 feature map
             diawindow.datattype = dIA_Setting.dataType;
             diawindow.ExportPeakCurveTable = ExportFragmentPeak;
             diawindow.ExportPeakClusterTable = ExportPrecursorPeak;
@@ -444,7 +446,7 @@ public class DIAPack {
         GenerateClusterScanNomapping();
         
         ExecutorService executorPool = null;
-        for (PeakCluster cluster : ms1lcms.PeakClusters) {
+        for (PeakCluster cluster : MS1FeatureMap.PeakClusters) {
             cluster.Identified = false;
         }
         
@@ -452,15 +454,18 @@ public class DIAPack {
             pepIonID.MS1PeakClusters = new ArrayList<>();
             pepIonID.MS2UnfragPeakClusters = new ArrayList<>();
         }
+        
+        //Assign precursor features and grouped fragments for all identified peptide ions for a isolation window
         for (LCMSPeakDIAMS2 DIAWindow : DIAWindows) {            
-            DIA_window_Quant dia_w = new DIA_window_Quant(GetQ1Name(), GetQ2Name(), GetQ3Name(), ScanClusterMap_Q1, ScanClusterMap_Q2, ScanClusterMap_Q3, ms1lcms, DIAWindow, IDsummary, NoCPUs);            
+            DIA_window_Quant dia_w = new DIA_window_Quant(GetQ1Name(), GetQ2Name(), GetQ3Name(), ScanClusterMap_Q1, ScanClusterMap_Q2, ScanClusterMap_Q3, MS1FeatureMap, DIAWindow, IDsummary, NoCPUs);            
             dia_w.run();            
         }
 
         executorPool = Executors.newFixedThreadPool(NoCPUs);
 
+        //Match fragments and calculate quantification for each peptide ion
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, ms1lcms, parameter);
+            DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, MS1FeatureMap, parameter);
             executorPool.execute(quantunit);
         }
         executorPool.shutdown();
@@ -477,11 +482,11 @@ public class DIAPack {
     }
 
     public void AssignMappedPepQuant(boolean export, FragmentLibManager libManager) throws IOException, SQLException, XmlPullParserException {
-        AssignMappedPepQuant(export, libManager, 1.1f,-1f);
+        TargetedExtractionQuant(export, libManager, 1.1f,-1f);
     }
 
     //Quantification process for peptide ions from targeted re-extraction
-    public void AssignMappedPepQuant(boolean export, FragmentLibManager libManager, float ReSearchProb, float RTWindow) throws IOException, SQLException, XmlPullParserException {
+    public void TargetedExtractionQuant(boolean export, FragmentLibManager libManager, float ReSearchProb, float RTWindow) throws IOException, SQLException, XmlPullParserException {
         if (IDsummary.GetMappedPepIonList().isEmpty()) {
             Logger.getRootLogger().error("There is no peptide ion for targeted re-extraction.");
             return;
@@ -530,7 +535,7 @@ public class DIAPack {
                     //If the spectrum of peptide ion in the spectral library has more than three fragment peaks
                     if (libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() >= 3) {
                         //U-score spectral matching
-                        UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(ms1lcms, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
+                        UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(MS1FeatureMap, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
                         executorPool.execute(matchunit);                        
                         TScoring.libTargetMatches.add(matchunit);
                     } else {
@@ -545,7 +550,7 @@ public class DIAPack {
                    //If the spectrum of peptide ion in the spectral library has more than three fragment peaks
                     if (libManager.GetFragmentLib(pepIonID.GetKey()).FragmentGroups.size() >= 3) {
                         //U-score spectral matching
-                        UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(ms1lcms, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
+                        UmpireSpecLibMatch matchunit = new UmpireSpecLibMatch(MS1FeatureMap, DIAWindow, pepIonID, libManager.GetFragmentLib(pepIonID.GetKey()), libManager.GetDecoyFragmentLib(pepIonID.GetKey()), parameter);
                         matchunit.IdentifiedPeptideIon = true;
                         executorPool.execute(matchunit);
                         TScoring.libIDMatches.add(matchunit);
@@ -580,11 +585,11 @@ public class DIAPack {
         TScoring = null;
         executorPool = Executors.newFixedThreadPool(NoCPUs);
         for (PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()) {
-            DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, ms1lcms, parameter);
+            DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, MS1FeatureMap, parameter);
             executorPool.execute(quantunit);
         }
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
-            DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, ms1lcms, parameter);
+            DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, MS1FeatureMap, parameter);
             executorPool.execute(quantunit);
         }
         executorPool.shutdown();
@@ -609,8 +614,8 @@ public class DIAPack {
         if (this.IDsummary == null) {
             return false;
         }
-        if (ms1lcms != null) {
-            ms1lcms.IDsummary = IDsummary;
+        if (MS1FeatureMap != null) {
+            MS1FeatureMap.IDsummary = IDsummary;
         }
         this.IDsummary.Filename = Filename;
         this.IDsummary.mzXMLFileName=Filename;
@@ -643,8 +648,8 @@ public class DIAPack {
         IDsummary.ReMapProPep();
         Logger.getRootLogger().info("Total number of peptide ions:" + IDsummary.GetPepIonList().size());
         CheckPSMRT();        
-        if (ms1lcms != null) {
-            this.ms1lcms.IDsummary = IDsummary;
+        if (MS1FeatureMap != null) {
+            this.MS1FeatureMap.IDsummary = IDsummary;
         }
     }
 
@@ -688,7 +693,7 @@ public class DIAPack {
             DIAwindow.FilterByCriteria();
             DIAwindow.BuildFragmentUnfragranking();
             DIAwindow.FilterByCriteriaUnfrag();
-            for (PeakCluster ms1cluster : ms1lcms.PeakClusters) {
+            for (PeakCluster ms1cluster : MS1FeatureMap.PeakClusters) {
                 if (DIAwindow.DIA_MZ_Range.getX() <= ms1cluster.GetMaxMz() && DIAwindow.DIA_MZ_Range.getY() >= ms1cluster.TargetMz() && DIAwindow.FragmentsClu2Cur.containsKey(ms1cluster.Index)) {
                     DIAwindow.ExtractFragmentForPeakCluser(ms1cluster);   
                     if (DIAwindow.Last_MZ_Range == null || DIAwindow.Last_MZ_Range.getY() < ms1cluster.TargetMz()) {
@@ -855,7 +860,7 @@ public class DIAPack {
     }
         
     public void ClearStructure() {
-        ms1lcms = null;
+        MS1FeatureMap = null;
         DIAWindows = null;
         dIA_Setting = null;
         SpectrumParser = null;
@@ -864,12 +869,12 @@ public class DIAPack {
     public void BuildStructure() throws SQLException, FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException {
         
         LoadDIASetting();
-        ms1lcms = new LCMSPeakMS1(Filename, NoCPUs);
-        ms1lcms.datattype = dIA_Setting.dataType;
-        ms1lcms.SetParameter(parameter);
+        MS1FeatureMap = new LCMSPeakMS1(Filename, NoCPUs);
+        MS1FeatureMap.datattype = dIA_Setting.dataType;
+        MS1FeatureMap.SetParameter(parameter);
         
         if (IDsummary != null) {
-            ms1lcms.IDsummary = IDsummary;
+            MS1FeatureMap.IDsummary = IDsummary;
         }
 
         if (dIA_Setting.DIAWindows == null || dIA_Setting.DIAWindows.isEmpty()) {
@@ -887,23 +892,28 @@ public class DIAPack {
 
     //Perform MS1 feature detection
     private void MS1PeakDetection() throws SQLException, InterruptedException, ExecutionException, IOException, ParserConfigurationException, SAXException, FileNotFoundException, Exception {
+        //Remove existing pseudo MS/MS MGF files
         RemoveMGF();
-        ms1lcms = new LCMSPeakMS1(Filename, NoCPUs);
-        ms1lcms.datattype = dIA_Setting.dataType;
-        ms1lcms.SetParameter(parameter);
+                
+        MS1FeatureMap = new LCMSPeakMS1(Filename, NoCPUs);
+        MS1FeatureMap.datattype = dIA_Setting.dataType;
+        MS1FeatureMap.SetParameter(parameter);
         
-        ms1lcms.SetMS1Windows(dIA_Setting.MS1Windows);
-        ms1lcms.CreatePeakFolder();
-        ms1lcms.ExportPeakCurveTable = false;
+        //Assign MS1 feature maps
+        MS1FeatureMap.SetMS1Windows(dIA_Setting.MS1Windows);
+        MS1FeatureMap.CreatePeakFolder();
+        MS1FeatureMap.ExportPeakCurveTable = false;
         
-        ms1lcms.SetSpectrumParser(GetSpectrumParser());
+        MS1FeatureMap.SetSpectrumParser(GetSpectrumParser());
         Logger.getRootLogger().info("Processing MS1 peak detection");        
-        ms1lcms.ExportPeakClusterTable = ExportPrecursorPeak;
-        ms1lcms.PeakClusterDetection();
+        MS1FeatureMap.ExportPeakClusterTable = ExportPrecursorPeak;
+        //Start MS1 feature detection
+        MS1FeatureMap.PeakClusterDetection();
 
         Logger.getRootLogger().info("==================================================================================");
     }
 
+    //Remove pseudo MS/MS spectra MGF files
     private void RemoveMGF() {
         String mgffile = FilenameUtils.getFullPath(Filename) + GetQ1Name() + ".mgf";
         String mgffile2 = FilenameUtils.getFullPath(Filename) + GetQ2Name() + ".mgf";
@@ -956,7 +966,7 @@ public class DIAPack {
             Logger.getRootLogger().info("Processing DIA MS2 (mz range):" + DIAwindow.DIA_MZ_Range.getX() + "_" + DIAwindow.DIA_MZ_Range.getY() + "( " + (count++) + "/" + GetSpectrumParser().dIA_Setting.DIAWindows.size() + " )");
             DIAwindow.ExportPeakCurveTable = ExportFragmentPeak;
             DIAwindow.ExportPeakClusterTable = ExportPrecursorPeak;
-            DIAwindow.PeakDetectionPFGrouping(ms1lcms);
+            DIAwindow.PeakDetectionPFGrouping(MS1FeatureMap);
             DIAwindow.ClearAllPeaks();
             Logger.getRootLogger().info("==================================================================================");
         }
@@ -985,13 +995,13 @@ public class DIAPack {
     //Generate mass calibration model
     public void GenerateMassCalibrationRTMap() {
         try {
-            ms1lcms.GenerateMassCalibrationRTMap();
+            MS1FeatureMap.GenerateMassCalibrationRTMap();
         } catch (IOException ex) {
             Logger.getRootLogger().error(ExceptionUtils.getStackTrace(ex));
         }
 
         for (LCMSPeakDIAMS2 DIAwindow : DIAWindows) {
-            DIAwindow.Masscalibrationfunction = ms1lcms.Masscalibrationfunction;
+            DIAwindow.Masscalibrationfunction = MS1FeatureMap.Masscalibrationfunction;
         }
     }
 

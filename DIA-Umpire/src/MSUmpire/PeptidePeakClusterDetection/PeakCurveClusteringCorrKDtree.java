@@ -204,7 +204,6 @@ public class PeakCurveClusteringCorrKDtree implements Runnable {
             if (peakCluster.IsotopeComplete(MinNoOfClusters)) {
                 peakCluster.CalcPeakArea_V2();
                 peakCluster.UpdateIsoMapProb(IsotopePatternMap);
-                peakCluster.UpdateIsoMapError(IsotopePatternMap);
                 peakCluster.AssignConfilictCorr();
                 peakCluster.LeftInt = peakA.GetSmoothedList().Data.get(0).getY();
                 peakCluster.RightInt = peakA.GetSmoothedList().Data.get(peakA.GetSmoothedList().PointCount() - 1).getY();

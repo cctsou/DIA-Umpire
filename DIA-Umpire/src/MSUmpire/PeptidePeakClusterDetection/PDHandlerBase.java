@@ -106,27 +106,36 @@ public class PDHandlerBase {
         }
     }
 
+    //Detect all m/z trace peak curves given a list of ScanCollection
     public void FindAllMzTracePeakCurvesForScanCollections(ArrayList<ScanCollection> scanCollections) throws IOException {
+        //Read peptide isotope pattern table
         ReadPepIsoMS1PatternMap();
         LCMSPeakBase.UnSortedPeakCurves = new ArrayList<>();
+        
         for (ScanCollection scanCollection : scanCollections) {
+            //Detect mz trace peak curves for each ScanCollection
             FindAllMzTracePeakCurves(scanCollection);
         }
         Logger.getRootLogger().info("Inclusion mz values found: "+InclusionCheckInfo());        
+        //Perform peak smoothing for each detected peak curve
         PeakCurveSmoothing();      
         ClearRawPeaks();
     }
     
+    //Detect all m/z trace / peak curves
     protected void FindAllMzTracePeakCurves(ScanCollection scanCollection) throws IOException {
 
         IncludedHashMap = new HashSet<>();
-        Logger.getRootLogger().info("Processing all scans to detect possible peak curves....");
-
+        Logger.getRootLogger().info("Processing all scans to detect possible m/z peak curves....");
         
         float preRT = 0f;
+        
+        //Loop for each scan in the ScanCollection
         for (int idx = 0; idx < scanCollection.GetScanNoArray(MSlevel).size(); idx++) {
-            Integer scanNO = scanCollection.GetScanNoArray(MSlevel).get(idx);
+            int scanNO = scanCollection.GetScanNoArray(MSlevel).get(idx);
             ScanData scanData = scanCollection.GetScan(scanNO);
+            
+            //If we are doing targeted peak detection and the RT of current scan is not in the range of targeted list, jump to the next scan 
             if(TargetedOnly && !FoundInInclusionRTList(scanData.RetentionTime)){
                 continue;
             }
@@ -135,18 +144,26 @@ public class PDHandlerBase {
             }
             for (int i = 0; i < scanData.PointCount(); i++) {
                 XYData peak = scanData.Data.get(i);
+                //If we are doing targeted peak detection and the RT and m/z of current peak is not in the range of targeted list, jump to the next peak 
                 if (TargetedOnly && !FoundInInclusionMZList(scanData.RetentionTime,peak.getX())) {
                     continue;
                 }
+                
                 if(peak.getX()<parameter.MinMZ){
                     continue;
                 }
-                //Include the mz-int pair to a hash
-                if (!IncludedHashMap.contains(scanNO + "_" + peak.getX())) {//The peak hasn't been included and checked
+                
+                //Check if the current peak has been included in previously developed peak curves
+                if (!IncludedHashMap.contains(scanNO + "_" + peak.getX())) {//The peak hasn't been included
+                   
+                    //The current peak will be the starting peak of a new peak curve
+                    //Add it to the hash table
                     IncludedHashMap.add(scanNO + "_" + peak.getX());
 
                     float startmz = peak.getX();
                     float startint = peak.getY();
+                    
+                   //Find the maximum peak within PPM window as the starting peak
                     for (int j = i + 1; j < scanData.PointCount(); j++) {
                         XYData currentpeak = scanData.Data.get(j);
                         if (!IncludedHashMap.contains(scanNO + "_" + currentpeak.getX())) {
@@ -163,8 +180,11 @@ public class PDHandlerBase {
                         }
                     }
 
+                    //Initialize a new peak curve
                     PeakCurve Peakcurve = new PeakCurve(parameter);
+                    //Add a background peak
                     Peakcurve.AddPeak(new XYZData(preRT, startmz, scanData.background));
+                    //Add the starting peak
                     Peakcurve.AddPeak(new XYZData(scanData.RetentionTime, startmz, startint));
                     Peakcurve.StartScan = scanNO;
 
@@ -173,9 +193,9 @@ public class PDHandlerBase {
                     int endScan=scanData.ScanNum;
                     float bk=0f;
 
-                    //Start with the next MS1 scan to group the mz-int pair within the N ppm window
+                     //Starting from the next scan, find the following peaks given the starting peak
                     for (int idx2 = idx + 1; idx2 < scanCollection.GetScanNoArray(MSlevel).size() && (missedScan < parameter.NoMissedScan /*|| (TargetedOnly && Peakcurve.RTWidth()<parameter.MaxCurveRTRange)*/); idx2++) {
-                        Integer scanNO2 = scanCollection.GetScanNoArray(MSlevel).get(idx2);
+                        int scanNO2 = scanCollection.GetScanNoArray(MSlevel).get(idx2);
                         ScanData scanData2 = scanCollection.GetScan(scanNO2);
 
                         endrt=scanData2.RetentionTime;
@@ -184,7 +204,8 @@ public class PDHandlerBase {
                         float currentmz = 0f;
                         float currentint = 0f;
 
-                        if (scanData2.PointCount() == 0) {
+                        //If the scan is empty
+                        if (scanData2.PointCount() == 0) {                            
                             if (parameter.FillGapByBK) {
                                 Peakcurve.AddPeak(new XYZData(scanData2.RetentionTime, Peakcurve.TargetMz, scanData2.background));
                             }
@@ -192,12 +213,14 @@ public class PDHandlerBase {
                             continue;
                         }
 
+                        //Find the m/z index 
                         int mzidx = scanData2.GetLowerIndexOfX(Peakcurve.TargetMz);
                         for (int pkidx = mzidx; pkidx < scanData2.Data.size(); pkidx++) {
                             XYData currentpeak = scanData2.Data.get(pkidx);
                             if (currentpeak.getX() < parameter.MinMZ) {
                                 continue;
                             }
+                            //Check if the peak has been included or not
                             if (!IncludedHashMap.contains(scanNO2 + "_" + currentpeak.getX())) {
                                 if (InstrumentParameter.CalcPPM(currentpeak.getX(), Peakcurve.TargetMz) > PPM) {
                                     if (currentpeak.getX() > Peakcurve.TargetMz) {
@@ -213,6 +236,8 @@ public class PDHandlerBase {
                                 }
                             }
                         }
+                        
+                        //No peak in the PPM window has been found
                         if (currentmz == 0f) {
                             if (parameter.FillGapByBK) {
                                 Peakcurve.AddPeak(new XYZData(scanData2.RetentionTime, Peakcurve.TargetMz, scanData2.background));
@@ -226,9 +251,11 @@ public class PDHandlerBase {
                     Peakcurve.AddPeak(new XYZData(endrt, Peakcurve.TargetMz, bk));
                     Peakcurve.EndScan=endScan;
 
+                    //First check if the peak curve is in targeted list
                     if (FoundInInclusionList(Peakcurve.TargetMz, Peakcurve.StartRT(), Peakcurve.EndRT())) {
                         LCMSPeakBase.UnSortedPeakCurves.add(Peakcurve);
-                    } else if (Peakcurve.GetRawSNR() > LCMSPeakBase.SNR && Peakcurve.GetPeakList().size() >= /*parameter.NoMissedScan +*/ parameter.MinPeakPerPeakCurve + 2) {
+                    //Then check if the peak curve passes the criteria
+                    } else if (Peakcurve.GetRawSNR() > LCMSPeakBase.SNR && Peakcurve.GetPeakList().size() >= parameter.MinPeakPerPeakCurve + 2) {
                         LCMSPeakBase.UnSortedPeakCurves.add(Peakcurve);
                     } else {
                         Peakcurve = null;
@@ -246,13 +273,13 @@ public class PDHandlerBase {
         IncludedHashMap = null;
 
         int i = 1;
+        //Assign peak curve index
         for (PeakCurve peakCurve : LCMSPeakBase.UnSortedPeakCurves) {
             peakCurve.Index = i++;
         }
         
         System.gc();
         Logger.getRootLogger().info(LCMSPeakBase.UnSortedPeakCurves.size() + " Peak curves found (Memory usage:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB)");
-        //writer.close();
     }
         
     private boolean FoundInInclusionRTList(float rt){              
@@ -304,10 +331,12 @@ public class PDHandlerBase {
         return false;     
     }
     
+    //Signal smoothing for each detected peak curve
     protected void PeakCurveSmoothing() {
         //System.out.print("Using multithreading now: " + NoCPUs + " processors");
         Logger.getRootLogger().info("Smoothing detected signals......");
         
+        //Threading pool
         ExecutorService executorPool = null;
         executorPool = Executors.newFixedThreadPool(NoCPUs);
         ArrayList<PeakCurveSmoothingUnit> ResultList = new ArrayList<>();
@@ -336,6 +365,7 @@ public class PDHandlerBase {
         }        
     }
 
+    //Load pre-built peptide isotope pattern table
     protected void ReadPepIsoMS1PatternMap() throws FileNotFoundException, IOException {
 
         InputStream is = this.getClass().getClassLoader().getResourceAsStream("resource/IsotopicPatternRange.csv");
@@ -365,12 +395,16 @@ public class PDHandlerBase {
         Logger.getRootLogger().info("Grouping isotopic peak curves........");
 
         LCMSPeakBase.PeakClusters = new ArrayList<>();
+        
+        //Thread pool
         ExecutorService executorPool = null;
         executorPool = Executors.newFixedThreadPool(NoCPUs);        
         ArrayList<PeakCurveClusteringCorrKDtree> ResultList = new ArrayList<>();
 
+        //For each peak curve
         for (PeakCurve Peakcurve : LCMSPeakBase.UnSortedPeakCurves) {
             if (Peakcurve.TargetMz >= mzRange.getX() && Peakcurve.TargetMz <= mzRange.getY()) {
+                //Create a thread unit for doing isotope clustering given a peak curve as the monoisotope peak
                 PeakCurveClusteringCorrKDtree unit = new PeakCurveClusteringCorrKDtree(Peakcurve, LCMSPeakBase.GetPeakCurveSearchTree(), parameter, IsotopePatternMap, LCMSPeakBase.StartCharge, LCMSPeakBase.EndCharge, LCMSPeakBase.MaxNoPeakCluster, LCMSPeakBase.MinNoPeakCluster);
                 ResultList.add(unit);
                 executorPool.execute(unit);                
@@ -385,6 +419,7 @@ public class PDHandlerBase {
         }
         for (PeakCurveClusteringCorrKDtree unit : ResultList) {
             for (PeakCluster peakCluster : unit.ResultClusters) {
+                //Check if the monoistope peak of cluster has been grouped in other isotope cluster, if yes, remove the peak cluster
                 if (!parameter.RemoveGroupedPeaks || !peakCluster.MonoIsotopePeak.ChargeGrouped.contains(peakCluster.Charge)) {
                     peakCluster.Index = LCMSPeakBase.PeakClusters.size() + 1;
                     peakCluster.GetConflictCorr();
@@ -396,6 +431,5 @@ public class PDHandlerBase {
         ResultList = null;
         System.gc();
         Logger.getRootLogger().info("No of ion clusters:" + LCMSPeakBase.PeakClusters.size() + " (Memory usage:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB)");
-
     }
 }

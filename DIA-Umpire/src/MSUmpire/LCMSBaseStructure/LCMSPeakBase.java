@@ -256,7 +256,7 @@ public class LCMSPeakBase {
             PeakAreaString += ",PeakArea" + (i + 1);
         }
 
-        writer.write("Cluster_Index,StartRT,EndRT,StartScan,EndScan,Identified,Charge" + mzstring + Idxstring + CorrString + SNRString + PeakheightString + PeakheightRTString + PeakAreaString /*+ IDIsoPatternString+MapIsoPatternString*/ + ",IDIsoPatternProb,IsoMapProb,ConflictCorr,LeftInt,RightInt,NoRidges,MS1Score,MS1Prob,MS1LProb\n");
+        writer.write("Cluster_Index,StartRT,EndRT,StartScan,EndScan,Identified,Charge" + mzstring + Idxstring + CorrString + SNRString + PeakheightString + PeakheightRTString + PeakAreaString  + ",IsoMapProb,ConflictCorr,LeftInt,RightInt,NoRidges,MS1Score,MS1Prob,MS1LProb\n");
 
         for (PeakCluster cluster : PeakClusters) {
             IdentifiedString = "0";
@@ -285,7 +285,7 @@ public class LCMSPeakBase {
                 PeakheightRTString += cluster.PeakHeightRT[i] + ",";
                 PeakAreaString += cluster.PeakArea[i] + ",";
             }
-            statementString += mzstring + Idxstring + CorrString + SNRString + PeakheightString + PeakheightRTString + PeakAreaString /*+ IDIsoPatternString+MapIsoPatternString*/ + cluster.IDIsoPatternProb + "," + cluster.IsoMapProb + "," + cluster.GetConflictCorr() + "," + cluster.LeftInt + "," + cluster.RightInt + "," + cluster.NoRidges + "," + cluster.MS1Score + "," + cluster.MS1ScoreProbability + "," + cluster.MS1ScoreLocalProb + "\n";
+            statementString += mzstring + Idxstring + CorrString + SNRString + PeakheightString + PeakheightRTString + PeakAreaString  + cluster.IsoMapProb + "," + cluster.GetConflictCorr() + "," + cluster.LeftInt + "," + cluster.RightInt + "," + cluster.NoRidges + "," + cluster.MS1Score + "," + cluster.MS1ScoreProbability + "," + cluster.MS1ScoreLocalProb + "\n";
             writer.write(statementString);
         }
         writer.close();
@@ -296,6 +296,7 @@ public class LCMSPeakBase {
         WritePeakClusterSerialization();      
     }
 
+    //Default path to store peak data serialization files  
      public void CreatePeakFolder(){
         new File(FilenameUtils.getFullPath(ParentmzXMLName)+FilenameUtils.getBaseName(ParentmzXMLName) + "_Peak/").mkdir();        
     }

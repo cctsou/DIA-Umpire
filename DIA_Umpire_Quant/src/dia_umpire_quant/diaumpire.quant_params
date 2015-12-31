@@ -13,7 +13,8 @@ Path = /data/diaumpire/
 #No of threads
 Thread = 6
 
-TargetedExtraction = true
+#InternalLibSearch / TargetedExtraction both will work
+InternalLibSearch = true
 ExternalLibSearch = false
 
 #Fasta file path

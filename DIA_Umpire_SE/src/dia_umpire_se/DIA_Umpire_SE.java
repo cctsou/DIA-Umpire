@@ -59,20 +59,24 @@ public class DIA_Umpire_SE {
             return;
         }
         try {
+            //Define logger level for console
             ConsoleLogger.SetConsoleLogger(Level.INFO);
+            //Define logger level and file path for text log file
             ConsoleLogger.SetFileLogger(Level.DEBUG, FilenameUtils.getFullPath(args[0]) + "diaumpire_se.log");
         } catch (Exception e) {
         }
 
         boolean Fix = false;
+        
+        
         if (args.length == 3 && args[2].equals("-f")) {
             Fix = true;
         }
         String parameterfile = args[1];
-        String mzXMLPath = args[0];
+        String MSFilePath = args[0];
         Logger.getRootLogger().info("Version: " + UmpireInfo.GetInstance().Version);
         Logger.getRootLogger().info("Parameter file:" + parameterfile);
-        Logger.getRootLogger().info("Spectra file:" + mzXMLPath);
+        Logger.getRootLogger().info("Spectra file:" + MSFilePath);
         BufferedReader reader = new BufferedReader(new FileReader(parameterfile));
 
         String line = "";
@@ -311,14 +315,18 @@ public class DIA_Umpire_SE {
 //</editor-fold>
 
         try {
-            File mzxml = new File(mzXMLPath);
-            if (mzxml.exists()) {
+            File MSFile = new File(MSFilePath);
+            if (MSFile.exists()) {
                 long time = System.currentTimeMillis();
                 Logger.getRootLogger().info("=================================================================================================");
-                Logger.getRootLogger().info("Processing " + mzXMLPath + "....");
-                DIAPack DiaFile = new DIAPack(mzxml.getAbsolutePath(), NoCPUs);
+                Logger.getRootLogger().info("Processing " + MSFilePath + "....");
+                
+                //Initialize a DIA file data structure                
+                DIAPack DiaFile = new DIAPack(MSFile.getAbsolutePath(), NoCPUs);
                 DiaFile.SetDataType(dataType);
                 DiaFile.SetParameter(param);
+                
+                //Set DIA isolation window setting
                 if (dataType == SpectralDataType.DataType.DIA_F_Window) {
                     DiaFile.SetWindowSize(WindowSize);
                 } else if (dataType == SpectralDataType.DataType.DIA_V_Window) {
@@ -326,8 +334,9 @@ public class DIA_Umpire_SE {
                         DiaFile.AddVariableWindow(window);
                     }
                 }
-                DiaFile.SaveDIASetting();
+                DiaFile.SaveDIASetting();                
                 DiaFile.SaveParams();
+                
                 if (Fix) {
                     DiaFile.FixScanidx();
                     return;
@@ -335,9 +344,10 @@ public class DIA_Umpire_SE {
                 DiaFile.ExportPrecursorPeak = ExportPrecursorPeak;
                 DiaFile.ExportFragmentPeak = ExportFragmentPeak;
                 Logger.getRootLogger().info("Module A: Signal extraction");
+                //Start DIA signal extraction process to generate pseudo MS/MS files
                 DiaFile.process();
                 time = System.currentTimeMillis() - time;
-                Logger.getRootLogger().info(mzXMLPath + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
+                Logger.getRootLogger().info(MSFilePath + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
             }
             Logger.getRootLogger().info("Job complete");
             Logger.getRootLogger().info("=================================================================================================");

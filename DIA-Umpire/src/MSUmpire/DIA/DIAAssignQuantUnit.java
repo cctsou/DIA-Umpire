@@ -107,6 +107,7 @@ public class DIAAssignQuantUnit implements Runnable {
                 }
             }
            
+            //Singly-charged fragment ion is found
             if (bestfragment != null) {
                 FragmentPeak fragmentpeak = new FragmentPeak();
                 fragmentpeak.ObservedMZ = bestfragment.FragmentMz;
@@ -132,6 +133,7 @@ public class DIAAssignQuantUnit implements Runnable {
                 }
             }
 
+            //Doubly-charged fragment ion is found
             if (bestfragment != null) {
                 FragmentPeak fragmentpeak = new FragmentPeak();
                 fragmentpeak.ObservedMZ = bestfragment.FragmentMz;

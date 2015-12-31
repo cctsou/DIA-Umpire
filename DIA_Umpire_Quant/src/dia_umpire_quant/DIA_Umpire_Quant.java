@@ -97,7 +97,6 @@ public class DIA_Umpire_Quant {
         
         float ProbThreshold = 0.99f;
         float ExtProbThreshold =0.99f;
-        float ReSearchProb =0.8f;
         float Freq = 0f;
         int TopNPep = 6;
         int TopNFrag = 6;
@@ -211,6 +210,10 @@ public class DIA_Umpire_Quant {
                         ExternalLibPath = value;
                         break;
                     }
+                    case "ExtProbThreshold":{
+                        ExtProbThreshold = Float.parseFloat(value);
+                        break;
+                    }
                      case "RTWindow_Int": {
                         RTWindow_Int = Float.parseFloat(value);
                         break;
@@ -231,7 +234,7 @@ public class DIA_Umpire_Quant {
                         break;
                     }
                     case "ReSearchProb": {
-                        ReSearchProb = Float.parseFloat(value);
+                        //ReSearchProb = Float.parseFloat(value);
                         break;
                     }                    
                     case "FilterWeight": {
@@ -313,21 +316,25 @@ public class DIA_Umpire_Quant {
         }
 //</editor-fold>
 
+        //Initialize PTM manager using compomics library
         PTMManager.GetInstance();
         if (!UserMod.equals("")) {
             PTMManager.GetInstance().ImportUserMod(UserMod);
         }
 
+        //Check if the fasta file can be found
         if (!new File(tandemPara.FastaPath).exists()) {
             Logger.getRootLogger().info("Fasta file :"+tandemPara.FastaPath + " cannot be found, the process will be terminated, please check.");
             System.exit(1);
         }               
         
+        //Check if the prot.xml file can be found
         if (!new File(Combined_Prot).exists()) {
             Logger.getRootLogger().info("ProtXML file: " +Combined_Prot + " cannot be found, the export protein summary table will be empty.");
         }
         LCMSID protID = null;
 
+        //Parse prot.xml and generate protein master list given an FDR 
         if (Combined_Prot != null && !Combined_Prot.equals("")) {
             protID = LCMSID.ReadLCMSIDSerialization(Combined_Prot);
             if (!"".equals(Combined_Prot) && protID == null) {
@@ -350,6 +357,7 @@ public class DIA_Umpire_Quant {
         }
         HashMap<String, HashMap<String, FragmentPeak>> IDSummaryFragments = new HashMap<>();
 
+        //Generate DIA file list
         ArrayList<DIAPack> FileList = new ArrayList<>();
         try {
             File folder = new File(WorkFolder);
@@ -376,14 +384,17 @@ public class DIA_Umpire_Quant {
             for (File fileEntry : AssignFiles.values()) {
                 Logger.getRootLogger().info(fileEntry.getAbsolutePath());
             }
+            
+            //process each DIA file for quantification based on untargeted identifications
             for (File fileEntry : AssignFiles.values()) {
                 ProcessDIA(fileEntry, NoCPUs, tandemPara, FileList, IDSummaryFragments, protID);
             }
-
+            
+            //<editor-fold defaultstate="collapsed" desc="Targete re-extraction using internal library">            
             Logger.getRootLogger().info("=================================================================================================");
             if (InternalLibSearch && FileList.size() > 1) {
-                Logger.getRootLogger().info("Module C: Targeted extraction (internal library search)");
-
+                Logger.getRootLogger().info("Module C: Targeted extraction using internal library");
+                
                 FragmentLibManager libManager = FragmentLibManager.ReadFragmentLibSerialization(WorkFolder, InternalLibID);
                 if (libManager == null) {
                     Logger.getRootLogger().info("Building internal spectral library");
@@ -392,13 +403,12 @@ public class DIA_Umpire_Quant {
                     for (DIAPack dia : FileList) {
                         LCMSIDList.add(dia.IDsummary);
                     }
-                    //libManager.ImportFragLib(LCMSIDList);
                     libManager.ImportFragLibTopFrag(LCMSIDList, Freq, TopNFrag);
                     libManager.WriteFragmentLibSerialization(WorkFolder);
                 }
                 libManager.ReduceMemoryUsage();
-
-                Logger.getRootLogger().info("Building retention time prediction model and generate candiate peptide list");
+                
+                Logger.getRootLogger().info("Building retention time prediction model and generate candidate peptide list");
                 for (int i = 0; i < FileList.size(); i++) {
                     FileList.get(i).IDsummary.ClearMappedPep();
                 }
@@ -407,12 +417,11 @@ public class DIA_Umpire_Quant {
                         RTAlignedPepIonMapping alignment = new RTAlignedPepIonMapping(WorkFolder, FileList.get(i).GetParameter(), FileList.get(i).IDsummary, FileList.get(j).IDsummary);
                         alignment.GenerateModel();
                         alignment.GenerateMappedPepIon();
-                        //alignment.ExportMappedPepIon(connectionManager);
                     }
                     FileList.get(i).ExportID();
                     FileList.get(i).IDsummary = null;
                 }
-
+                
                 Logger.getRootLogger().info("Targeted matching........");
                 for (DIAPack diafile : FileList) {
                     if (diafile.IDsummary == null) {
@@ -422,11 +431,11 @@ public class DIA_Umpire_Quant {
                         diafile.UseMappedIon = true;
                         diafile.FilterMappedIonByProb = false;
                         diafile.BuildStructure();
-                        diafile.ms1lcms.ReadPeakCluster();
-                        diafile.ms1lcms.ClearMonoisotopicPeakOfCluster();
+                        diafile.MS1FeatureMap.ReadPeakCluster();
+                        diafile.MS1FeatureMap.ClearMonoisotopicPeakOfCluster();
                         diafile.GenerateMassCalibrationRTMap();
-                        diafile.AssignMappedPepQuant(false, libManager,1.1f,RTWindow_Int);
-                        diafile.ms1lcms.ClearAllPeaks();
+                        diafile.TargetedExtractionQuant(false, libManager,1.1f,RTWindow_Int);
+                        diafile.MS1FeatureMap.ClearAllPeaks();
                         diafile.IDsummary.ReduceMemoryUsage();
                         diafile.IDsummary.RemoveLowProbMappedIon(ProbThreshold);
                         if (protID != null) {
@@ -442,13 +451,22 @@ public class DIA_Umpire_Quant {
                 }
                 Logger.getRootLogger().info("=================================================================================================");
             }
-
+            //</editor-fold>
+            
+            //<editor-fold defaultstate="collapsed" desc="Targeted re-extraction using external library">
+            
+            //External library search
             if (ExternalLibSearch) {
-                Logger.getRootLogger().info("Module C: Targeted extraction (external library search)");
+                Logger.getRootLogger().info("Module C: Targeted extraction using external library");
+                
+                //Read exteranl library
                 FragmentLibManager ExlibManager = FragmentLibManager.ReadFragmentLibSerialization(WorkFolder, FilenameUtils.getBaseName(ExternalLibPath));
                 if (ExlibManager == null) {
                     ExlibManager = new FragmentLibManager(FilenameUtils.getBaseName(ExternalLibPath));
+                    
+                    //Import traML file
                     ExlibManager.ImportFragLibByTraML(ExternalLibPath, ExternalLibDecoyTag);
+                    //Check if there are decoy spectra
                     ExlibManager.CheckDecoys();
                     //ExlibManager.ImportFragLibBySPTXT(ExternalLibPath);
                     ExlibManager.WriteFragmentLibSerialization(WorkFolder);
@@ -458,17 +476,20 @@ public class DIA_Umpire_Quant {
                     if (diafile.IDsummary == null) {
                         diafile.ReadSerializedLCMSID();
                     }
+                    //Generate RT mapping
                     RTMappingExtLib RTmap = new RTMappingExtLib(diafile.IDsummary, ExlibManager, diafile.GetParameter());
                     RTmap.GenerateModel();
                     RTmap.GenerateMappedPepIon();
-
+                    
                     diafile.BuildStructure();
-                    diafile.ms1lcms.ReadPeakCluster();
+                    diafile.MS1FeatureMap.ReadPeakCluster();
                     diafile.GenerateMassCalibrationRTMap();
-                    diafile.AssignMappedPepQuant(false, ExlibManager,ReSearchProb,RTWindow_Ext);
-                    diafile.ms1lcms.ClearAllPeaks();
+                    //Perform targeted re-extraction
+                    diafile.TargetedExtractionQuant(false, ExlibManager,ProbThreshold,RTWindow_Ext);
+                    diafile.MS1FeatureMap.ClearAllPeaks();
                     diafile.IDsummary.ReduceMemoryUsage();
-                    diafile.IDsummary.RemoveLowProbMappedIon(ProbThreshold);
+                    //Remove target IDs below the defined probability threshold
+                    diafile.IDsummary.RemoveLowProbMappedIon(ExtProbThreshold);
                     if (protID != null) {
                         diafile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
                         diafile.IDsummary.ReMapProPep();
@@ -478,15 +499,15 @@ public class DIA_Umpire_Quant {
                     Logger.getRootLogger().info("Peptide ions: " + diafile.IDsummary.GetPepIonList().size() + " Mapped ions: " + diafile.IDsummary.GetMappedPepIonList().size());
                 }
             }
+            //</editor-fold>
+            
+            //<editor-fold defaultstate="collapsed" desc="Peptide and fragment selection">
+            
             Logger.getRootLogger().info("Peptide and fragment selection across the whole dataset");
             ArrayList<LCMSID> SummaryList = new ArrayList<>();
             for (DIAPack diafile : FileList) {
                 if (diafile.IDsummary == null) {
                     diafile.ReadSerializedLCMSID();
-                    ////////////////////////////
-                    diafile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
-                    diafile.IDsummary.ReMapProPep();
-                    /////////////////////////////
                     diafile.IDsummary.ClearAssignPeakCluster();
                     //diafile.IDsummary.ClearPSMs();
                 }
@@ -503,7 +524,8 @@ public class DIA_Umpire_Quant {
             fragselection.GenerateTopFragMap(TopNFrag);
             fragselection.GenerateProtPepScoreMap(MinWeight);
             fragselection.GenerateTopPepMap(TopNPep);
-
+//</editor-fold>
+            
             //<editor-fold defaultstate="collapsed" desc="Writing general reports">                 
             ExportTable export = new ExportTable(WorkFolder, SummaryList, IDSummaryFragments, protID, fragselection);
             export.Export(TopNPep, TopNFrag, Freq);
@@ -625,17 +647,21 @@ public class DIA_Umpire_Quant {
             }
             Logger.getRootLogger().info("Loading identification results " + mzXMLFile + "....");
 
+            //If the serialization file for ID file existed
             if (!DiaFile.ReadSerializedLCMSID()) {
                 DiaFile.ParsePepXML(tandemPara);
                 DiaFile.BuildStructure();
-                if (!DiaFile.ms1lcms.ReadPeakCluster()) {
+                if (!DiaFile.MS1FeatureMap.ReadPeakCluster()) {
                     Logger.getRootLogger().info("Loading peak and structure failed, job is incomplete");
                     System.exit(1);
                 }
+                //Generate protein list according to mapping of peptide ions for each DIA file to the master protein list
                 DiaFile.IDsummary.GenerateProteinByRefIDByPepSeq(protID, true);
                 DiaFile.IDsummary.ReMapProPep();
-                DiaFile.ms1lcms.ClearMonoisotopicPeakOfCluster();
+                DiaFile.MS1FeatureMap.ClearMonoisotopicPeakOfCluster();
+                //Generate mapping between index of precursor feature and pseudo MS/MS scan index 
                 DiaFile.GenerateClusterScanNomapping();
+                //Doing quantification
                 DiaFile.AssignQuant();
                 DiaFile.ClearStructure();
             }            

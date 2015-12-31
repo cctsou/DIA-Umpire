@@ -70,6 +70,7 @@ public class DIA_window_Quant implements  Runnable{
         ExecutorService executorPool;
         executorPool = Executors.newFixedThreadPool(NoThread);
         
+        //For each identified peptide ion, extract the precursor feature and grouped fragments from the isolation window
         for (PepIonID pepIonID : IDsummary.GetPepIonList().values()) {
             if (DIAWindow.DIA_MZ_Range.getX() <= pepIonID.GetPeakMz(2)&& DIAWindow.DIA_MZ_Range.getY() >= pepIonID.ObservedMz) {
                 DIAMapClusterUnit mapunit = new DIAMapClusterUnit(pepIonID, Q1Name, Q2Name, Q3Name, ScanClusterMap_Q1, ScanClusterMap_Q2, ScanClusterMap_Q3, ms1lcms, DIAWindow);

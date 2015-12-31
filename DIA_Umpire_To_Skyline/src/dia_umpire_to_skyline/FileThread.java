@@ -74,7 +74,7 @@ public class FileThread implements Runnable{
                     System.exit(1);
                 }
                 DiaFile.BuildStructure();
-                if (!DiaFile.ms1lcms.ReadPeakCluster()) {
+                if (!DiaFile.MS1FeatureMap.ReadPeakCluster()) {
                     Logger.getRootLogger().info("Loading peak and structure failed, job is incomplete");
                     System.exit(1);
                 }

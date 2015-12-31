@@ -379,7 +379,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
         StartScanNo = GetStartScan(startTime);        
         EndScanNo = GetEndScan(endTime);
         ArrayList<Integer> IncludedScans=new ArrayList<>();
-        for(Integer scannum :dIA_Setting.DIAWindows.get(DIAWindow)){
+        for(int scannum :dIA_Setting.DIAWindows.get(DIAWindow)){
             if(scannum >= StartScanNo && scannum <= EndScanNo){
                 IncludedScans.add(scannum);
             }
@@ -411,7 +411,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
         StartScanNo = GetStartScan(startTime);        
         EndScanNo = GetEndScan(endTime);
         ArrayList<Integer> IncludedScans=new ArrayList<>();
-        for(Integer scannum : dIA_Setting.MS1Windows.get(MS1Window)){
+        for(int scannum : dIA_Setting.MS1Windows.get(MS1Window)){
             if(scannum >= StartScanNo && scannum <= EndScanNo){
                 IncludedScans.add(scannum);
             }
@@ -494,7 +494,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
 
         ArrayList<Integer> IncludedScans = new ArrayList<>();
         
-        for(Integer ScanNum : MsLevelList.keySet()){
+        for(int ScanNum : MsLevelList.keySet()){
             if(MsLevelList.get(ScanNum)==1 && MS1Included){
                 IncludedScans.add(ScanNum);
             }
@@ -512,7 +512,7 @@ public final class mzXMLParser  extends SpectrumParserBase{
         EndScanNo = GetEndScan(endTime);
         
         ArrayList<Integer> temp=new ArrayList<>();
-        for(Integer scannum : IncludedScans){
+        for(int scannum : IncludedScans){
             if(scannum >= StartScanNo && scannum <= EndScanNo){
                 temp.add(scannum);
             }

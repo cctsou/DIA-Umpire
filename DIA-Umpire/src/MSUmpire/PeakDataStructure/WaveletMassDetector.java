@@ -69,6 +69,8 @@ public class WaveletMassDetector implements Serializable{
     }
     int d;
     //public ArrayList<XYData>[] waveletCWT;
+    
+    //List of peak ridge (local maxima)
     public ArrayList<XYData>[] PeakRidge;
 
     public void Run() {

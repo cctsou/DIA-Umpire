@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
 /**
- * MS1 peak data related to a LCMS map
+ * MS1 peak feature data related to a LCMS1 feature map
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSPeakMS1 extends LCMSPeakBase {
@@ -85,7 +85,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         this.datattype=SpectralDataType.DataType.DDA;        
         this.NoCPUs = NoCPUs;
     }
-    
+        
     public void SetMS1Windows(TreeMap<XYData, ArrayList<Integer>> MS1Windows){
         this.MS1Windows=MS1Windows;
     }
@@ -180,23 +180,30 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
         }
         CreatePeakFolder();
         ArrayList<ScanCollection> scanCollections = new ArrayList<>();
+        //Calculate how many point per minute when we do B-spline peak smoothing
         parameter.NoPeakPerMin = (int) (parameter.SmoothFactor / GetSpectrumParser().GetMS1CycleTime());
         Logger.getRootLogger().info("MS1 average cycle time : "+GetSpectrumParser().GetMS1CycleTime()*60+ " seconds");
-        if (MS1Windows == null || MS1Windows.isEmpty()) {            
+        
+        if (MS1Windows == null || MS1Windows.isEmpty()) {
+            //The data has only one MS1 scan set
             ScanCollection scanCollection=GetSpectrumParser().GetAllScanCollectionByMSLabel(true, true, true, false,parameter.startRT, parameter.endRT);
             scanCollections.add(scanCollection);            
         }
         else{
+            //Get MS1 ScanCollection for each MS1 scan set
             for( XYData window : MS1Windows.keySet()){
                 scanCollections.add(GetSpectrumParser().GetScanCollectionMS1Window(window, true));
             }
         }
         
         PDHandlerMS1 detection = new PDHandlerMS1(this, NoCPUs, parameter.MS1PPM);        
+        //Set the flag to tell the program to do targeted peak detection.
         if(parameter.TargetIDOnly){
             detection.SetTargetedDetectionOnly();
         }
+        
         if (IDsummary != null) {
+            //If identifications are present, assign mz-RT for each PSM into targeted peak detection list.
             for (PSM psm : IDsummary.PSMList.values()) {
                 for (int i = 0; i < parameter.MinNoPeakCluster; i++) {
                     detection.AddToInclusionList(psm.GetObsrIsotopicMz(i), psm.RetentionTime);
@@ -204,15 +211,22 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
             }
             Logger.getRootLogger().info("No. of targeted PSM IDs:"+IDsummary.PSMList.size());
         }
+        //Start detect MS1 peak curve and isotope clusters
         detection.DetectPeakClusters(scanCollections);
+        
+        //Release scan collection data structure
         scanCollections.clear();
         scanCollections=null;
+        
+        //Find closet scan number for each detected isotope peak cluster
         MapScanNoForPeakClusters();
         
+        //Export peak cluster CSV table
         if (ExportPeakClusterTable) {
             ExportPeakClusterResultCSV();
         }
         
+        //Export peak cluster serialization file
         if (SaveSerializationFile) {
             ExportPeakCluster();
         }

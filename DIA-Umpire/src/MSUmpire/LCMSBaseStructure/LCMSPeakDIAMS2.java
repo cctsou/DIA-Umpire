@@ -56,7 +56,7 @@ import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
 
 /**
- * MS2 peak data structure related to a LCMS map
+ * MS2 peak feature map related to a DIA MS2 isolation window 
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSPeakDIAMS2 extends LCMSPeakBase {

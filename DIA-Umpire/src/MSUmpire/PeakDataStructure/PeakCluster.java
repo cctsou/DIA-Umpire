@@ -57,11 +57,8 @@ public class PeakCluster implements Serializable {
     public transient int StartScan;
     public transient int EndScan;
     public int Charge;
-    public float IDIsoPatternProb = -1f;
     public float IsoMapProb = -1f;
     private float conflictCorr = -1f;
-    public float[] IsoPatternErrorMap;
-    public float[] IsoPatternErrorID;
     public float[] PeakDis;    
     public int NoRidges;
     public float OverlapP;
@@ -82,8 +79,6 @@ public class PeakCluster implements Serializable {
         Corrs = new float[IsotopicNum - 1];
         SNR = new float[IsotopicNum];
         OverlapRT = new float[IsotopicNum-1];
-        IsoPatternErrorID = new float[IsotopicNum];
-        IsoPatternErrorMap = new float[IsotopicNum];
         PeakHeight = new float[IsotopicNum];
         PeakHeightRT = new float[IsotopicNum];
         PeakArea = new float[IsotopicNum];
@@ -148,10 +143,6 @@ public class PeakCluster implements Serializable {
         return 1;
     }
 
-    public float GetSymScore() {
-        return Math.abs(LeftInt - RightInt) / PeakHeight[0];
-    }
-
     public void SetMz(int pkidx, float value) {
         mz[pkidx] = value;
     }
@@ -167,31 +158,6 @@ public class PeakCluster implements Serializable {
     public void SetConflictCorr(float ConflictCorr) {
         conflictCorr = ConflictCorr;
     }
-
-    public float GetApexVar() {
-        if (RTVar > 0f) {
-            return RTVar;
-        }
-        float mean = 0f;
-        int count = 0;
-
-        for (int i = 0; i < PeakHeightRT.length; i++) {
-            if (PeakHeightRT[i] > 0) {
-                mean += PeakHeightRT[i];
-                count++;
-            }
-        }
-        mean /= count;
-        RTVar = 0f;
-        for (int i = 0; i < PeakHeightRT.length; i++) {
-            if (PeakHeightRT[i] > 0) {
-                RTVar += (mean - PeakHeightRT[i]) * (mean - PeakHeightRT[i]);
-            }
-        }
-        RTVar = RTVar / count;
-        return RTVar;
-    }
-    
 
     public float TargetMz() {
         if (mz[0] == 0f) {
@@ -229,20 +195,6 @@ public class PeakCluster implements Serializable {
         return mass;
     }
 
-    public void UpdateIDChiSquareProb(float[] TheoIso) {
-        if (IDIsoPatternProb == -1) {
-            IDIsoPatternProb = GetChiSquareProbByTheoIso(TheoIso);
-        }
-    }
-
-    public void UpdateIDIsoError(float[] TheoIso) {
-        GetIsoPatternErrorByTheoIso(TheoIso);
-    }
-
-    public void UpdateIsoMapError(TreeMap<Float, XYData>[] IsotopePatternMap) {
-        GetIsoPatternErrorByIsoMap(IsotopePatternMap);
-    }
-
     public void UpdateIsoMapProb(TreeMap<Float, XYData>[] IsotopePatternMap) {
         if (IsoMapProb == -1) {
             IsoMapProb = GetChiSquareProbByIsoMap(IsotopePatternMap);
@@ -257,18 +209,6 @@ public class PeakCluster implements Serializable {
                 }
             }
         }
-    }
-
-    public float GetMassError() {
-        float error = 0f;
-        for (int i = 1; i < IsoPeaksCurves.length; i++) {
-            float mz = TargetMz() + (i * ((float)ElementaryIon.proton.getTheoreticMass() / Charge));
-            if (IsoPeaksCurves[i] == null) {
-                break;
-            }
-            error += InstrumentParameter.CalcPPM(mz, IsoPeaksCurves[i].TargetMz);
-        }
-        return error;
     }
 
     public void CalcPeakArea_V2() {
@@ -317,6 +257,7 @@ public class PeakCluster implements Serializable {
         }        
     }
 
+    //Generate isotope peak distribution
     private void GeneratePeakDis() {
         if (PeakDis != null) {
             return;
@@ -330,6 +271,7 @@ public class PeakCluster implements Serializable {
         }
     }
 
+    //Get isotope pattern range according the mass of this peak cluster
     public XYData[] GetPatternRange(TreeMap<Float, XYData>[] IsotopePatternMap) {
         XYData[] PatternRange = new XYData[IsotopePatternMap.length];
         for (int i = 0; i < IsotopePatternMap.length; i++) {
@@ -342,43 +284,6 @@ public class PeakCluster implements Serializable {
         return PatternRange;
     }
 
-    private void GetIsoPatternErrorByIsoMap(TreeMap<Float, XYData>[] IsotopePatternMap) {
-
-        GeneratePeakDis();
-        XYData[] PatternRange = GetPatternRange(IsotopePatternMap);
-        float[] TheoIso = new float[IsotopePatternMap.length];
-
-        TheoIso[0] = 1f;
-
-        for (int i = 1; i < IsotopePatternMap.length; i++) {
-            if (PeakDis[i] >= PatternRange[i - 1].getY() && PeakDis[i] <= PatternRange[i - 1].getX()) {
-                TheoIso[i] = PeakDis[i];
-            } else {
-                if (Math.abs(PeakDis[1] - PatternRange[i - 1].getY()) > Math.abs(PeakDis[i] - PatternRange[i - 1].getX())) {
-                    TheoIso[i] = PatternRange[i - 1].getX();
-                } else {
-                    TheoIso[i] = PatternRange[i - 1].getY();
-                }
-            }
-        }
-        for (int i = 0; i < TheoIso.length; i++) {
-            IsoPatternErrorMap[i] = PeakDis[i] - TheoIso[i];
-        }
-    }
-
-    public void GetIsoPatternErrorByTheoIso(float[] TheoIso) {
-        GeneratePeakDis();
-        for (int i = 0; i < TheoIso.length; i++) {
-            IsoPatternErrorID[i] = PeakDis[i] - TheoIso[i];
-        }
-    }
-
-    public float GetChiSquareProbByTheoIso(float[] TheoIso) {
-        GeneratePeakDis();
-        float prob = ChiSquareGOF.GetInstance(PeakHeight.length).GetGoodNessOfFitProb(TheoIso, PeakDis);
-        return prob;
-        //return  0f;
-    }
 
     private float GetChiSquareProbByIsoMap(TreeMap<Float, XYData>[] IsotopePatternMap) {
 
@@ -412,6 +317,7 @@ public class PeakCluster implements Serializable {
         return prob;
     }
 
+    //Check is the number of detected isotope peaks passes the criterion
     public boolean IsotopeComplete(int minIsonum) {
         for (int i = 0; i < minIsonum; i++) {
             if ((IsoPeaksCurves==null || IsoPeaksCurves[i] == null) && mz[i] == 0.0f) {
@@ -421,6 +327,7 @@ public class PeakCluster implements Serializable {
         return true;
     }
 
+    //Create locks for multithreading 
     public void CreateLock() {
         lock=new ReentrantReadWriteLock();
         locked=false;

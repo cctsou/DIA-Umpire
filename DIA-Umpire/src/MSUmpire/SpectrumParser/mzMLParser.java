@@ -26,7 +26,6 @@ import MSUmpire.BaseDataStructure.SpectralDataType;
 import MSUmpire.BaseDataStructure.XYData;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.concurrent.*;
 import java.util.zip.DataFormatException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -52,8 +51,14 @@ public final class mzMLParser extends SpectrumParserBase{
     
     public mzMLParser(String filename, InstrumentParameter parameter, SpectralDataType.DataType datatype, DIA_Setting dIA_Setting, int NoCPUs) throws FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException {
         super(filename, parameter, datatype, dIA_Setting, NoCPUs);        
-        scanCollection = InitializeScanCollection();        
-        ParseAllScans();
+        scanCollection = InitializeScanCollection();   
+    }
+    
+    //Check if the the file has been parsed
+    private void CheckStatus() {
+        if (scanCollection.ScanHashMap.isEmpty()) {
+            ParseAllScans();
+        }
     }
     
     private void ParseAllScans() {
@@ -118,7 +123,11 @@ public final class mzMLParser extends SpectrumParserBase{
                     }
                 }
             }
-        }        
+        } 
+        try {        
+            FSElutionIndexWrite();
+        } catch (IOException ex) {            
+        }
     }
         
     @Override
@@ -127,6 +136,7 @@ public final class mzMLParser extends SpectrumParserBase{
             Logger.getRootLogger().error(filename + " is not DIA data");
             return null;
         }
+        CheckStatus();
         ScanCollection swathScanCollection = new ScanCollection(parameter.Resolution);
 
         int StartScanNo = 0;
@@ -146,6 +156,7 @@ public final class mzMLParser extends SpectrumParserBase{
 
     @Override
     public ScanCollection GetAllScanCollectionByMSLabel(boolean MS1Included, boolean MS2Included, boolean MS1Peak, boolean MS2Peak, float startTime, float endTime) {
+       CheckStatus();
         ScanCollection newscanCollection = InitializeScanCollection();
         Logger.getRootLogger().debug("Memory usage before loading scans:" + Math.round((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1048576) + "MB (" + NoCPUs + " threads)");
 
@@ -184,6 +195,7 @@ public final class mzMLParser extends SpectrumParserBase{
             Logger.getRootLogger().error(filename + " is not DIA data");
             return null;
         }
+        CheckStatus();
         ScanCollection MS1WindowScanCollection = new ScanCollection(parameter.Resolution);
        
         int StartScanNo = 0;

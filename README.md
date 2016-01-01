@@ -29,7 +29,7 @@ DIA-Umpire internal library search using *LCMSID file as input file
 
 **DIA_Umpire_ExtLibSearch**
 
-DIA-Umpire external library search using *LCMSID file as input file
+DIA-Umpire external library search using *LCMSID file and a spectral library as input files
 
 **DIA_Umpire_PortQuant**
 

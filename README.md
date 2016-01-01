@@ -28,7 +28,7 @@ Module to generate raw-intensity pseudo MS/MS spectra. (without intensity adjust
 Main DIA-Umpire class libraries
 
 * ExternalPackages: external packages, currently including JAligner, SortedListLib, JMEF, and a traML parser developed by ISB.
-* FDREstimator: wrapper to generate FDR filtered protein and peptide list
+* FDREstimator: wrapper to generate FDR filtered protein and peptide lists
 * MSUmpire: Umpire libraries
   * BaseDataStructure : basic data structure, including x-y pair value data, scan data, and parameter setting class etc.
   * DIA : DIA specific classes

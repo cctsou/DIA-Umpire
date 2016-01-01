@@ -2,6 +2,10 @@
 
 Computational analysis for mass spectrometry-based proteomics data
 
+The followings are the brief descriptions for each NetBeans project
+
+**DIA-Umpire_SE**
+The first step of DIA-Umpire analysis. It is a signal extraction module to generate pseudo MS/MS spectra given a DIA file
 
 **DIA-Umpire_Quant:** 
 
@@ -12,10 +16,19 @@ DIA-Umpire quantification module which performs the following steps for a list o
 3. External library search
 4. Generate a master protein list given an FDR threshold and map peptides to the master protein list and do final protein-level quantification
 
+Alternatively, one run the four modules separately using the following Netbeans projects
 
-**DIA-Umpire_SE**
+**DIA_Umpire_LCMSIDGen**
+After untargeted identification analysis, DIA-Umpire generate untargeted peptide IDs using pepXML files as *LCMSID file, which is the input file format for internal and external library search.
 
-DIA-Umpire signal extraction module to generate pseudo MS/MS spectra given a DIA file
+**DIA_Umpire_IntLibSearch**
+DIA-Umpire internal library search using *LCMSID file as input file
+
+**DIA_Umpire_ExtLibSearch**
+DIA-Umpire external library search using *LCMSID file as input file
+
+**DIA_Umpire_PortQuant**
+DIA-Umpire protein quantification module, the output is csv format
 
 
 **DIA-Umpire_To_Skyline**

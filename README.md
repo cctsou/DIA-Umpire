@@ -7,11 +7,10 @@ Computational analysis for mass spectrometry-based proteomics data
 
 DIA-Umpire quantification module which performs the following steps for a list of DIA files:
 
-1. Generate a master protein list given an FDR threshold (using prot.xml file)
-2. Generate untargeted peptide IDs
-3. Internal library search
-4. External library search
-5. Map peptides to the master protein list and do final protein-level quantification
+1. Generate untargeted peptide IDs
+2. Internal library search
+3. External library search
+4. Generate a master protein list given an FDR threshold and map peptides to the master protein list and do final protein-level quantification
 
 
 **DIA-Umpire_SE**

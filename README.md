@@ -2,6 +2,7 @@
 
 Computational analysis for mass spectrometry-based proteomics data
 
+
 **DIA-Umpire_Quant:** 
 
 DIA-Umpire quantification module which performs the following steps for a list of DIA files:
@@ -12,9 +13,11 @@ DIA-Umpire quantification module which performs the following steps for a list o
 4. External library search
 5. Map peptides to the master protein list and do final protein-level quantification
 
+
 **DIA-Umpire_SE**
 
 DIA-Umpire signal extraction module to generate pseudo MS/MS spectra given a DIA file
+
 
 **DIA-Umpire_To_Skyline**
 
@@ -42,6 +45,7 @@ Main DIA-Umpire class libraries
   * Utility: Other classes
   
 * resource: all resource files in text format
+
 
 **MS1Quant**
 

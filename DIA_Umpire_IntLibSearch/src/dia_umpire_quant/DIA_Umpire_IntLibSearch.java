@@ -149,6 +149,10 @@ public class DIA_Umpire_IntLibSearch {
                         Freq = Float.parseFloat(value);
                         break;
                     }
+                    case "Fasta": {
+                        tandemPara.FastaPath = value;
+                        break;
+                    }
                 }
             }
         }
@@ -157,6 +161,13 @@ public class DIA_Umpire_IntLibSearch {
         //Initialize PTM manager using compomics library
         PTMManager.GetInstance();
 
+         //Check if the fasta file can be found
+        if (!new File(tandemPara.FastaPath).exists()) {
+            Logger.getRootLogger().info("Fasta file :"+tandemPara.FastaPath + " cannot be found, the process will be terminated, please check.");
+            System.exit(1);
+        }               
+        
+        
         //Generate DIA file list
         ArrayList<DIAPack> FileList = new ArrayList<>();
         try {
@@ -203,6 +214,7 @@ public class DIA_Umpire_IntLibSearch {
                     //If the serialization file for ID file existed
                     if (DiaFile.ReadSerializedLCMSID()) {
                         DiaFile.IDsummary.ReduceMemoryUsage();
+                        DiaFile.IDsummary.FastaPath=tandemPara.FastaPath;
                         FileList.add(DiaFile);
                     }
                 }

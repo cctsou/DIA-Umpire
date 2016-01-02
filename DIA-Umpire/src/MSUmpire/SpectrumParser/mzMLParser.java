@@ -51,7 +51,10 @@ public final class mzMLParser extends SpectrumParserBase{
     
     public mzMLParser(String filename, InstrumentParameter parameter, SpectralDataType.DataType datatype, DIA_Setting dIA_Setting, int NoCPUs) throws FileNotFoundException, IOException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, DataFormatException {
         super(filename, parameter, datatype, dIA_Setting, NoCPUs);        
-        scanCollection = InitializeScanCollection();   
+        scanCollection = InitializeScanCollection(); 
+        if(!FSElutionIndexRead()){
+            ParseAllScans();
+        }
     }
     
     //Check if the the file has been parsed

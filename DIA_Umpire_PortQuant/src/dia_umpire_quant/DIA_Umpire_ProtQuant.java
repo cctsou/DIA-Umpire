@@ -54,7 +54,7 @@ import org.apache.log4j.Logger;
  *
  * @author Chih-Chiang Tsou
  */
-public class DIA_Umpire_PortQuant {
+public class DIA_Umpire_ProtQuant {
 
     /**
      * @param args the command line arguments
@@ -328,6 +328,8 @@ public class DIA_Umpire_PortQuant {
                         DiaFile.IDsummary.ReduceMemoryUsage();
                         DiaFile.IDsummary.ClearAssignPeakCluster();
                         FileList.add(DiaFile);
+                        HashMap<String, FragmentPeak> FragMap = new HashMap<>();
+                        IDSummaryFragments.put(FilenameUtils.getBaseName(mzXMLFile), FragMap);
                     }
                 }
             }

@@ -215,7 +215,7 @@ public class TargetMatchScoring implements Serializable {
     }
 
     private void CalcUmpireScore() {
-        Logger.getRootLogger().info("Calculating Umpire Scores");
+        Logger.getRootLogger().debug("Calculating Umpire Scores");
         for (UmpireSpecLibMatch match : libTargetMatches) {
             for (PeakGroupScore target : match.TargetHits) {
                 AssignUmpireScore(target);

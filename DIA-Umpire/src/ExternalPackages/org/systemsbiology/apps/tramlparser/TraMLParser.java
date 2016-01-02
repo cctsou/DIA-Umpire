@@ -104,7 +104,7 @@ public class TraMLParser {
      */
     public void parse_file(String tramlFileName, Logger logger) throws Exception {
 
-        JAXBContext ctx = JAXBContext.newInstance("org.hupo.psi.ms.traml");
+        JAXBContext ctx = JAXBContext.newInstance("ExternalPackages.org.hupo.psi.ms.traml");
         Unmarshaller um = ctx.createUnmarshaller();
         JAXBElement<TraMLType> jaxb_traml = (JAXBElement<TraMLType>) um.unmarshal(new File(tramlFileName));
         this.traML = jaxb_traml.getValue();
@@ -113,7 +113,7 @@ public class TraMLParser {
 
     public String getTransitionListXML(Logger logger) throws Exception {
 
-        JAXBContext ctx = JAXBContext.newInstance("org.hupo.psi.ms.traml");
+        JAXBContext ctx = JAXBContext.newInstance("ExternalPackages.org.hupo.psi.ms.traml");
         Marshaller m = ctx.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, JTRAML_URL.TRAML_XSD_LOCATION);
@@ -130,7 +130,7 @@ public class TraMLParser {
 
     public void writeToFile(String filename) throws Exception {
 
-        JAXBContext ctx = JAXBContext.newInstance("org.hupo.psi.ms.traml");
+        JAXBContext ctx = JAXBContext.newInstance("ExternalPackages.org.hupo.psi.ms.traml");
         Marshaller m = ctx.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, JTRAML_URL.TRAML_XSD_LOCATION);

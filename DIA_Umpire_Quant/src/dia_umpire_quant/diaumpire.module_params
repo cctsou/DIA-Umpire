@@ -18,6 +18,9 @@ Thread = 6
 #Decoy tag
 DecoyPrefix=
 
+#Fasta file path
+Fasta = /data/msumpire/sp.fa
+
 ##Common parameters end
 
 ##DIA-Umpire_LCMSIDGen parameters start
@@ -50,8 +53,6 @@ RTWindow_Ext=-1
 
 
 ##DIA-Umpire_ProtQuant parameters start
-#Fasta file path
-Fasta = /data/msumpire/sp.fa
 
 #Use default protein FDR filtering.
 # Set to true if you wish to filter protein using DIA-Umpire's filtering method based on maximum peptide ion probability values.

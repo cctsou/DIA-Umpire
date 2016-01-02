@@ -173,8 +173,11 @@ public class DIAPack {
 
     //Building empty data structure for MS2 feature maps 
     public void BuildDIAWindows() throws IOException, DataFormatException, IOException, IOException, IOException, InterruptedException {
+        if (dIA_Setting.DIAWindows == null || dIA_Setting.DIAWindows.isEmpty()) {
+            GetSpectrumParser();
+        }
         DIAWindows = new ArrayList<>();
-        Object[] WindowRange = GetSpectrumParser().dIA_Setting.DIAWindows.keySet().toArray();
+        Object[] WindowRange = dIA_Setting.DIAWindows.keySet().toArray();
         for (int i = 0; i < WindowRange.length; i++) {
             XYData DiaWinMz = (XYData) WindowRange[i];
             XYData LastWinMz = null;
@@ -875,10 +878,6 @@ public class DIAPack {
         
         if (IDsummary != null) {
             MS1FeatureMap.IDsummary = IDsummary;
-        }
-
-        if (dIA_Setting.DIAWindows == null || dIA_Setting.DIAWindows.isEmpty()) {
-            GetSpectrumParser();
         }
         BuildDIAWindows();
     }

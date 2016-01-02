@@ -160,6 +160,7 @@ public class DIA_Umpire_ExtLibSearch {
         //Initialize PTM manager using compomics library
         PTMManager.GetInstance();
         
+        
         //Check if the fasta file can be found
         if (!new File(tandemPara.FastaPath).exists()) {
             Logger.getRootLogger().info("Fasta file :"+tandemPara.FastaPath + " cannot be found, the process will be terminated, please check.");
@@ -213,6 +214,7 @@ public class DIA_Umpire_ExtLibSearch {
                     //If the serialization file for ID file existed
                     if (DiaFile.ReadSerializedLCMSID()) {
                         DiaFile.IDsummary.ReduceMemoryUsage();
+                        DiaFile.IDsummary.FastaPath=tandemPara.FastaPath;
                         FileList.add(DiaFile);
                     }
                 }

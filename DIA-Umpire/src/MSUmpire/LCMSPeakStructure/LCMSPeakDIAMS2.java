@@ -71,11 +71,11 @@ public class LCMSPeakDIAMS2 extends LCMSPeakBase {
 
     public boolean FragmentGroupByCluster = false;
 
-    public LCMSPeakDIAMS2(String Filename, DIAPack parentDIA, InstrumentParameter parameter, XYData WindowMZ, XYData LastWindowMZ, SpectrumParserBase mzxml, int NoCPUs) {
+    public LCMSPeakDIAMS2(String Filename, DIAPack parentDIA, InstrumentParameter parameter, XYData WindowMZ, XYData LastWindowMZ, SpectrumParserBase spectrumparser, int NoCPUs) {
         this.DIA_MZ_Range = WindowMZ;
         this.Last_MZ_Range = LastWindowMZ;
         this.WindowID = (int) Math.floor(WindowMZ.getX()) + "_" + (int) Math.floor(WindowMZ.getY());
-        this.SpectrumParser = mzxml;
+        this.SpectrumParser = spectrumparser;
         this.ScanCollectionName = FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename) + "_" + (int) Math.floor(WindowMZ.getX()) + "_" + (int) Math.floor(WindowMZ.getY());
         this.ParentmzXMLName = FilenameUtils.getFullPath(Filename) + "/" + FilenameUtils.getBaseName(Filename);
         this.parentDIA = parentDIA;

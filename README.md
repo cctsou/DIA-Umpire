@@ -31,7 +31,7 @@ DIA-Umpire internal library search using *LCMSID file as input file
 
 DIA-Umpire external library search using *LCMSID file and a spectral library as input files
 
-**DIA_Umpire_PortQuant**
+**DIA_Umpire_ProtQuant**
 
 DIA-Umpire protein quantification module, the output is csv format
 

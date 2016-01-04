@@ -4,37 +4,30 @@ Computational analysis for mass spectrometry-based proteomics data
 
 The followings are the brief descriptions for each NetBeans project
 
-**DIA-Umpire_SE**
+**DIA_Umpire_SE**
 
-The first step of DIA-Umpire analysis. It is a signal extraction module to generate pseudo MS/MS spectra given a DIA file
-
-**DIA-Umpire_Quant:** 
-
-DIA-Umpire quantification module which performs the following steps for a list of DIA files:
-
-1. Generate untargeted peptide IDs
-2. Internal library search
-3. External library search
-4. Generate a master protein list given an FDR threshold and map peptides to the master protein list and do final protein-level quantification
-
-Alternatively, one run the four modules separately using the following Netbeans projects
+The first step of DIA-Umpire analysis. It is a signal extraction module to generate pseudo MS/MS spectra given a DIA file 
+  * java -jar -Xmx8G DIA_Umpire_SE.jar mzMXL_file diaumpire.se_params
 
 **DIA_Umpire_LCMSIDGen**
 
-After untargeted identification analysis, DIA-Umpire generate untargeted peptide IDs using pepXML files as *LCMSID file, which is the input file format for internal and external library search.
+After untargeted identification analysis, DIA-Umpire generates untargeted peptide IDs using pepXML files and output as *LCMSID file, which is the input file format for internal and external library searches.
+  * java -jar -Xmx10G DIA_Umpire_LCMSIDGen.jar diaumpire.module_params
 
 **DIA_Umpire_IntLibSearch**
 
-DIA-Umpire internal library search using *LCMSID file as input file
+DIA-Umpire internal library search that uses *LCMSID file as input file. The input *LCMSID file will be updated after the process.
+  * java -jar -Xmx10G DIA_Umpire_IntLibSearch.jar diaumpire.module_params
 
 **DIA_Umpire_ExtLibSearch**
 
-DIA-Umpire external library search using *LCMSID file and a spectral library as input files
+DIA-Umpire external library search that uses *LCMSID file and a spectral library as input files. The input *LCMSID file will be updated after the process. 
+  * java -jar -Xmx10G DIA_Umpire_ExtLibSearch.jar diaumpire.module_params
 
 **DIA_Umpire_ProtQuant**
 
-DIA-Umpire protein quantification module, the output is csv format
-
+DIA-Umpire protein quantification module takes *LCMSID file as input, the output is protein, peptide, fragment quantification results in csv format
+  * java -jar -Xmx10G DIA_Umpire_ExtLibSearch.jar diaumpire.module_params
 
 **DIA-Umpire_To_Skyline**
 

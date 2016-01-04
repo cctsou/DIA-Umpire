@@ -40,6 +40,7 @@ SE.EndRT=9999
 SE.MinMZ=200
 SE.IsoPattern=0.8
 SE.MassDefectFilter=true
+SE.MassDefectOffset=0.1
 
 #Isolation window setting
 #The current version supports the following window type: SWATH (fixed window size), V_SWATH (variable SWATH window), MSX, MSE, pSMART

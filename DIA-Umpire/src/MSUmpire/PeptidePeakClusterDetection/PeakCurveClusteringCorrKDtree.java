@@ -89,7 +89,7 @@ public class PeakCurveClusteringCorrKDtree implements Runnable {
         float Arange = peakA.EndRT() - peakA.StartRT();
         for (int charge = EndCharge; charge >= StartCharge; charge--) {
             float mass=charge * (peakA.TargetMz - (float)ElementaryIon.proton.getTheoreticMass());
-            if(mass<parameter.MinPrecursorMass|| (parameter.MassDefectFilter && !MD.InMassDefectRange(mass))){
+            if(mass<parameter.MinPrecursorMass|| (parameter.MassDefectFilter && !MD.InMassDefectRange(mass, parameter.MassDefectOffset))){
                 continue;
             }
             PeakCluster peakCluster = new PeakCluster(MaxNoOfClusters, charge);

@@ -100,7 +100,7 @@ public class ExportTable {
             }
         }
 
-        NOWriter.write("File\tNo. Proteins\tNo. peptide ions (Spec-centric)\tNo. peptide ions (Pep-centric)\tNo. proein assoc. ions\n");
+        NOWriter.write("File\tNo. proteins\tNo. peptide ions (Spec-centric)\tNo. peptide ions (Pep-centric)\tNo. protein assoc. ions\n");
 
         //ProteinSummary/////////////
         proWriter.write("Protein Key\t");
@@ -131,7 +131,7 @@ public class ExportTable {
         fragWriter.write("Fragment Key\tProtein\tPeptide\tFragment\tFragMz\t");
         for (LCMSID IDSummary : FileList) {
             String file = FilenameUtils.getBaseName(IDSummary.mzXMLFileName);
-            fragWriter.write(file + "_RT\t" + file + "_Spec_Centric_Prob\t" + file + "_Pep_Centric_Prob\t" + file + "_Intensity\t" + file + "_Corr\t" + file + "_PPM\t");
+            fragWriter.write(file + "_RT\t" + file + "_UntargetID_Prob\t" + file + "_TargetID_Prob\t" + file + "_Intensity\t" + file + "_Corr\t" + file + "_PPM\t");
         }
         fragWriter.write("\n");
         for (String key : ProteinFragMap.keySet()) {

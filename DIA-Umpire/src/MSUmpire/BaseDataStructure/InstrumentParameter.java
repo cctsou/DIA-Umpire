@@ -94,6 +94,7 @@ public class InstrumentParameter implements Serializable{
     public transient float RT_window_Targeted=-1f;
     public transient int SmoothFactor = 5;
     public transient boolean DetectSameChargePairOnly=false;
+    public transient float MassDefectOffset=0.1f;
         
     public void WriteParamSerialization(String mzXMLFileName) {
         try {

@@ -95,7 +95,8 @@ public class InstrumentParameter implements Serializable{
     public transient int SmoothFactor = 5;
     public transient boolean DetectSameChargePairOnly=false;
     public transient float MassDefectOffset=0.1f;
-        
+    public transient int MS2PairTopN=5;    
+    
     public void WriteParamSerialization(String mzXMLFileName) {
         try {
             Logger.getRootLogger().info("Writing parameter to file:" + FilenameUtils.getFullPath(mzXMLFileName) + FilenameUtils.getBaseName(mzXMLFileName) + "_params.ser...");
@@ -164,6 +165,7 @@ public class InstrumentParameter implements Serializable{
         TOF5600,
         Orbitrap,
         QExactive,
+        MALDI,
     };
 
     private void SetParameter(InstrumentType type) {

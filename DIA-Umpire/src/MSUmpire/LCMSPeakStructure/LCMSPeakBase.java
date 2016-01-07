@@ -27,7 +27,6 @@ import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeakDataStructure.PeakCurve;
 import MSUmpire.PeakDataStructure.SortedCurveCollectionApexRT;
 import MSUmpire.SpectrumParser.SpectrumParserBase;
-import MSUmpire.SpectrumParser.mzXMLParser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

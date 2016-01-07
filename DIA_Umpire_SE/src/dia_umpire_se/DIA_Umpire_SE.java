@@ -258,9 +258,11 @@ public class DIA_Umpire_SE {
                     }
                     case "SE.StartRT": {
                         param.startRT = Float.valueOf(value);
+                        break;
                     }
                     case "SE.EndRT": {
                         param.endRT = Float.valueOf(value);
+                        break;
                     }
                     case "SE.RemoveGroupedPeaksRTOverlap": {
                         param.RemoveGroupedPeaksRTOverlap = Float.valueOf(value);

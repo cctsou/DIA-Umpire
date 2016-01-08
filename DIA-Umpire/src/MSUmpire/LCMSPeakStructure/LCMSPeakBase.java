@@ -48,7 +48,7 @@ import org.nustaq.serialization.FSTObjectOutput;
 
 
 /**
- * Parent peak data structure related to a LCMS map
+ * Parent peak data structure related to an LCMS map
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class LCMSPeakBase {

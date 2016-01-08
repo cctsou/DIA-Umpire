@@ -36,6 +36,9 @@ public class PeakCurve implements Serializable  {
     private static final long serialVersionUID = 6498163564821L;
 
     private ArrayList<XYZData> PeakList;
+    //X: retention time
+    //Y: m/z
+    //Z: intensity
     private XYPointCollection SmoothData;
     private float startint = 0f;
     public int Index;

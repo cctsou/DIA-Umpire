@@ -71,7 +71,7 @@ public class DIA_Umpire_Quant {
         System.out.println("=================================================================================================");
         System.out.println("DIA-Umpire quantitation with targeted re-extraction analysis (version: " + UmpireInfo.GetInstance().Version + ")");
         if (args.length != 1) {
-            System.out.println("command format error, it should be like: java -jar -Xmx10G DIA_Umpire_Quant.jar diaumpire.quant_params");
+            System.out.println("command format error, it should be like: java -jar -Xmx10G DIA_Umpire_Quant.jar diaumpire_quant.params");
             return;
         }
         try {

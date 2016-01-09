@@ -63,7 +63,7 @@ public class DIA_Umpire_ProtQuant {
         System.out.println("=================================================================================================");
         System.out.println("DIA-Umpire protein quantitation module (version: " + UmpireInfo.GetInstance().Version + ")");
         if (args.length != 1) {
-            System.out.println("command format error, the correct format should be: java -jar -Xmx10G DIA_Umpire_PortQuant.jar diaumpire.module_params");
+            System.out.println("command format error, the correct format should be: java -jar -Xmx10G DIA_Umpire_PortQuant.jar diaumpire_module.params");
             return;
         }
         try {

@@ -56,7 +56,7 @@ public class DIA_Umpire_ExtLibSearch {
         System.out.println("=================================================================================================");
         System.out.println("DIA-Umpire targeted re-extraction analysis using external library (version: " + UmpireInfo.GetInstance().Version + ")");
         if (args.length != 1) {
-            System.out.println("command format error, the correct format should be: java -jar -Xmx10G DIA_Umpire_ExtLibSearch.jar diaumpire.module_params");
+            System.out.println("command format error, the correct format should be: java -jar -Xmx10G DIA_Umpire_ExtLibSearch.jar diaumpire_module.params");
             return;
         }
         try {

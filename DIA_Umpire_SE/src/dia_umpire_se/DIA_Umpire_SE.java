@@ -54,8 +54,8 @@ public class DIA_Umpire_SE {
         System.out.println("=================================================================================================");
         System.out.println("DIA-Umpire singal extraction analysis  (version: " + UmpireInfo.GetInstance().Version + ")");
         if (args.length < 2 || args.length > 3) {
-            System.out.println("command format error, the correct format is: java -jar -Xmx8G DIA_Umpire_SE.jar mzMXL_file diaumpire.se_params");
-            System.out.println("To fix DIA setting, use : java -jar -Xmx8G DIA_Umpire_SE.jar mzMXL_file diaumpire.se_params -f");
+            System.out.println("command format error, the correct format is: java -jar -Xmx8G DIA_Umpire_SE.jar mzMXL_file diaumpire_se.params");
+            System.out.println("To fix DIA setting, use : java -jar -Xmx8G DIA_Umpire_SE.jar mzMXL_file diaumpire_se.params -f");
             return;
         }
         try {

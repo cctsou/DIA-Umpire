@@ -40,6 +40,9 @@ public class PeakCurve implements Serializable  {
     //Y: m/z
     //Z: intensity
     private XYPointCollection SmoothData;
+    //X: retention time
+    //Y: intensity
+    //XIC
     private float startint = 0f;
     public int Index;
     private float endrt = -1f;

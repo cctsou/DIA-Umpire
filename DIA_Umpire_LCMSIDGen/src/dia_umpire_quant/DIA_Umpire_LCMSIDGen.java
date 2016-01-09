@@ -50,7 +50,7 @@ public class DIA_Umpire_LCMSIDGen {
         System.out.println("=================================================================================================");
         System.out.println("DIA-Umpire LCMSID geneartor (version: " + UmpireInfo.GetInstance().Version + ")");
         if (args.length != 1) {
-            System.out.println("command format error, the correct format should be: java -jar -Xmx10G DIA_Umpire_LCMSIDGen.jar diaumpire.module_params");
+            System.out.println("command format error, the correct format should be: java -jar -Xmx10G DIA_Umpire_LCMSIDGen.jar diaumpire_module.params");
             return;
         }
         try {

@@ -172,6 +172,10 @@ public class DIA_Umpire_IntLibSearch {
         ArrayList<DIAPack> FileList = new ArrayList<>();
         try {
             File folder = new File(WorkFolder);
+            if(!folder.exists()){
+                Logger.getRootLogger().info("The path : "+ WorkFolder + " cannot be found.");
+                System.exit(1);
+            }
             for (final File fileEntry : folder.listFiles()) {
                 if (fileEntry.isFile() && (fileEntry.getAbsolutePath().toLowerCase().endsWith(".mzxml") | fileEntry.getAbsolutePath().toLowerCase().endsWith(".mzml"))
                         && !fileEntry.getAbsolutePath().toLowerCase().endsWith("q1.mzxml")

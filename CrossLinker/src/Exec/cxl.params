@@ -17,4 +17,5 @@ SE.EndRT=150
 SE.MinMZ=150
 SE.MassDefectFilter=true
 SE.DetectSameChargePairOnly=true
+SE.MS2Pairing=true
 SE.MS2PairTopN=5

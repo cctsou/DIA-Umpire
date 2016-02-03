@@ -96,6 +96,8 @@ public class InstrumentParameter implements Serializable{
     public transient boolean DetectSameChargePairOnly=false;
     public transient float MassDefectOffset=0.1f;
     public transient int MS2PairTopN=5;    
+    public transient boolean MS2Pairing=true;
+    
     
     public void WriteParamSerialization(String mzXMLFileName) {
         try {

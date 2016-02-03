@@ -437,7 +437,7 @@ public class LCMSPeakMS1 extends LCMSPeakBase {
     }
 
     public void RemoveContaminantPeaks(float proportion) {
-        Logger.getRootLogger().info("Removing peak clusters whose m/z apprear more than " +proportion*100+ "% chromatography. No. of peak clusters : "+PeakClusters.size());
+        Logger.getRootLogger().info("Removing peak clusters whose m/z appear more than " +proportion*100+ "% chromatography. No. of peak clusters : "+PeakClusters.size());
         float minmz=Float.MAX_VALUE;
         float maxmz=Float.MIN_VALUE;
         float minrt=Float.MAX_VALUE;

@@ -70,7 +70,7 @@ public class CXL_MALDI {
         CrosslinkerPepFinder finder = new CrosslinkerPepFinder(lCMSPeakBase,0f);
         lCMSPeakBase.parameter.MS1PPM=200;
         lCMSPeakBase.parameter.RTtol=1f;
-        finder.FindAllPairPeaks();
+        finder.FindAllPairPeaks(NoCPUs);
         
         FileWriter writer = new FileWriter(FilePath + "112_pair.xls");
         writer.write("A_MW\tA_startScan\tA_endScan\tA_intensity\tB_MW\tB_startScan\tB_endScan\tB_intensity\tCorr\n");

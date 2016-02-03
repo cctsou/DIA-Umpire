@@ -528,7 +528,7 @@ public class DIAPack {
 
             if (!DIAWindow.ReadPeakCluster()|| !DIAWindow.ReadPrecursorFragmentClu2Cur()) {
                 Logger.getRootLogger().warn("Reading results for " + DIAWindow.ScanCollectionName + " failed");
-                System.exit(2);
+                continue;
             }
 
             executorPool = Executors.newFixedThreadPool(NoCPUs);
@@ -587,6 +587,8 @@ public class DIAPack {
         TargetHitPepXMLWriter pepxml=new TargetHitPepXMLWriter(GetiProphExtPepxml(libManager.LibID), IDsummary.FastaPath, IDsummary.DecoyTag, TScoring);
         TScoring = null;
         executorPool = Executors.newFixedThreadPool(NoCPUs);
+        
+        //Assign precursor peak cluster, extract fragments and do quantification
         for (PepIonID pepIonID : IDsummary.GetMappedPepIonList().values()) {
             DIAAssignQuantUnit quantunit = new DIAAssignQuantUnit(pepIonID, MS1FeatureMap, parameter);
             executorPool.execute(quantunit);
@@ -946,10 +948,12 @@ public class DIAPack {
         }
     }
 
+    
     public void ExportID() throws SQLException, IOException {
         ExportID("");
     }
 
+    //Export LCMSID instrance to serialization file
     public void ExportID(String tag) throws SQLException, IOException {
         if (IDsummary == null) {
             return;

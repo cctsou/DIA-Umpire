@@ -32,12 +32,11 @@ public class CrosslinkerPepFinder {
         this.medianIntensity=medianIntensity;
     }
 
-     public void FindPairPeakMS2(ArrayList<ScanPeakGroup> MS2PeakGroups, InstrumentParameter parameter) {
-        Logger.getRootLogger().info("Finding pair peaks in MS2 scans........");
+     public void FindPairPeakMS2(ArrayList<ScanPeakGroup> MS2PeakGroups, InstrumentParameter parameter, int NoCPUs) {
+        Logger.getRootLogger().info("Finding MS2 peak pairs from MS/MS scans........");
         
         ExecutorService executorPool = null;
-        //executorPool = Executors.newFixedThreadPool(10);
-        executorPool = Executors.newFixedThreadPool(10);
+        executorPool = Executors.newFixedThreadPool(NoCPUs);
        
          IntactPepListMS2 = new ArrayList<>();
          //For each scan
@@ -60,12 +59,11 @@ public class CrosslinkerPepFinder {
     }
 
 
-    public void FindAllPairPeaks() {
-        Logger.getRootLogger().info("Finding pair peak curves........");
+    public void FindAllPairPeaks(int NoCPUs) {
+        Logger.getRootLogger().info("Finding MS1 peak pairs........");
                 
         ExecutorService executorPool = null;
-        executorPool = Executors.newFixedThreadPool(10);
-        //executorPool = Executors.newFixedThreadPool(1);
+        executorPool = Executors.newFixedThreadPool(NoCPUs);
         PairList = new SortedFragFinder();
         ArrayList<PeakPairFinder> templist=new ArrayList<>();
 
@@ -94,7 +92,7 @@ public class CrosslinkerPepFinder {
         
         IntactPepList=new ArrayList<>();
         Logger.getRootLogger().info("Finding crosslinking groups");
-        executorPool = Executors.newFixedThreadPool(10);
+        executorPool = Executors.newFixedThreadPool(NoCPUs);
         for (int i = 0; i < PairList.size(); i++) {
             if (PairList.get(i).pairgroup.GetBestPeakPair() != null ) {
                 PairGroup lowmass = PairList.get(i).pairgroup;                

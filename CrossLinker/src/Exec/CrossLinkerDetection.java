@@ -56,7 +56,7 @@ public class CrossLinkerDetection {
 
         try {
             ConsoleLogger.SetConsoleLogger(Level.INFO);
-            ConsoleLogger.SetFileLogger(Level.DEBUG, FilenameUtils.getFullPath(args[0]) + "diaumpire_se.log");
+            ConsoleLogger.SetFileLogger(Level.DEBUG, FilenameUtils.getFullPath(args[0]) + "cxl.log");
         } catch (Exception e) {
         }
 
@@ -77,7 +77,7 @@ public class CrossLinkerDetection {
         parameter.RemoveGroupedPeaksRTOverlap = 0.6f;
         parameter.MS2PairTopN = 5;
         parameter.DetectSameChargePairOnly = true;
-
+        
         parameter.MinPeakPerPeakCurve = 3;
         parameter.MaxCurveRTRange = 5f;
         parameter.NoMissedScan = 3;
@@ -270,6 +270,7 @@ public class CrossLinkerDetection {
         ArrayList<ScanPeakGroup> MS2ScanPeakGroup = null;
 
         lCMSPeakBase = new LCMSPeakMS1(FilePath, parameter, NoCPUs);
+        lCMSPeakBase.Resume=false;
         try {
             //Detect MS1 peak clusters
             lCMSPeakBase.PeakClusterDetection();
@@ -326,9 +327,7 @@ public class CrossLinkerDetection {
         //detection.DetectSingleMZTraces(scans);
             //lCMSPeakBase.ExportPeakCurveResult();
         }
-        lCMSPeakBase.parameter.RTtol = 1f;
-        lCMSPeakBase.parameter.MS1PPM = 20f;
-
+        
         //Initialize crosslinker peak pair finder
         CrosslinkerPepFinder finder = new CrosslinkerPepFinder(lCMSPeakBase, medianIntensity);
 
@@ -336,8 +335,9 @@ public class CrossLinkerDetection {
         finder.FindAllPairPeaks(NoCPUs);
 
         //Find peak pairs for MS2 scans
-        finder.FindPairPeakMS2(MS2ScanPeakGroup, parameter,NoCPUs);
+        finder.FindPairPeakMS2(MS2ScanPeakGroup, NoCPUs);
 
+        Logger.getRootLogger().info("Exporting tables");
         FileWriter writer = new FileWriter(FilenameUtils.getFullPath(FilePath) + basename + "_112_pair.xls");
         writer.write("A_MW\tA_mz\tA_Charge\tA_startRT\tA_endRT\tA_intensity\tB_MW\tB_mz\tB_Charge\tB_startRT\tB_endRT\tB_intensity\tCorr\tppm\n");
         for (PeakPairFinder pair : finder.PairList) {
@@ -387,5 +387,6 @@ public class CrossLinkerDetection {
             }
             writer.close();
         }
+         Logger.getRootLogger().info("Done");
     }
 }

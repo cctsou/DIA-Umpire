@@ -38,6 +38,7 @@ SE.MaxNoPeakCluster = 3
 SE.StartRT=0
 SE.EndRT=9999
 SE.MinMZ=200
+SE.MinPrecursorMass=600
 SE.IsoPattern=0.8
 SE.MassDefectFilter=true
 SE.MassDefectOffset=0.1

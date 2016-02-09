@@ -32,7 +32,7 @@ public class CrosslinkerPepFinder {
         this.medianIntensity=medianIntensity;
     }
 
-     public void FindPairPeakMS2(ArrayList<ScanPeakGroup> MS2PeakGroups, InstrumentParameter parameter, int NoCPUs) {
+     public void FindPairPeakMS2(ArrayList<ScanPeakGroup> MS2PeakGroups, int NoCPUs) {
         Logger.getRootLogger().info("Finding MS2 peak pairs from MS/MS scans........");
         
         ExecutorService executorPool = null;
@@ -41,7 +41,7 @@ public class CrosslinkerPepFinder {
          IntactPepListMS2 = new ArrayList<>();
          //For each scan
          for (ScanPeakGroup scan : MS2PeakGroups) {
-             MS2PeakPairFinder finder = new MS2PeakPairFinder(scan, parameter);
+             MS2PeakPairFinder finder = new MS2PeakPairFinder(scan, LCMSPeakBase.parameter);
              executorPool.execute(finder);
              //finder.run();
              IntactPepListMS2.add(finder);

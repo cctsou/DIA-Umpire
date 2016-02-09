@@ -28,16 +28,6 @@
             <file>file:/C:/Umich/MS-Umpire/CrossLinker/src/Exec/clx.params</file>
             <file>file:/C:/Umich/MS-Umpire/CrossLinker/src/crosslinker/CrossLinkerHandler.java</file>
         </group>
-        <group name="MS_Umpire_Tsou">
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/PrecursorCrossPepFinder.java</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/CrosslinkerPepFinder.java</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/CXL_MALDI.java</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/PeakPairFinder.java</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/MS2PeakPairFinder.java</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/Exec/cxl.params</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/SortedFragFinder.java</file>
-            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/Exec/CrossLinkerDetection.java</file>
-        </group>
         <group name="DIA-Umpire_Release">
             <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/PrecursorCrossPepFinder.java</file>
             <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/CrosslinkerPepFinder.java</file>
@@ -47,6 +37,16 @@
             <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/Exec/cxl.params</file>
             <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/SortedFragFinder.java</file>
             <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/Exec/CrossLinkerDetection.java</file>
+        </group>
+        <group name="MS_Umpire_Tsou">
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/CXL_MALDI.java</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/CrosslinkerPepFinder.java</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/MS2PeakPairFinder.java</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/SortedFragFinder.java</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/Exec/CrossLinkerDetection.java</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/Exec/cxl.params</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/PeakPairFinder.java</file>
+            <file>file:/C:/Umich/GitHub/DIA-Umpire/CrossLinker/src/CXL_PeakPairFinder/PrecursorCrossPepFinder.java</file>
         </group>
     </open-files>
 </project-private>

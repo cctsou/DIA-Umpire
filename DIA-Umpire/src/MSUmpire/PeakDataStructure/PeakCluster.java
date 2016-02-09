@@ -19,7 +19,6 @@
  */
 package MSUmpire.PeakDataStructure;
 
-import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.SortedListFloat;
 import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.BaseDataStructure.XYPointCollection;

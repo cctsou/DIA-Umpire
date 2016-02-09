@@ -82,6 +82,7 @@ public class DIAPack {
     public boolean ExportFragmentPeak = false;
     public HashMap<Integer, Double> FactorialTable;
     TargetMatchScoring TScoring;
+    public boolean Resume;
 
     
     private void RemoveIndexFile() {
@@ -186,7 +187,7 @@ public class DIAPack {
             }
             
             LCMSPeakDIAMS2 diawindow = new LCMSPeakDIAMS2(Filename, this, parameter, DiaWinMz, LastWinMz, GetSpectrumParser(), NoCPUs);
-            
+            diawindow.Resume=Resume;
             //pass the settings through to MS2 feature map
             diawindow.datattype = dIA_Setting.dataType;
             diawindow.ExportPeakCurveTable = ExportFragmentPeak;
@@ -899,7 +900,7 @@ public class DIAPack {
         MS1FeatureMap = new LCMSPeakMS1(Filename, NoCPUs);
         MS1FeatureMap.datattype = dIA_Setting.dataType;
         MS1FeatureMap.SetParameter(parameter);
-        
+        MS1FeatureMap.Resume=Resume;
         //Assign MS1 feature maps
         MS1FeatureMap.SetMS1Windows(dIA_Setting.MS1Windows);
         MS1FeatureMap.CreatePeakFolder();

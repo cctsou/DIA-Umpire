@@ -67,7 +67,7 @@ public class DIA_Umpire_SE {
         }
 
         boolean Fix = false;
-        
+        boolean Resume=false;
         
         if (args.length == 3 && args[2].equals("-f")) {
             Fix = true;
@@ -276,6 +276,14 @@ public class DIA_Umpire_SE {
                         param.MinMZ = Float.valueOf(value);
                         break;
                     }
+                    case "SE.MinPrecursorMass":{
+                        param.MinPrecursorMass = Float.valueOf(value);
+                        break;
+                    }
+                    case "SE.MaxPrecursorMass":{
+                        param.MaxPrecursorMass = Float.valueOf(value);
+                        break;
+                    }
                     case "SE.IsoCorrThreshold": {
                         param.IsoCorrThreshold = Float.valueOf(value);
                         break;
@@ -291,6 +299,7 @@ public class DIA_Umpire_SE {
                     
 
 //</editor-fold>//</editor-fold>
+                    
                     case "WindowType": {
                         WindowType = value;
                         switch (WindowType) {
@@ -331,6 +340,7 @@ public class DIA_Umpire_SE {
                 
                 //Initialize a DIA file data structure                
                 DIAPack DiaFile = new DIAPack(MSFile.getAbsolutePath(), NoCPUs);
+                DiaFile.Resume=Resume;
                 DiaFile.SetDataType(dataType);
                 DiaFile.SetParameter(param);
                 

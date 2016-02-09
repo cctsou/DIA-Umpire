@@ -90,9 +90,10 @@ public class InstrumentParameter implements Serializable{
     public transient boolean TargetIDOnly=false;
     public transient boolean MassDefectFilter=true;
     public transient float MinPrecursorMass=600f;
+    public transient float MaxPrecursorMass=1500f;
     public transient boolean UseOldVersion=false;
     public transient float RT_window_Targeted=-1f;
-    public transient int SmoothFactor = 5;
+    public transient int SmoothFactor = 3;
     public transient boolean DetectSameChargePairOnly=false;
     public transient float MassDefectOffset=0.1f;
     public transient int MS2PairTopN=5;    

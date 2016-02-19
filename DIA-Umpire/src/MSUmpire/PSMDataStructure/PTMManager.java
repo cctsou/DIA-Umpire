@@ -113,12 +113,14 @@ public class PTMManager {
             String name = ptmFactory.getPTMs().get(i);
             PTM ptm = ptmFactory.getPTM(name);
             boolean sitecorrect = false;
-            if (("C-term".equals(AA) && name.contains("c-term")) || ("N-term".equals(AA) && name.contains("n-term"))) {
+            if (("C-term".equals(AA) && name.toLowerCase().contains("c-term")) || ("N-term".equals(AA) && name.toLowerCase().contains("n-term"))) {
                 sitecorrect = true;
             }
-            for (Character residue : ptm.getPattern().getAminoAcidsAtTarget()) {
-                if (String.valueOf(residue).equals(AA)) {
-                    sitecorrect = true;
+            if (ptm.getPattern() != null) {
+                for (Character residue : ptm.getPattern().getAminoAcidsAtTarget()) {
+                    if (String.valueOf(residue).equals(AA)) {
+                        sitecorrect = true;
+                    }
                 }
             }
             if (sitecorrect) {

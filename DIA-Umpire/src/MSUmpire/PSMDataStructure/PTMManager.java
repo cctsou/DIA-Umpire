@@ -105,6 +105,12 @@ public class PTMManager {
         return modlist;
     }
     
+    
+    public void AddPTM(PTM ptm) throws IOException{
+        ptmFactory.addUserPTM(ptm);
+        ptmFactory.saveFactory();
+    }
+    
     public PTM GetPTM(String AA, float massdiff) {
 
         double smallmassdiff = Double.MAX_VALUE;

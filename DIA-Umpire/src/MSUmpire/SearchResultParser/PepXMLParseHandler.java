@@ -135,7 +135,7 @@ public class PepXMLParseHandler implements SolnaHandler<Element> {
             massdiff= (float) (Math.floor(massdiff*10)/10);
             Logger.getRootLogger().warn("Creating a custom modification type called \"" + massdiff + "@" + site + "\"");
             ptm = new PTM(PTM.MODAA, String.valueOf(massdiff + "@" + site), (double) massdiff, new AminoAcidPattern(site));
-            
+            PTMManager.GetInstance().AddPTM(ptm);
         }
         singleLCMSID.AddModification(ptm, site);
     }

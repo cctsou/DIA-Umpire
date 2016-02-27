@@ -90,7 +90,7 @@ public class InstrumentParameter implements Serializable{
     public transient boolean TargetIDOnly=false;
     public transient boolean MassDefectFilter=true;
     public transient float MinPrecursorMass=600f;
-    public transient float MaxPrecursorMass=1500f;
+    public transient float MaxPrecursorMass=15000f;
     public transient boolean UseOldVersion=false;
     public transient float RT_window_Targeted=-1f;
     public transient int SmoothFactor = 3;

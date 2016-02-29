@@ -374,6 +374,10 @@ public class MS1Quant {
                 for (File file : mzXMLfolder.listFiles()) {
                     if (file.getName().toLowerCase().endsWith("mzxml")) {
                         LCMSID id = LCMSIDMap.get(FilenameUtils.getBaseName(file.getName()));
+                        if(id==null || id.PSMList==null){
+                            logger.warn("No IDs found in :"+FilenameUtils.getBaseName(file.getName()) +". Quantification for this file is skipped");
+                            continue;
+                        }
                         if (!id.PSMList.isEmpty()) {
                             MS1TargetQuantThread thread = new MS1TargetQuantThread(file, id, NoCPUs, outputfolder, param);
                             executorPool.execute(thread);

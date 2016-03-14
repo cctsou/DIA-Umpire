@@ -29,6 +29,7 @@ DecoyPrefix=
 #FDR threshold
 PeptideFDR = 0.01
 ProteinFDR = 0.01
+DataSetLevelPepFDR = false
 
 #Use default protein FDR filtering.
 # Set to true if you wish to filter protein using DIA-Umpire's filtering method based on maximum peptide ion probability values.

@@ -370,7 +370,7 @@ public class PDHandlerBase {
 
         InputStream is = this.getClass().getClassLoader().getResourceAsStream("resource/IsotopicPatternRange.csv");
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        IsotopePatternMap = new TreeMap[LCMSPeakBase.MaxNoPeakCluster - 1];
+        IsotopePatternMap = new TreeMap[Math.max(2,LCMSPeakBase.MaxNoPeakCluster - 1)];
         for (int i = 0; i < IsotopePatternMap.length; i++) {
             IsotopePatternMap[i] = new TreeMap<>();
         }
@@ -378,7 +378,7 @@ public class PDHandlerBase {
         while ((line = reader.readLine()) != null) {
             float MW = Float.parseFloat(line.split(",")[0]);
 
-            for (int i = 0; i < LCMSPeakBase.MaxNoPeakCluster - 1; i++) {
+            for (int i = 0; i < IsotopePatternMap.length; i++) {
                 float Mean = Float.parseFloat(line.split(",")[1 + (i * 2)]);
                 float SD = Float.parseFloat(line.split(",")[2 + (i * 2)]);
 

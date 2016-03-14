@@ -638,17 +638,25 @@ public class DIAPack {
         iProphPepXMLs.add(PepXMLPath3);
     }
     
-    public void ParsePepXML(DBSearchParam searchPara) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException {
+    public void ParsePepXML(DBSearchParam searchPara, LCMSID refID) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException {
 
         SetPepXMLPath();
         IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),searchPara.DecoyPrefix,searchPara.FastaPath);        
         for (String pepxml : iProphPepXMLs) {
             LCMSID pepxmlid = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),searchPara.DecoyPrefix,searchPara.FastaPath);
             PepXMLParser pepxmlparser = new PepXMLParser(pepxmlid, pepxml, 0f);
-            pepxmlid.FilterByPepDecoyFDR(searchPara.DecoyPrefix, searchPara.PepFDR);
+            if (refID == null) {
+                pepxmlid.FilterByPepDecoyFDR(searchPara.DecoyPrefix, searchPara.PepFDR);
+            }
             Logger.getRootLogger().info("No. of peptide ions:" + pepxmlid.GetPepIonList().size() + "; Peptide level threshold: " + pepxmlid.PepProbThreshold);
             for (PepIonID pepID : pepxmlid.GetPepIonList().values()) {
-                IDsummary.AddPeptideID(pepID);
+                if (refID != null) {
+                    if(refID.GetPepIonList().containsKey(pepID.GetKey())){
+                        IDsummary.AddPeptideID(pepID);
+                    }                    
+                } else {
+                    IDsummary.AddPeptideID(pepID);
+                }
             }
         }
         IDsummary.ReMapProPep();

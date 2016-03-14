@@ -217,7 +217,7 @@ public class PeakCluster implements Serializable {
         startRT = MonoIsotopePeak.StartRT();
         endRT = MonoIsotopePeak.EndRT();
         
-        if (IsoPeaksCurves[1]!=null) {
+        if (IsoPeaksCurves.length>1 && IsoPeaksCurves[1]!=null) {
             startRT = Math.min(MonoIsotopePeak.StartRT(), IsoPeaksCurves[1].StartRT());
             endRT = Math.max(MonoIsotopePeak.EndRT(), IsoPeaksCurves[1].EndRT());
         }

@@ -34,14 +34,14 @@ public class ChiSquareGOF {
     public static ReadWriteLock lock = new ReentrantReadWriteLock();    
     
     private ChiSquareGOF(int maxpeak) {        
-        chimodels = new ChiSquared[maxpeak];
-        for (int i = 2; i <= maxpeak; i++) {
-            chimodels[i - 1] = new ChiSquared(i - 1);
+        chimodels = new ChiSquared[maxpeak-1];
+        for (int i = 1; i <= maxpeak; i++) {
+            chimodels[i - 1] = new ChiSquared(i);
         }
     }
 
     public static ChiSquareGOF GetInstance(int maxpeak) {
-        if (models == null || maxpeak > chimodels.length) {
+        if (models == null || (maxpeak>1 && maxpeak >= chimodels.length)) {
             lock.writeLock().lock();
             try {
                 if (models == null) {
@@ -57,17 +57,17 @@ public class ChiSquareGOF {
     public float GetGoodNessOfFitProb(float[] expected, float[] observed) {
         float gof = 0f;
         int nopeaks = 0;
-        for (int i = 0; i < expected.length; i++) {
+        for (int i = 0; i < Math.min(observed.length,expected.length); i++) {
             if (observed[i] > 0) {
                 float error = expected[i] - observed[i];
                 gof += (error * error) / (expected[i] * expected[i]);
                 nopeaks++;
             }
         }
-        if (Float.isNaN(gof)) {
+        if (Float.isNaN(gof) || nopeaks<2){
             return 0f;
         }
-        float prob = 1 - (float) chimodels[nopeaks].cdf(gof);
+        float prob = 1 - (float) chimodels[nopeaks-2].cdf(gof);
         return prob;
     }
 }

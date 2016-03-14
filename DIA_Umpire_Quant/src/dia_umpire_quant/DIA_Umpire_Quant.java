@@ -24,6 +24,7 @@ package DIA_Umpire_Quant;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+import FDREstimator.FDR_DataSetLevel;
 import MSUmpire.BaseDataStructure.UmpireInfo;
 import MSUmpire.DIA.DIAPack;
 import MSUmpire.DIA.RTAlignedPepIonMapping;
@@ -94,7 +95,7 @@ public class DIA_Umpire_Quant {
         String ExternalLibPath = "";
         String ExternalLibDecoyTag = "DECOY";
         boolean DefaultProtFiltering=true;
-        
+        boolean DataSetLevelPepFDR=false;
         float ProbThreshold = 0.99f;
         float ExtProbThreshold =0.99f;
         float Freq = 0f;
@@ -200,6 +201,10 @@ public class DIA_Umpire_Quant {
                     }
                     case "PeptideFDR": {
                         tandemPara.PepFDR = Float.parseFloat(value);
+                        break;
+                    }
+                    case "DataSetLevelPepFDR": {
+                        DataSetLevelPepFDR = Boolean.parseBoolean(value);
                         break;
                     }
                     case "InternalLibID": {
@@ -332,6 +337,8 @@ public class DIA_Umpire_Quant {
         if (!new File(Combined_Prot).exists()) {
             Logger.getRootLogger().info("ProtXML file: " +Combined_Prot + " cannot be found, the export protein summary table will be empty.");
         }
+        
+         
         LCMSID protID = null;
 
         //Parse prot.xml and generate protein master list given an FDR 
@@ -388,10 +395,65 @@ public class DIA_Umpire_Quant {
             for (File fileEntry : AssignFiles.values()) {
                 Logger.getRootLogger().info(fileEntry.getAbsolutePath());
             }
+         
+                
+        LCMSID combinePepID = null;
+        if (DataSetLevelPepFDR) {
+            combinePepID = LCMSID.ReadLCMSIDSerialization(WorkFolder + "combinePepID.SerFS");
+            if (combinePepID == null) {
+                FDR_DataSetLevel fdr = new FDR_DataSetLevel();
+                fdr.GeneratePepIonList(FileList, tandemPara, WorkFolder + "combinePepID.SerFS");
+                combinePepID = fdr.combineID;
+                combinePepID.WriteLCMSIDSerialization(WorkFolder + "combinePepID.SerFS");
+            }
+        }
             
             //process each DIA file for quantification based on untargeted identifications
             for (File fileEntry : AssignFiles.values()) {
-                ProcessDIA(fileEntry, NoCPUs, tandemPara, FileList, IDSummaryFragments);
+                String mzXMLFile = fileEntry.getAbsolutePath();
+                if (mzXMLFile.toLowerCase().endsWith(".mzxml") | mzXMLFile.toLowerCase().endsWith(".mzml")) {
+                    long time = System.currentTimeMillis();
+
+                    DIAPack DiaFile = new DIAPack(mzXMLFile, NoCPUs);
+                    FileList.add(DiaFile);
+                    HashMap<String, FragmentPeak> FragMap = new HashMap<>();
+                    IDSummaryFragments.put(FilenameUtils.getBaseName(mzXMLFile), FragMap);
+                    if (!new File(FilenameUtils.getFullPath(DiaFile.Filename) + DiaFile.GetQ1Name() + ".mzXML").exists()
+                            | !new File(FilenameUtils.getFullPath(DiaFile.Filename) + DiaFile.GetQ2Name() + ".mzXML").exists()
+                            | !new File(FilenameUtils.getFullPath(DiaFile.Filename) + DiaFile.GetQ3Name() + ".mzXML").exists()) {
+                        return;
+                    }
+                    Logger.getRootLogger().info("=================================================================================================");
+                    Logger.getRootLogger().info("Processing " + mzXMLFile);
+                    if (!DiaFile.LoadDIASetting()) {
+                        Logger.getRootLogger().info("Loading DIA setting failed, job is incomplete");
+                        System.exit(1);
+                    }
+                    if (!DiaFile.LoadParams()) {
+                        Logger.getRootLogger().info("Loading parameters failed, job is incomplete");
+                        System.exit(1);
+                    }
+                    Logger.getRootLogger().info("Loading identification results " + mzXMLFile + "....");
+
+                    //If the LCMSID serialization is found
+                    if (!DiaFile.ReadSerializedLCMSID()) {
+                        DiaFile.ParsePepXML(tandemPara, combinePepID);
+                        DiaFile.BuildStructure();
+                        if (!DiaFile.MS1FeatureMap.ReadPeakCluster()) {
+                            Logger.getRootLogger().info("Loading peak and structure failed, job is incomplete");
+                            System.exit(1);
+                        }
+                        DiaFile.MS1FeatureMap.ClearMonoisotopicPeakOfCluster();
+                        //Generate mapping between index of precursor feature and pseudo MS/MS scan index 
+                        DiaFile.GenerateClusterScanNomapping();
+                        //Doing quantification
+                        DiaFile.AssignQuant();
+                        DiaFile.ClearStructure();
+                    }
+                    DiaFile.IDsummary.ReduceMemoryUsage();
+                    time = System.currentTimeMillis() - time;
+                    Logger.getRootLogger().info(mzXMLFile + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
+                }
             }
             
             //<editor-fold defaultstate="collapsed" desc="Targete re-extraction using internal library">            
@@ -622,51 +684,5 @@ public class DIA_Umpire_Quant {
         }
     }
 
-    private static void ProcessDIA(final File fileEntry, int NoCPUs, TandemParam tandemPara, ArrayList<DIAPack> FileList, HashMap<String, HashMap<String, FragmentPeak>> IDSummaryFragments) throws IOException, FileNotFoundException, DataFormatException, InterruptedException, ExecutionException, ParserConfigurationException, SAXException, Exception {
-        String mzXMLFile = fileEntry.getAbsolutePath();
-        if (mzXMLFile.toLowerCase().endsWith(".mzxml") | mzXMLFile.toLowerCase().endsWith(".mzml")) {
-            long time = System.currentTimeMillis();
-
-            DIAPack DiaFile = new DIAPack(mzXMLFile, NoCPUs);
-            FileList.add(DiaFile);
-            HashMap<String, FragmentPeak> FragMap = new HashMap<>();
-            IDSummaryFragments.put(FilenameUtils.getBaseName(mzXMLFile), FragMap);
-            if (!new File(FilenameUtils.getFullPath(DiaFile.Filename) + DiaFile.GetQ1Name() + ".mzXML").exists()
-                    | !new File(FilenameUtils.getFullPath(DiaFile.Filename) + DiaFile.GetQ2Name() + ".mzXML").exists()
-                    | !new File(FilenameUtils.getFullPath(DiaFile.Filename) + DiaFile.GetQ3Name() + ".mzXML").exists()) {
-                return;
-            }
-            Logger.getRootLogger().info("=================================================================================================");
-            Logger.getRootLogger().info("Processing " + mzXMLFile);
-            if (!DiaFile.LoadDIASetting()) {
-                Logger.getRootLogger().info("Loading DIA setting failed, job is incomplete");
-                System.exit(1);
-            }
-            if (!DiaFile.LoadParams()) {
-                Logger.getRootLogger().info("Loading parameters failed, job is incomplete");
-                System.exit(1);
-            }
-            Logger.getRootLogger().info("Loading identification results " + mzXMLFile + "....");
-
-            //If the serialization file for ID file existed
-            if (!DiaFile.ReadSerializedLCMSID()) {
-                DiaFile.ParsePepXML(tandemPara);
-                DiaFile.BuildStructure();
-                if (!DiaFile.MS1FeatureMap.ReadPeakCluster()) {
-                    Logger.getRootLogger().info("Loading peak and structure failed, job is incomplete");
-                    System.exit(1);
-                }                
-                DiaFile.MS1FeatureMap.ClearMonoisotopicPeakOfCluster();
-                //Generate mapping between index of precursor feature and pseudo MS/MS scan index 
-                DiaFile.GenerateClusterScanNomapping();
-                //Doing quantification
-                DiaFile.AssignQuant();
-                DiaFile.ClearStructure();
-            }            
-            DiaFile.IDsummary.ReduceMemoryUsage();   
-            time = System.currentTimeMillis() - time;
-            Logger.getRootLogger().info(mzXMLFile + " processed time:" + String.format("%d hour, %d min, %d sec", TimeUnit.MILLISECONDS.toHours(time), TimeUnit.MILLISECONDS.toMinutes(time) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(time)), TimeUnit.MILLISECONDS.toSeconds(time) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(time))));
-        }
-    }
 
 }

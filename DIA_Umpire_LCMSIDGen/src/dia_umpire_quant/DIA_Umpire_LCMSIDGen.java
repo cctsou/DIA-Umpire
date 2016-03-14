@@ -180,7 +180,7 @@ public class DIA_Umpire_LCMSIDGen {
                 }
                 Logger.getRootLogger().info("Loading identification results " + mzXMLFile + "....");
 
-                DiaFile.ParsePepXML(tandemPara);
+                DiaFile.ParsePepXML(tandemPara,null);
                 DiaFile.BuildStructure();
                 if (!DiaFile.MS1FeatureMap.ReadPeakCluster()) {
                     Logger.getRootLogger().info("Loading peak and structure failed, job is incomplete");

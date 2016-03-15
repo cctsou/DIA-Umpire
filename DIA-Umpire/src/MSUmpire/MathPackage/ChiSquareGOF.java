@@ -35,9 +35,8 @@ public class ChiSquareGOF {
     
     private ChiSquareGOF(int maxpeak) {        
         chimodels = new ChiSquared[maxpeak-1];
-        for (int i = 1; i <= maxpeak; i++) {
-            chimodels[i - 1] = new ChiSquared(i);
-        }
+        for (int i = 0; i < chimodels.length; i++)
+            chimodels[i] = new ChiSquared(i+1);
     }
 
     public static ChiSquareGOF GetInstance(int maxpeak) {

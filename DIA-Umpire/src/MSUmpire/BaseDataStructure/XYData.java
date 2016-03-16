@@ -24,17 +24,16 @@ import java.io.Serializable;
 /*
  * Two dimensional data
  */
-
 /**
  *
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
-public class XYData implements Comparable<XYData>,Serializable {
+public class XYData implements Comparable<XYData>, Serializable {
+
     private static final long serialVersionUID = 973492749274921L;
 
-    //private float X;
-    //private float Y;
-    private float[] xydata = new float[2];
+    private float X;
+    private float Y;
 
 //    private synchronized void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {        
 //        stream.defaultWriteObject();
@@ -60,28 +59,28 @@ public class XYData implements Comparable<XYData>,Serializable {
      * @return the X
      */
     public float getX() {
-        return xydata[0];
+        return X;
     }
 
     /**
      * @param X the X to set
      */
     public void setX(float X) {
-        xydata[0] = X;
+        this.X = X;
     }
 
     /**
      * @return the Y
      */
     public float getY() {
-        return xydata[1];
+        return Y;
     }
 
     /**
      * @param Y the Y to set
      */
     public void setY(float Y) {
-        xydata[1] = Y;
+        this.Y = Y;
     }
 
     public XYData cloneXYData() {

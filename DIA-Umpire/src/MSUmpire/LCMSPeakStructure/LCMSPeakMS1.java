@@ -32,7 +32,6 @@ import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeptidePeakClusterDetection.PDHandlerMS1;
 import MSUmpire.SearchResultParser.PepXMLParser;
 import MSUmpire.SpectrumParser.SpectrumParserBase;
-import MSUmpire.SpectrumParser.mzXMLParser;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.geom.Ellipse2D;

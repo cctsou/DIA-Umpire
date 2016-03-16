@@ -641,9 +641,9 @@ public class DIAPack {
     public void ParsePepXML(DBSearchParam searchPara, LCMSID refID) throws ParserConfigurationException, SAXException, IOException, XmlPullParserException, ClassNotFoundException, InterruptedException {
 
         SetPepXMLPath();
-        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),searchPara.DecoyPrefix,searchPara.FastaPath);        
+        IDsummary = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename), searchPara.DecoyPrefix, searchPara.FastaPath);
         for (String pepxml : iProphPepXMLs) {
-            LCMSID pepxmlid = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename),searchPara.DecoyPrefix,searchPara.FastaPath);
+            LCMSID pepxmlid = new LCMSID(FilenameUtils.getFullPath(Filename) + FilenameUtils.getBaseName(Filename), searchPara.DecoyPrefix, searchPara.FastaPath);
             PepXMLParser pepxmlparser = new PepXMLParser(pepxmlid, pepxml, 0f);
             if (refID == null) {
                 pepxmlid.FilterByPepDecoyFDR(searchPara.DecoyPrefix, searchPara.PepFDR);
@@ -651,9 +651,9 @@ public class DIAPack {
             Logger.getRootLogger().info("No. of peptide ions:" + pepxmlid.GetPepIonList().size() + "; Peptide level threshold: " + pepxmlid.PepProbThreshold);
             for (PepIonID pepID : pepxmlid.GetPepIonList().values()) {
                 if (refID != null) {
-                    if(refID.GetPepIonList().containsKey(pepID.GetKey())){
+                    if (refID.GetPepIonList().containsKey(pepID.GetKey())) {
                         IDsummary.AddPeptideID(pepID);
-                    }                    
+                    }
                 } else {
                     IDsummary.AddPeptideID(pepID);
                 }
@@ -661,7 +661,7 @@ public class DIAPack {
         }
         IDsummary.ReMapProPep();
         Logger.getRootLogger().info("Total number of peptide ions:" + IDsummary.GetPepIonList().size());
-        CheckPSMRT();        
+        CheckPSMRT();
         if (MS1FeatureMap != null) {
             this.MS1FeatureMap.IDsummary = IDsummary;
         }

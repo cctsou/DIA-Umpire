@@ -99,6 +99,7 @@ public class DIA_Umpire_Quant {
             float Freq = 0f;
             int TopNPep = 6;
             int TopNFrag = 6;
+            float MinFragMz=200f;
             String FilterWeight = "GW";
             float MinWeight = 0.9f;
             float RTWindow_Int = -1f;
@@ -251,13 +252,17 @@ public class DIA_Umpire_Quant {
                         case "TopNFrag": {
                             TopNFrag = Integer.parseInt(value);
                             break;
-                        }
+                        }                        
                         case "TopNPep": {
                             TopNPep = Integer.parseInt(value);
                             break;
                         }
                         case "Freq": {
                             Freq = Float.parseFloat(value);
+                            break;
+                        }
+                        case "MinFragMz": {
+                            MinFragMz = Float.parseFloat(value);
                             break;
                         }
 
@@ -570,6 +575,7 @@ public class DIA_Umpire_Quant {
             }
             FragmentSelection fragselection = new FragmentSelection(SummaryList);
             fragselection.freqPercent = Freq;
+            fragselection.MinFragMZ = MinFragMz;
             fragselection.GeneratePepFragScoreMap();
             fragselection.GenerateTopFragMap(TopNFrag);
             fragselection.GenerateProtPepScoreMap(MinWeight);
@@ -640,6 +646,7 @@ public class DIA_Umpire_Quant {
             }
 
 //</editor-fold>
+
             Logger.getRootLogger().info("Job done");
             Logger.getRootLogger().info("=================================================================================================");
 

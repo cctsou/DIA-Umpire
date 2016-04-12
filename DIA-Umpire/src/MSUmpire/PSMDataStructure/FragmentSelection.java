@@ -24,7 +24,8 @@ import java.util.HashMap;
 import org.apache.commons.io.FilenameUtils;
 
 /**
- * Fragment and peptide selection algorithms (as described in DIA-Umpire paper) 
+ * Fragment and peptide selection algorithms (as described in DIA-Umpire paper)
+ *
  * @author Chih-Chiang Tsou <chihchiang.tsou@gmail.com>
  */
 public class FragmentSelection {
@@ -36,14 +37,16 @@ public class FragmentSelection {
     public HashMap<String, ArrayList<String>> TopPeps = new HashMap<>();
     public HashMap<String, HashMap<String, Float>> FragInt = new HashMap<>();
     public float freqPercent = 0f;
-    public float CorrelationThreshold=0.6f;
+    public float MinFragMZ = 200f;
+    public float CorrelationThreshold = 0.6f;
     public int NoConsecutiveRun = 3;
-    public Scoring scoring=Scoring.IntensityCorr;
+    public Scoring scoring = Scoring.IntensityCorr;
 
-    public enum Scoring{
+    public enum Scoring {
         IntensityCorr,
         Intensity,
     }
+
     public FragmentSelection(ArrayList<LCMSID> FileList) {
         this.FileList = FileList;
     }
@@ -77,7 +80,7 @@ public class FragmentSelection {
                 if (pep != null) {
                     IDNo++;
                     for (FragmentPeak frag : pep.FragmentPeaks) {
-                        if (frag.corr > CorrelationThreshold) {
+                        if (frag.corr > CorrelationThreshold && frag.FragMZ >= MinFragMZ) {
                             if (!fragmentscore.containsKey(frag.GetFragKey())) {
                                 fragmentscore.put(frag.GetFragKey(), 0f);
                                 fragmentfreq.put(frag.GetFragKey(), 0);
@@ -218,5 +221,5 @@ public class FragmentSelection {
             TopPeps.put(ProteinKey, peps);
         }
     }
-  
+
 }

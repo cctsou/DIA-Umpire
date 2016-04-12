@@ -66,6 +66,7 @@ MinWeight = 0.9
 TopNFrag = 6
 TopNPep = 6
 Freq = 0.5
+MinFragMz=350
 
 ####Export SAINT input files####
 ExportSaintInput = false

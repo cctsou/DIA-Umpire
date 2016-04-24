@@ -78,13 +78,13 @@ public class InstrumentParameter implements Serializable{
     public transient boolean DetectByCWT=true;
     public transient boolean FillGapByBK=true;
     public transient float IsoCorrThreshold=0.2f;
-    public transient float RemoveGroupedPeaksCorr=0.5f;
-    public transient float RemoveGroupedPeaksRTOverlap=0.5f;
+    public transient float RemoveGroupedPeaksCorr=0.3f;
+    public transient float RemoveGroupedPeaksRTOverlap=0.3f;
     public transient float HighCorrThreshold=0.7f;
     public transient int MinHighCorrCnt=10;
     public transient int TopNLocal=6;
     public transient int TopNLocalRange=100;
-    public transient float IsoPattern = 0.5f;
+    public transient float IsoPattern = 0.3f;
     public transient float startRT=0f;
     public transient float endRT=9999f;
     public transient boolean TargetIDOnly=false;
@@ -93,7 +93,7 @@ public class InstrumentParameter implements Serializable{
     public transient float MaxPrecursorMass=15000f;
     public transient boolean UseOldVersion=false;
     public transient float RT_window_Targeted=-1f;
-    public transient int SmoothFactor = 3;
+    public transient int SmoothFactor = 5;
     public transient boolean DetectSameChargePairOnly=false;
     public transient float MassDefectOffset=0.1f;
     public transient int MS2PairTopN=5;    

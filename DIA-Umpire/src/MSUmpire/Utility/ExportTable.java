@@ -24,7 +24,7 @@ import MSUmpire.PSMDataStructure.FragmentSelection;
 import MSUmpire.PSMDataStructure.LCMSID;
 import MSUmpire.PSMDataStructure.PepIonID;
 import MSUmpire.PSMDataStructure.ProtID;
-import MSUmpire.Utility.DateTimeTag;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -100,7 +100,7 @@ public class ExportTable {
             }
         }
 
-        NOWriter.write("File\tNo. proteins\tNo. peptide ions (Spec-centric)\tNo. peptide ions (Pep-centric)\tNo. protein assoc. ions\n");
+        NOWriter.write("File\tNo. Proteins\tNo. peptide ions (Spec-centric)\tNo. peptide ions (Pep-centric)\tNo. proein assoc. ions\n");
 
         //ProteinSummary/////////////
         proWriter.write("Protein Key\t");
@@ -131,7 +131,7 @@ public class ExportTable {
         fragWriter.write("Fragment Key\tProtein\tPeptide\tFragment\tFragMz\t");
         for (LCMSID IDSummary : FileList) {
             String file = FilenameUtils.getBaseName(IDSummary.mzXMLFileName);
-            fragWriter.write(file + "_RT\t" + file + "_UntargetID_Prob\t" + file + "_TargetID_Prob\t" + file + "_Intensity\t" + file + "_Corr\t" + file + "_PPM\t");
+            fragWriter.write(file + "_RT\t" + file + "_Spec_Centric_Prob\t" + file + "_Pep_Centric_Prob\t" + file + "_Intensity\t" + file + "_Corr\t" + file + "_PPM\t");
         }
         fragWriter.write("\n");
         for (String key : ProteinFragMap.keySet()) {
@@ -181,7 +181,7 @@ public class ExportTable {
                 if (IDSummary.GetPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetPepIonList().get(key);                    
                     if (!output) {
-                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ParentProteins() + "\t" + peptide.NeutralPrecursorMz() + "\t" + peptide.Charge + "\t");
+                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ParentProteins() + "\t" + peptide.ObservedMz+ "\t" + peptide.Charge + "\t");
                         output = true;
                     }
                     if (peptide.MaxProbability > maxprob) {
@@ -191,7 +191,7 @@ public class ExportTable {
                 if (IDSummary.GetMappedPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetMappedPepIonList().get(key);
                     if (!output) {
-                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ParentProteins() + "\t" + peptide.NeutralPrecursorMz() + "\t" + peptide.Charge + "\t");
+                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ParentProteins() + "\t" + peptide.ObservedMz + "\t" + peptide.Charge + "\t");
                         output = true;
                     }
                     if (peptide.TargetedProbability() > maxprob) {
@@ -206,7 +206,7 @@ public class ExportTable {
                     pepWriter.write(peptide.MaxProbability + "\t-1\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + peptide.GetPepAbundanceByTopCorrFragAcrossSample(fragselection.TopFrags.get(peptide.GetKey())) + "\t");
                 } else if (IDSummary.GetMappedPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetMappedPepIonList().get(key);
-                    pepWriter.write("-1\t" + peptide.TargetedProbability() + "\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + peptide.GetPepAbundanceByTopFragments(6) + "\t");
+                    pepWriter.write("-1\t" + peptide.TargetedProbability() + "\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + peptide.GetPepAbundanceByTopCorrFragAcrossSample(fragselection.TopFrags.get(peptide.GetKey())) + "\t");
                 } else {
                     pepWriter.write("\t\t\t\t\t\t");
                 }
@@ -222,12 +222,14 @@ public class ExportTable {
         FileWriter fragWriter = new FileWriter(WorkFolder + "FragSummary_" + DateTimeTag.GetTag() + ".xls");
         //Fragment Summary//////////////////////////////////////////
         for (LCMSID IDsummary : FileList) {
-            HashMap<String, FragmentPeak> FragMap = IDSummaryFragments.get(FilenameUtils.getBaseName(IDsummary.mzXMLFileName));
-            for (PepIonID pep : IDsummary.GetPepIonList().values()) {
-                GetFragments(pep, FragMap);
-            }
-            for (PepIonID pep : IDsummary.GetMappedPepIonList().values()) {
-                GetFragments(pep, FragMap);
+            if (IDSummaryFragments!=null && IDSummaryFragments.containsKey(FilenameUtils.getBaseName(IDsummary.mzXMLFileName))) {
+                HashMap<String, FragmentPeak> FragMap = IDSummaryFragments.get(FilenameUtils.getBaseName(IDsummary.mzXMLFileName));
+                for (PepIonID pep : IDsummary.GetPepIonList().values()) {
+                    GetFragments(pep, FragMap);
+                }
+                for (PepIonID pep : IDsummary.GetMappedPepIonList().values()) {
+                    GetFragments(pep, FragMap);
+                }
             }
         }
 
@@ -240,7 +242,7 @@ public class ExportTable {
         for (String key : ProteinFragMap.keySet()) {
             fragWriter.write(key + "\t"  + key.split(";")[0] + "\t" + key.split(";")[1] + "\t" + ProteinFragMap.get(key) + "\t");
             for (LCMSID IDSummary : FileList) {
-                if (IDSummaryFragments.get(FilenameUtils.getBaseName(IDSummary.mzXMLFileName)).containsKey(key)) {
+                if (IDSummaryFragments!=null && IDSummaryFragments.get(FilenameUtils.getBaseName(IDSummary.mzXMLFileName)).containsKey(key)) {
                     FragmentPeak fragmentPeak = IDSummaryFragments.get(FilenameUtils.getBaseName(IDSummary.mzXMLFileName)).get(key);
                     fragWriter.write(fragmentPeak.RT + "\t" + fragmentPeak.Prob1 + "\t" + fragmentPeak.Prob2 + "\t" + fragmentPeak.intensity + "\t" + fragmentPeak.corr + "\t" + fragmentPeak.ppm + "\t");
                 } else {
@@ -263,8 +265,9 @@ public class ExportTable {
         ////PepSummary///////////////////////////////////
         for (LCMSID IDsummary : FileList) {
             HashMap<String, FragmentPeak> FragMap = new HashMap<>();
-            IDSummaryFragments.put(FilenameUtils.getBaseName(IDsummary.mzXMLFileName), FragMap);
-
+            if (IDSummaryFragments != null && IDSummaryFragments.containsKey(FilenameUtils.getBaseName(IDsummary.mzXMLFileName))) {
+                IDSummaryFragments.put(FilenameUtils.getBaseName(IDsummary.mzXMLFileName), FragMap);
+            }
             for (String key : IDsummary.GetPepIonList().keySet()) {
                 if (!IdentifiedPepMap.contains(key)) {
                     IdentifiedPepMap.add(key);
@@ -293,7 +296,7 @@ public class ExportTable {
                 if (IDSummary.GetPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetPepIonList().get(key);
                     if (!output) {
-                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.NeutralPrecursorMz() + "\t" + peptide.Charge + "\t");
+                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ObservedMz + "\t" + peptide.Charge + "\t");
                         output = true;
                     }
                     if (peptide.MaxProbability > maxprob) {
@@ -303,7 +306,7 @@ public class ExportTable {
                 if (IDSummary.GetMappedPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetMappedPepIonList().get(key);
                     if (!output) {
-                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ParentProteins() + "\t" + peptide.NeutralPrecursorMz() + "\t" + peptide.Charge + "\t");
+                        pepWriter.write(peptide.Sequence + "\t" + peptide.ModSequence + "\t" + peptide.ParentProteins() + "\t" + peptide.ObservedMz + "\t" + peptide.Charge + "\t");
                         output = true;
                     }
                     if (peptide.TargetedProbability() > maxprob) {
@@ -315,10 +318,18 @@ public class ExportTable {
             for (LCMSID IDSummary : FileList) {
                 if (IDSummary.GetPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetPepIonList().get(key);
-                    pepWriter.write(peptide.MaxProbability + "\t-1\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + peptide.GetPepAbundanceByTopCorrFragAcrossSample(fragselection.TopFrags.get(peptide.GetKey())) + "\t");
+                    float pepabun=0f;
+                    if (fragselection != null) {
+                        pepabun=peptide.GetPepAbundanceByTopCorrFragAcrossSample(fragselection.TopFrags.get(peptide.GetKey()));
+                    }
+                    pepWriter.write(peptide.MaxProbability + "\t-1\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + pepabun + "\t");
                 } else if (IDSummary.GetMappedPepIonList().containsKey(key)) {
                     PepIonID peptide = IDSummary.GetMappedPepIonList().get(key);
-                    pepWriter.write("-1\t" + peptide.TargetedProbability() + "\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + peptide.GetPepAbundanceByTopFragments(6) + "\t");
+                    float pepabun=0f;
+                    if (fragselection != null) {
+                        pepabun=peptide.GetPepAbundanceByTopCorrFragAcrossSample(fragselection.TopFrags.get(peptide.GetKey()));
+                    }
+                    pepWriter.write("-1\t" + peptide.TargetedProbability() + "\t" + peptide.GetSpectralCount() + "\t" + peptide.PeakRT + "\t" + peptide.PeakHeight[0] + "\t" + pepabun+ "\t");
                 } else {
                     pepWriter.write("\t\t\t\t\t\t");
                 }

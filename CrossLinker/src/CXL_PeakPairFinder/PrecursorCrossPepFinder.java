@@ -9,7 +9,7 @@ package CXL_PeakPairFinder;
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeptidePeakClusterDetection.PeakCurveCorrCalc;
-import crosslinker.DC4;
+import crosslinker.Linker;
 import java.io.IOException;
 import java.util.HashMap;
 import net.sf.javaml.core.kdtree.KDTree;
@@ -29,17 +29,19 @@ public class PrecursorCrossPepFinder implements Runnable{
     public float MaxHighMassPeakCorr=0f;
     public float LowHighPeakCorr=0f;
     private float PrecCorssPeakPPM=1000f;
+    Linker linker;
     private InstrumentParameter parameter;
     float lowrt = 0f;
     float highrt = 0f;
     private final KDTree PeakClusterSearchTree;
     private CoElutePeak BestPrecursorPeak=null;
     
-    public PrecursorCrossPepFinder(PairGroup LowMassPeak, PairGroup HighMassPeak, KDTree PeakClusterSearchTree, InstrumentParameter parameter){
+    public PrecursorCrossPepFinder(PairGroup LowMassPeak, PairGroup HighMassPeak, KDTree PeakClusterSearchTree, InstrumentParameter parameter, Linker linker){
         this.LowMassPeakGroup=LowMassPeak;
         this.HighMassPeakGroup=HighMassPeak;
         this.PeakClusterSearchTree=PeakClusterSearchTree;
         this.parameter=parameter;
+        this.linker=linker;
         try {
             LowHighPeakCorr = PeakCurveCorrCalc.CalPeakCorr(LowMassPeak.lowMassPeak.MonoIsotopePeak, HighMassPeak.lowMassPeak.MonoIsotopePeak, parameter.NoPeakPerMin);
             if (Float.isNaN(LowHighPeakCorr)) {
@@ -53,7 +55,7 @@ public class PrecursorCrossPepFinder implements Runnable{
         highrt = Math.min(LowMassPeak.lowMassPeak.PeakHeightRT[0],HighMassPeak.lowMassPeak.PeakHeightRT[0]) + parameter.RTtol;
     }
     public void FindPrecursorCrossPeak(){
-        float IntactMW = LowMassPeakGroup.lowMassPeak.NeutralMass()+HighMassPeakGroup.lowMassPeak.NeutralMass()+DC4.DABCO;
+        float IntactMW = LowMassPeakGroup.lowMassPeak.NeutralMass()+HighMassPeakGroup.lowMassPeak.NeutralMass()+linker.Core;
         
         float lowMW = InstrumentParameter.GetMzByPPM(IntactMW, 1, parameter.MS1PPM);
         float highMW = InstrumentParameter.GetMzByPPM(IntactMW, 1, -parameter.MS1PPM);

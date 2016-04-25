@@ -4,11 +4,11 @@
  */
 package CXL_PeakPairFinder;
 
-import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.BaseDataStructure.XYData;
 import MSUmpire.LCMSPeakStructure.LCMSPeakBase;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.SpectralProcessingModule.ScanPeakGroup;
+import crosslinker.Linker;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,9 +27,11 @@ public class CrosslinkerPepFinder {
     public ArrayList<PrecursorCrossPepFinder> IntactPepList;
     public ArrayList<MS2PeakPairFinder> IntactPepListMS2;
     public float medianIntensity=-1f;
-    public CrosslinkerPepFinder(LCMSPeakBase LCMSPeakBase,float medianIntensity) {
+    Linker linker;
+    public CrosslinkerPepFinder(LCMSPeakBase LCMSPeakBase,float medianIntensity, Linker linker) {
         this.LCMSPeakBase = LCMSPeakBase;
         this.medianIntensity=medianIntensity;
+        this.linker=linker;
     }
 
      public void FindPairPeakMS2(ArrayList<ScanPeakGroup> MS2PeakGroups, int NoCPUs) {
@@ -41,7 +43,7 @@ public class CrosslinkerPepFinder {
          IntactPepListMS2 = new ArrayList<>();
          //For each scan
          for (ScanPeakGroup scan : MS2PeakGroups) {
-             MS2PeakPairFinder finder = new MS2PeakPairFinder(scan, LCMSPeakBase.parameter);
+             MS2PeakPairFinder finder = new MS2PeakPairFinder(scan, LCMSPeakBase.parameter, linker);
              executorPool.execute(finder);
              //finder.run();
              IntactPepListMS2.add(finder);
@@ -71,7 +73,7 @@ public class CrosslinkerPepFinder {
         for (int i = 0; i < LCMSPeakBase.PeakClusters.size(); i++) {
             PeakCluster peakCluster = LCMSPeakBase.PeakClusters.get(i);
             if (peakCluster.NeutralMass() >= mzRange.getX() && peakCluster.NeutralMass() <= mzRange.getY()) {
-                PeakPairFinder unit = new PeakPairFinder(peakCluster, LCMSPeakBase.GetPeakClusterMassSearchTree(), LCMSPeakBase.parameter);
+                PeakPairFinder unit = new PeakPairFinder(peakCluster, LCMSPeakBase.GetPeakClusterMassSearchTree(), LCMSPeakBase.parameter, linker);
                 templist.add(unit);
                 executorPool.execute(unit);
             }
@@ -102,7 +104,7 @@ public class CrosslinkerPepFinder {
                         //For any two peak pairs, check if they co-elute together (RT diff < RTtol)
                         if (lowmass.lowMassPeak.NeutralMass()<=highmass.lowMassPeak.NeutralMass() 
                                 && Math.abs(lowmass.lowMassPeak.PeakHeightRT[0] - highmass.lowMassPeak.PeakHeightRT[0]) < LCMSPeakBase.parameter.RTtol) {
-                            PrecursorCrossPepFinder intactLinkedPep = new PrecursorCrossPepFinder(lowmass, highmass, LCMSPeakBase.GetPeakClusterMassSearchTree(), LCMSPeakBase.parameter);
+                            PrecursorCrossPepFinder intactLinkedPep = new PrecursorCrossPepFinder(lowmass, highmass, LCMSPeakBase.GetPeakClusterMassSearchTree(), LCMSPeakBase.parameter, linker);
                             IntactPepList.add(intactLinkedPep);
                             executorPool.execute(intactLinkedPep);
                         }

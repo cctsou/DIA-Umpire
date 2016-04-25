@@ -23,6 +23,7 @@ public class CrossLinkerHandler {
 
     public HashMap<String, MALDI_Spot> ResultMap = new HashMap<>();
     public ArrayList<CrossLinkerPep> CrossLinkingPeps = new ArrayList<>();
+    public Linker linker;
 
     private void ReadFile(File folder) throws IOException {
         File[] listOfFiles = folder.listFiles();
@@ -40,7 +41,7 @@ public class CrossLinkerHandler {
                         Scan.MsLevel = 2;
                         Scan.MGFTitle = Scan.MGFTitle.split("_")[Scan.MGFTitle.split("_").length - 2];
                         Scan.Normalization();
-                        CrossLinkerScanResult scanresult = new CrossLinkerScanResult(Scan);
+                        CrossLinkerScanResult scanresult = new CrossLinkerScanResult(Scan,linker);
                         Results.add(scanresult);
                     }
                 } else if (files.toLowerCase().endsWith(".pkl")) {
@@ -48,7 +49,7 @@ public class CrossLinkerHandler {
                     pkl.scan.MsLevel = 1;
                     pkl.scan.MGFTitle = pkl.scan.MGFTitle.split("_")[pkl.scan.MGFTitle.split("_").length - 2];
                     pkl.scan.Normalization();
-                    CrossLinkerScanResult scanresult = new CrossLinkerScanResult(pkl.scan);
+                    CrossLinkerScanResult scanresult = new CrossLinkerScanResult(pkl.scan,linker);
                     Results.add(scanresult);
                 }
             } else {

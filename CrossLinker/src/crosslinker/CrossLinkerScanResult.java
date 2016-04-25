@@ -22,26 +22,28 @@ public class CrossLinkerScanResult {
     public ArrayList<XYData[]> DeadEndEvidence = new ArrayList<>();
     public int DeadEndLinker = 0;
     public int MSlevel;
+    public Linker linker;
     public ArrayList<CrossLinkerScanResult> PossibleFragmentScans = new ArrayList<>();
 
-    public CrossLinkerScanResult(ScanData scan) {
-        Scan = scan;
-        MSlevel = scan.MsLevel;
+    public CrossLinkerScanResult(ScanData scan, Linker linker) {
+        this.Scan = scan;
+        this.MSlevel = scan.MsLevel;
+        this.linker=linker;
     }
 
     public void FindAllPairPeaks() {
 
         for (int i = 0; i < Scan.PointCount(); i++) {
             XYData peak = Scan.Data.get(i);
-            if (peak.getX() < DC4.Arm + 147) {
+            if (peak.getX() < linker.Arm + 147) {
                 continue;
             }
-            if (Math.abs(Scan.GetPoinByXCloset(DC4.DABCO + DC4.Arm + DC4.H2O + DC4.H).getX() - (DC4.DABCO + DC4.Arm + DC4.H2O + DC4.H)) < Parameter.Tolerance) {
-                Fragment199 = Scan.GetPoinByXCloset(DC4.DABCO + DC4.Arm + DC4.H2O + DC4.H);
+            if (Math.abs(Scan.GetPoinByXCloset(linker.Core + linker.Arm + linker.H2O + linker.H).getX() - (linker.Core + linker.Arm + linker.H2O + linker.H)) < Parameter.Tolerance) {
+                Fragment199 = Scan.GetPoinByXCloset(linker.Core + linker.Arm + linker.H2O + linker.H);
             }
-            XYPointCollection peakrange = Scan.GetSubSetByXRange(peak.getX() + DC4.DABCO - Parameter.Tolerance, peak.getX() + DC4.DABCO + Parameter.Tolerance);
+            XYPointCollection peakrange = Scan.GetSubSetByXRange(peak.getX() + linker.Core - Parameter.Tolerance, peak.getX() + linker.Core + Parameter.Tolerance);
             for (int pk = 0; pk < peakrange.PointCount(); pk++) {
-                if (Math.abs(peakrange.Data.get(pk).getX() - (peak.getX() + DC4.DABCO)) < Parameter.Tolerance) {
+                if (Math.abs(peakrange.Data.get(pk).getX() - (peak.getX() + linker.Core)) < Parameter.Tolerance) {
                     XYData[] pair = new XYData[2];
                     pair[0] = peak;
                     pair[1] = peakrange.Data.get(pk);
@@ -62,10 +64,10 @@ public class CrossLinkerScanResult {
                 if (MSlevel == 2) {
                     matchmz = Scan.PrecursorMz;
                 } else if (MSlevel == 1) {
-                    matchmz = Scan.GetPoinByXCloset(pair[0].getX() + pair2[0].getX() + DC4.DABCO - DC4.H).getX();
-                    IntactPeps = Scan.GetPoinByXCloset(pair[0].getX() + pair2[0].getX() + DC4.DABCO - DC4.H);
+                    matchmz = Scan.GetPoinByXCloset(pair[0].getX() + pair2[0].getX() + linker.Core - linker.H).getX();
+                    IntactPeps = Scan.GetPoinByXCloset(pair[0].getX() + pair2[0].getX() + linker.Core - linker.H);
                 }
-                if (Math.abs(matchmz - (pair[0].getX() + pair2[0].getX() + DC4.DABCO - DC4.H)) < Parameter.Tolerance) {
+                if (Math.abs(matchmz - (pair[0].getX() + pair2[0].getX() + linker.Core - linker.H)) < Parameter.Tolerance) {
                     FragmentPair fragpair = new FragmentPair();
                     fragpair.FragmentPair = new XYData[2][2];
                     fragpair.FragmentPair[0] = pair;
@@ -78,9 +80,9 @@ public class CrossLinkerScanResult {
             if (MSlevel == 2) {
                 matchmz = Scan.PrecursorMz;
             } else if (MSlevel == 1) {
-                matchmz = Scan.GetPoinByXCloset(pair[0].getX() + DC4.DABCO + DC4.H2O + DC4.Arm).getX();
+                matchmz = Scan.GetPoinByXCloset(pair[0].getX() + linker.Core + linker.H2O + linker.Arm).getX();
             }
-            if (Math.abs(matchmz - (pair[0].getX() + DC4.DABCO + DC4.H2O + DC4.Arm)) < Parameter.Tolerance) {
+            if (Math.abs(matchmz - (pair[0].getX() + linker.Core + linker.H2O + linker.Arm)) < Parameter.Tolerance) {
                 DeadEndEvidence.add(pair);
             }
         }

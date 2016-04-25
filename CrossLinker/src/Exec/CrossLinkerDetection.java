@@ -17,6 +17,7 @@ import MSUmpire.LCMSPeakStructure.LCMSPeakMS1;
 import MSUmpire.SpectralProcessingModule.ScanIsotopePeakDetectionThread;
 import MSUmpire.SpectralProcessingModule.ScanPeakGroup;
 import MSUmpire.Utility.ConsoleLogger;
+import crosslinker.Linker;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -63,6 +64,7 @@ public class CrossLinkerDetection {
         Logger logger = Logger.getRootLogger();
 
         InstrumentParameter parameter = null;
+        Linker linker=new Linker();
         parameter = new InstrumentParameter(InstrumentParameter.InstrumentType.Orbitrap);
         parameter.MS1PPM = 20;
         parameter.MS2PPM = 600f;
@@ -256,6 +258,14 @@ public class CrossLinkerDetection {
                         parameter.MS2Pairing = Boolean.parseBoolean(value);
                         break;
                     }
+                    case "CXL.CoreMass":{
+                        linker.Core=Float.parseFloat(value);
+                        break;
+                    }
+                    case "CXL.ArmMass":{
+                        linker.Arm=Float.parseFloat(value);
+                        break;
+                    }                            
 
 //</editor-fold>//</editor-fold>                   
                 }
@@ -329,7 +339,7 @@ public class CrossLinkerDetection {
         }
         
         //Initialize crosslinker peak pair finder
-        CrosslinkerPepFinder finder = new CrosslinkerPepFinder(lCMSPeakBase, medianIntensity);
+        CrosslinkerPepFinder finder = new CrosslinkerPepFinder(lCMSPeakBase, medianIntensity, linker);
 
         //Find all peak pairs
         finder.FindAllPairPeaks(NoCPUs);

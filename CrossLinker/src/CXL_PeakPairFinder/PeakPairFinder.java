@@ -22,7 +22,7 @@ package CXL_PeakPairFinder;
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.PeakDataStructure.PeakCluster;
 import MSUmpire.PeptidePeakClusterDetection.PeakCurveCorrCalc;
-import crosslinker.DC4;
+import crosslinker.Linker;
 import java.io.IOException;
 import java.util.HashMap;
 import net.sf.javaml.core.kdtree.KDTree;
@@ -37,15 +37,17 @@ public class PeakPairFinder implements Runnable {
 
     private PeakCluster TargetPeak;
     InstrumentParameter parameter;
+    Linker linker;
     private final KDTree PeakClusterKDTree;
     float lowrt = 0f;
     float highrt = 0f;
     public PairGroup pairgroup;
 
-    public PeakPairFinder(PeakCluster peakClusterA, KDTree PeakClusterKDTree, InstrumentParameter parameter) {
+    public PeakPairFinder(PeakCluster peakClusterA, KDTree PeakClusterKDTree, InstrumentParameter parameter, Linker linker) {
         this.TargetPeak = peakClusterA;
         this.PeakClusterKDTree = PeakClusterKDTree;
         this.parameter = parameter;
+        this.linker=linker;
         lowrt = peakClusterA.PeakHeightRT[0] - parameter.RTtol;
         if (lowrt < 0) {
             lowrt = 0f;
@@ -55,13 +57,13 @@ public class PeakPairFinder implements Runnable {
 
     @Override
     public void run() {
-        //linked pair : x + DC4.DABCO
+        //linked pair : x + Linker.Core
         pairgroup=new PairGroup(TargetPeak);
         
         //calculate MW of peak pair
-        float pairmw= TargetPeak.NeutralMass()+DC4.DABCO;
+        float pairmw= TargetPeak.NeutralMass()+linker.Core;
         pairgroup.highMassPeak=FindTargetMWPeak(pairmw);        
-        float DeadEndpairMW = TargetPeak.NeutralMass()+ DC4.DABCO + DC4.H2O + DC4.Arm;
+        float DeadEndpairMW = TargetPeak.NeutralMass()+ linker.Core + linker.H2O + linker.Arm;
         pairgroup.DeadEndpairs=FindTargetMWPeak(DeadEndpairMW);
     }
 

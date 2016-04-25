@@ -12,6 +12,7 @@ import MSUmpire.LCMSPeakStructure.LCMSPeakBase;
 import MSUmpire.PeptidePeakClusterDetection.PDHandlerMS1;
 import MSUmpire.SpectrumParser.MALDIDataParser;
 import MSUmpire.Utility.ConsoleLogger;
+import crosslinker.Linker;
 import java.io.FileWriter;
 import java.io.IOException;;
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class CXL_MALDI {
         int NoCPUs=10;
         InstrumentParameter parameter=null;
         LCMSPeakBase lCMSPeakBase = null;
+        Linker linker=new Linker();
         parameter = new InstrumentParameter(InstrumentParameter.InstrumentType.MALDI);
         MALDIDataParser parser = new MALDIDataParser(FilePath);
         parser.cycletime = 120f / 576f;
@@ -67,7 +69,7 @@ public class CXL_MALDI {
         //detection.DetectSingleMZTraces(scans);
         //lCMSPeakBase.ExportPeakCurveResult();
         
-        CrosslinkerPepFinder finder = new CrosslinkerPepFinder(lCMSPeakBase,0f);
+        CrosslinkerPepFinder finder = new CrosslinkerPepFinder(lCMSPeakBase,0f,linker);
         lCMSPeakBase.parameter.MS1PPM=200;
         lCMSPeakBase.parameter.RTtol=1f;
         finder.FindAllPairPeaks(NoCPUs);

@@ -19,3 +19,7 @@ SE.MassDefectFilter=true
 SE.DetectSameChargePairOnly=true
 SE.MS2Pairing=true
 SE.MS2PairTopN=5
+
+#CXL linker
+CXL.CoreMass = 112.0995
+CXL.ArmMass = 68

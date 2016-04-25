@@ -22,7 +22,7 @@ package CXL_PeakPairFinder;
 import MSUmpire.BaseDataStructure.InstrumentParameter;
 import MSUmpire.SpectralProcessingModule.IsotopePeakGroup;
 import MSUmpire.SpectralProcessingModule.ScanPeakGroup;
-import crosslinker.DC4;
+import crosslinker.Linker;
 import java.util.ArrayList;
 import net.sf.javaml.core.kdtree.KDTree;
 import net.sf.javaml.core.kdtree.KeyDuplicateException;
@@ -37,6 +37,7 @@ public class MS2PeakPairFinder implements Runnable {
 
     public ScanPeakGroup ScanPeak;
     InstrumentParameter parameter;
+    Linker linker;
     private KDTree PeakClusterKDTree;
     public ArrayList<PairGroupMS2> PeakPairGroupList;
     public ArrayList<PeakPair> peakPairs = new ArrayList<>();
@@ -77,9 +78,10 @@ public class MS2PeakPairFinder implements Runnable {
         return BestPeak;
     }
 
-    public MS2PeakPairFinder(ScanPeakGroup ScanPeak, InstrumentParameter parameter) {
+    public MS2PeakPairFinder(ScanPeakGroup ScanPeak, InstrumentParameter parameter, Linker linker) {
         this.ScanPeak = ScanPeak;
         this.parameter = parameter;
+        this.linker=linker;
     }
 
     
@@ -106,9 +108,9 @@ public class MS2PeakPairFinder implements Runnable {
             IsotopePeakGroup PeakCluster = ScanPeak.peakGroupList.get(i);
             PairGroupMS2 Pairgroup = new PairGroupMS2(PeakCluster);
             //Calculate MW of peak pair
-            float pairmw = PeakCluster.NeutralMass() + DC4.DABCO;
+            float pairmw = PeakCluster.NeutralMass() + linker.Core;
             Pairgroup.HighMassPeak = FindTargetMWPeak(PeakCluster,pairmw);
-            float DeadEndpairMW = PeakCluster.NeutralMass() + DC4.DABCO + DC4.H2O + DC4.Arm;
+            float DeadEndpairMW = PeakCluster.NeutralMass() + linker.Core + linker.H2O + linker.Arm;
             Pairgroup.DeadEndpairs = FindTargetMWPeak(PeakCluster,DeadEndpairMW);
             PeakPairGroupList.add(Pairgroup);
         }
@@ -121,7 +123,7 @@ public class MS2PeakPairFinder implements Runnable {
                         PairGroupMS2 highmass = PeakPairGroupList.get(j);
                         if (lowmass.LowMassPeak.NeutralMass() <= highmass.LowMassPeak.NeutralMass()) {
                             
-                            float IntactMW = lowmass.LowMassPeak.NeutralMass() + highmass.LowMassPeak.NeutralMass() + DC4.DABCO;
+                            float IntactMW = lowmass.LowMassPeak.NeutralMass() + highmass.LowMassPeak.NeutralMass() + linker.Core;
                             
                             //Check if the precursor mass value of the MS2 spectrum is the summation of MW values of low and high peak pairs
                             //If yes, then the two peak pairs are potentially crosslinking peptides
